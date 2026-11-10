@@ -1,5 +1,11 @@
 # El factor de actividad radicular, y lo que no alcanzó a explicar
 
+> **Al día siguiente, 10/11/2026.** Lo que este lote dejó anotado como «lo que
+> sigue» —el agua inicial de las temporadas secas— se pagó: con la humedad de
+> suelo de ERA5-Land el sesgo contra los doce baja de **+0,132 a +0,061**, 1977
+> y 1968 se acomodan y queda sólo 1971. Ver `FORRAJE_AGUA_INICIAL.md`. De paso
+> se cayeron dos degradaciones declaradas: el invierno y la nieve.
+
 **09/11/2026.** Tercera y última de las degradaciones declaradas del balance de
 Wight y Hanks que tenía una fuente esperando. Se montó, se midió contra los doce
 índices publicados, y el resultado es mitad y mitad: **destapa el techo del

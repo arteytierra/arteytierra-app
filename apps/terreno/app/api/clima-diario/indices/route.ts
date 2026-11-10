@@ -45,6 +45,7 @@ import {
   indicesQueSirven,
   ventanasDeCadaAnio,
 } from '@/lib/forrajeAnios';
+import { humedadDeLaSerie } from '@/lib/aguaDelPerfil';
 
 const HDRS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': SITE_ORIGIN };
 
@@ -118,7 +119,7 @@ export async function GET(req: Request) {
 
   // Todo lo que cambia el resultado entra en la clave. Si falta un parámetro acá,
   // dos corridas distintas se sirven la misma respuesta.
-  const dbKey = `clima-indices-v3:${latR},${lngR},${arranque},${dias},${awCrudo.join('-')},`
+  const dbKey = `clima-indices-v4:${latR},${lngR},${arranque},${dias},${awCrudo.join('-')},`
     + `${kc ?? ''},${c ?? ''},${b ?? ''},${aguaBajo ?? ''}`;
   const hit = await cacheGet<{ raw: string }>(dbKey);
   if (hit?.raw) return new Response(hit.raw, { status: 200, headers: HDRS });
@@ -127,7 +128,8 @@ export async function GET(req: Request) {
     + `?latitude=${latR}&longitude=${lngR}`
     + `&start_date=${START}&end_date=${END}`
     + '&daily=precipitation_sum,et0_fao_evapotranspiration,shortwave_radiation_sum,'
-    + 'temperature_2m_max,temperature_2m_min,soil_temperature_28_to_100cm_mean&timezone=auto';
+    + 'temperature_2m_max,temperature_2m_min,soil_temperature_28_to_100cm_mean,'
+    + 'soil_moisture_0_to_7cm_mean,soil_moisture_7_to_28cm_mean,soil_moisture_28_to_100cm_mean&timezone=auto';
 
   let res: Response;
   try {
@@ -147,6 +149,9 @@ export async function GET(req: Request) {
       temperature_2m_max?: Array<number | null>;
       temperature_2m_min?: Array<number | null>;
       soil_temperature_28_to_100cm_mean?: Array<number | null>;
+      soil_moisture_0_to_7cm_mean?: Array<number | null>;
+      soil_moisture_7_to_28cm_mean?: Array<number | null>;
+      soil_moisture_28_to_100cm_mean?: Array<number | null>;
     };
   };
   try {
@@ -170,6 +175,19 @@ export async function GET(req: Request) {
   const tsuelo = d.soil_temperature_28_to_100cm_mean ?? [];
   const sueloCompleto = tsuelo.length === d.time.length
     && tsuelo.every(v => v !== null && v !== undefined && Number.isFinite(v));
+  // La humedad de suelo de las tres primeras capas de ERA5-Land, que es con lo
+  // que cada temporada arranca con el agua **medida** en vez de con la que dejó
+  // el invierno simulado. La textura del píxel se identifica de la propia serie.
+  // Si no llega completa, se cae a la cadena y el aviso lo dice: ver
+  // `aguaDelPerfil.ts`.
+  const humedad = humedadDeLaSerie(
+    d.soil_moisture_0_to_7cm_mean ?? [],
+    d.soil_moisture_7_to_28cm_mean ?? [],
+    d.soil_moisture_28_to_100cm_mean ?? [],
+  );
+  const aguaCompleta = humedad !== null && humedad.completa
+    && humedad.por_dia.length === d.time.length;
+
   const serie = d.time.map((fecha, i) => ({
     fecha,
     precip_mm: precip[i] ?? null,
@@ -178,6 +196,9 @@ export async function GET(req: Request) {
     t_max_c: tmax[i] ?? null,
     t_min_c: tmin[i] ?? null,
     ...(sueloCompleto ? { t_suelo_30_90_c: tsuelo[i] as number } : {}),
+    ...(aguaCompleta
+      ? { agua_util_por_capa: humedad.por_dia[i] as readonly number[] }
+      : {}),
   }));
   const nulos = serie.filter(x => x.precip_mm === null || x.et0_mm === null).length;
   if (nulos > 0) {
@@ -243,6 +264,19 @@ export async function GET(req: Request) {
      * corrido igual: con factor y sin factor los índices no son comparables.
      */
     actividad_radicular: r.actividad_radicular,
+    /**
+     * Si cada temporada arrancó con el agua del perfil **medida** en vez de con
+     * la que dejó el invierno simulado. El corte del que sale el `Yp` tiene que
+     * haber corrido igual: en Sidney la mediana del índice se mueve 0,10 entre
+     * una cosa y la otra.
+     */
+    agua_inicial_medida: r.agua_inicial_medida,
+    /** La clase de textura de H-TESSEL que se identificó para el píxel. */
+    textura_del_pixel: humedad === null ? null : {
+      clase: humedad.textura.textura.clase,
+      agua_util_m3_m3: humedad.textura.textura.agua_util,
+      maximo_de_la_serie: humedad.textura.maximo_de_la_serie,
+    },
     fuente: coeficientes
       ? 'Open-Meteo / ERA5 (reanálisis, ~10 km). La Eo del balance se calculó por Jensen-Haise '
         + 'modificada —el método con el que Wight y Hanks ajustaron su Kc y su b— con las '
@@ -252,6 +286,12 @@ export async function GET(req: Request) {
             + 'suelo de ERA5-Land, capa de 28 a 100 cm: ver lib/actividadRadicular.ts.'
           : 'No llegó la temperatura del suelo, así que las capas profundas corrieron sin el '
             + 'factor de actividad radicular y el índice sale alto.')
+        + (r.agua_inicial_medida
+          ? ' El agua con la que arranca cada temporada sale de la humedad de suelo de '
+            + 'ERA5-Land: ver lib/aguaDelPerfil.ts.'
+          : ' No llegó la humedad del suelo, así que el agua con la que arranca cada temporada '
+            + 'sale de correr el balance fuera de temporada, que en Sidney entrega unos 40 mm de '
+            + 'mas sobre 150 y deja el indice alto.')
       : 'Open-Meteo / ERA5 (reanálisis, ~10 km). No se pudieron calcular los coeficientes de la '
         + 'Eo de Jensen-Haise, así que el balance usó la ETo de referencia de FAO-56: ver '
         + 'ETO_NO_ES_EO en lib/forrajeCorte.ts.',

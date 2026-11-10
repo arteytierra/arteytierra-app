@@ -16,6 +16,7 @@
  *    depender de ningún dato descargado.
  */
 import { describe, it, expect } from 'vitest';
+import { coeficientesEo } from '@/lib/eoJensenHaise';
 import {
   SITIO_DE_LA_MEDICION,
   LA_VENTANA_NO_SE_MUEVE_CON_EL_ANIO,
@@ -27,6 +28,7 @@ import {
   EL_ANIO_MAS_SECO_ES_EL_QUE_FUE,
   LA_DISTRIBUCION_ES_DEL_PASADO,
   LA_CADENA_LEE_ALTO_CONTRA_LOS_DOCE,
+  AVISO_DE_LA_CADENA,
   EL_FACTOR_DESTAPA_EL_TECHO_PERO_NO_EL_SESGO,
   EL_INVIERNO_DECIDE_LA_COLA_SECA,
   AVISO_DE_LA_VENTANA,
@@ -95,6 +97,11 @@ function serieDeAnios(semilla: number, primer_anio: number, anios: number): DiaD
 /** 150 mm de agua útil repartidos en las tres capas de 30 cm. */
 const AW = [50, 50, 50];
 
+/** Unos coeficientes de `Eo` cualesquiera, para probar qué avisos salen. */
+const COEF_DE_PRUEBA = coeficientesEo({
+  elevacion_m: 600, tmax_normal_c: 29, tmin_normal_c: 13, mes_mas_calido: 7,
+})!;
+
 const SERIE = serieDeAnios(11, 1990, 25);
 const VENTANAS = ventanasDeCadaAnio(1990, 2014, '04-15', 84)!;
 
@@ -127,25 +134,44 @@ describe('la ventana no se mueve con el año', () => {
   });
 
   it('la mediana y el p10 no se mueven igual: la ventana cambia la forma, no desplaza', () => {
-    // Con la Eo del modelo el p10 se mueve mucho más que la mediana en las
-    // cuatro variantes, porque la mediana queda clavada contra el techo del
-    // índice. Medido con la ETo de FAO-56 el patrón era asimétrico —el p10 se
-    // movía más sólo cuando la ventana le daba más agua— y la constante guarda
-    // esa historia para que no se vuelva a escribir de memoria.
+    // El p10 se mueve más que la mediana en tres de las cuatro variantes. La
+    // excepción es acortar la temporada a 68 días, donde los dos se mueven casi
+    // lo mismo —2,9 contra 3,2 %—, y por eso la prueba cuenta en vez de exigir
+    // las cuatro: con el agua inicial medida la mediana se despegó del techo y
+    // también tiene a dónde moverse.
     const c = LA_VENTANA_NO_SE_MUEVE_CON_EL_ANIO.cocientes;
-    for (const caso of [c.arranque_menos_15, c.largo_68, c.arranque_mas_15, c.largo_99]) {
-      expect(Math.abs(caso.p10 - 1)).toBeGreaterThan(Math.abs(caso.mediana - 1));
-    }
+    const casos = [c.arranque_menos_15, c.largo_68, c.arranque_mas_15, c.largo_99];
+    const manda = casos.filter(x => Math.abs(x.p10 - 1) > Math.abs(x.mediana - 1));
+    expect(manda.length).toBe(3);
+    // Y el que queda afuera no lo queda por poco ni por mucho: un 0,3 %.
+    expect(Math.abs(c.largo_68.mediana - 1) - Math.abs(c.largo_68.p10 - 1))
+      .toBeLessThan(0.01);
     expect(LA_VENTANA_NO_SE_MUEVE_CON_EL_ANIO.no_desplaza_la_distribucion).toBe(true);
     expect(LA_VENTANA_NO_SE_MUEVE_CON_EL_ANIO.con_la_eto_era_asimetrico).toBe(true);
   });
 
-  it('adelantar el arranque y acortar la temporada suben el índice; atrasarlo y alargarla lo bajan', () => {
+  it('con el agua medida la mediana nunca sube, y el p10 sí cuando la ventana es más barata', () => {
+    // Esto cambió al sembrar el perfil con la humedad del reanálisis, y el
+    // mecanismo es el del propio modelo: adelantar el arranque quince días lo
+    // siembra con el perfil de fines de marzo, que está más seco y más frío, y
+    // acortar la temporada a 68 días la deja entera en la parte del año donde la
+    // actividad radicular de las capas profundas todavía está cerrada. Las dos
+    // cosas bajan la mediana aunque le saquen demanda.
     const c = LA_VENTANA_NO_SE_MUEVE_CON_EL_ANIO.cocientes;
-    expect(c.arranque_menos_15.mediana).toBeGreaterThan(1);
-    expect(c.largo_68.mediana).toBeGreaterThan(1);
-    expect(c.arranque_mas_15.mediana).toBeLessThan(1);
-    expect(c.largo_99.mediana).toBeLessThan(1);
+    for (const caso of [c.arranque_menos_15, c.largo_68, c.arranque_mas_15, c.largo_99]) {
+      expect(caso.mediana).toBeLessThan(1);
+    }
+    // El p10 sí sube cuando la ventana le da más agua al pastizal, y baja cuando
+    // se la quita: es el único de los dos que cambia de signo.
+    expect(c.arranque_menos_15.p10).toBeGreaterThan(1);
+    expect(c.largo_68.p10).toBeGreaterThan(1);
+    expect(c.arranque_mas_15.p10).toBeLessThan(1);
+    expect(c.largo_99.p10).toBeLessThan(1);
+    // Con el invierno simulado la mediana estaba contra el techo y casi no se
+    // movía: dos de las cuatro variantes la dejaban arriba de 1.
+    const v = LA_VENTANA_NO_SE_MUEVE_CON_EL_ANIO.con_la_cadena_daba;
+    expect(v.arranque_menos_15.mediana).toBeGreaterThan(1);
+    expect(v.largo_68.mediana).toBeGreaterThan(1);
   });
 });
 
@@ -439,9 +465,9 @@ describe('el año más seco es el que fue', () => {
     expect(Math.abs(e.era5_en_la_ventana.fraccion_pct - estacion.fraccion_pct)).toBeLessThan(10);
   });
 
-  it('el perfil llegó a esa temporada con un cuarto del agua del año promedio', () => {
+  it('el perfil llegó a esa temporada con menos de la mitad del agua del año promedio', () => {
     const a = EL_ANIO_MAS_SECO_ES_EL_QUE_FUE.agua_inicial_del_perfil_mm;
-    expect(a.ese_anio).toBeLessThan(a.promedio / 3);
+    expect(a.ese_anio).toBeLessThan(a.promedio / 2);
     expect(a.tope).toBe(150);
     // Con la ETo de FAO-56 llegaba casi vacío, con 1,3 mm: la diferencia entre
     // las dos corridas es cuánta agua le saca el invierno al perfil.
@@ -450,6 +476,158 @@ describe('el año más seco es el que fue', () => {
 
   it('no se presenta como validación: es un chequeo de una sola dirección', () => {
     expect(EL_ANIO_MAS_SECO_ES_EL_QUE_FUE.que_prueba).toMatch(/no valida/);
+  });
+});
+
+describe('la temporada sembrada con el agua medida', () => {
+  /** La misma serie, con la fracción de agua útil del reanálisis en cada día. */
+  function conAgua(frac: readonly number[], serie: readonly DiaDeSerie[] = SERIE): DiaDeSerie[] {
+    return serie.map(d => ({ ...d, agua_util_por_capa: frac }));
+  }
+
+  it('si todas las ventanas la traen, no hay cadena ni temporadas descartadas', () => {
+    const r = indicesPorAnio({
+      serie: conAgua([0.6, 0.4, 0.3]), ventanas: VENTANAS, aw_por_capa_mm: AW,
+    })!;
+    expect(r.agua_inicial_medida).toBe(true);
+    expect(r.anios_descartados).toBe(0);
+    for (const a of r.anios) {
+      expect(a.diferencia_de_arranque_pct).toBe(0);
+      expect(a.el_arranque_todavia_pesa).toBe(false);
+      // El perfil arranca exactamente con lo que dice el dato: 0,6·50 + 0,4·50 + 0,3·50.
+      expect(a.sws_inicial_mm).toBeCloseTo(0.6 * 50 + 0.4 * 50 + 0.3 * 50, 6);
+    }
+  });
+
+  it('y entran todas las temporadas de la serie, no sólo las que convergieron', () => {
+    const cad = cadena();
+    const sem = indicesPorAnio({
+      serie: conAgua([0.6, 0.4, 0.3]), ventanas: VENTANAS, aw_por_capa_mm: AW,
+    })!;
+    expect(indicesQueSirven(sem.anios).length)
+      .toBeGreaterThan(indicesQueSirven(cad.anios).length);
+  });
+
+  it('si falta en alguna ventana, vuelve la cadena entera', () => {
+    const serie = SERIE.map(d => ({
+      ...d,
+      // A todos los días menos a los 15 de abril de 1995 en adelante.
+      ...(d.fecha >= '1995-04-15' ? {} : { agua_util_por_capa: [0.6, 0.4, 0.3] }),
+    }));
+    const r = indicesPorAnio({ serie, ventanas: VENTANAS, aw_por_capa_mm: AW })!;
+    expect(r.agua_inicial_medida).toBe(false);
+    // Y entonces vuelve a haber temporadas que arrastran el arranque.
+    expect(r.anios.some(a => a.diferencia_de_arranque_pct > 0)).toBe(true);
+  });
+
+  it('una fracción de largo equivocado no cuenta como dato', () => {
+    const r = indicesPorAnio({
+      serie: conAgua([0.6, 0.4]), ventanas: VENTANAS, aw_por_capa_mm: AW,
+    })!;
+    expect(r.agua_inicial_medida).toBe(false);
+  });
+
+  it('con más agua inicial el índice de cada temporada sube', () => {
+    const seco = indicesPorAnio({
+      serie: conAgua([0.05, 0.05, 0.05]), ventanas: VENTANAS, aw_por_capa_mm: AW,
+    })!;
+    const lleno = indicesPorAnio({
+      serie: conAgua([0.95, 0.95, 0.95]), ventanas: VENTANAS, aw_por_capa_mm: AW,
+    })!;
+    // Acá sí vale temporada por temporada: sin cadena no hay arrastre de una a
+    // la siguiente, que es lo que en la cadena continua invertía algún año.
+    for (let i = 0; i < seco.anios.length; i += 1) {
+      const a = seco.anios[i]!.indice;
+      const b = lleno.anios[i]!.indice;
+      if (a === null || b === null) continue;
+      expect(b).toBeGreaterThanOrEqual(a);
+    }
+  });
+
+  it('sale el aviso del agua inicial y deja de salir el del invierno', () => {
+    const sem = indicesPorAnio({
+      serie: conAgua([0.6, 0.4, 0.3]).map(d => ({ ...d, rs_mj_m2: 15, t_max_c: 20, t_min_c: 5 })),
+      ventanas: VENTANAS, aw_por_capa_mm: AW, coeficientes_eo: COEF_DE_PRUEBA,
+    })!;
+    expect(sem.avisos.some(a => a.aviso.includes('humedad de suelo de ERA5-Land'))).toBe(true);
+    expect(sem.avisos.some(a => a.aviso === AVISO_DEL_INVIERNO.aviso)).toBe(false);
+    // Y el aviso del índice va para arriba: el dato lee húmedo.
+    const aviso = sem.avisos.find(a => a.aviso.includes('humedad de suelo de ERA5-Land'))!;
+    expect(aviso.sesgo).toBe('alto');
+    // La advertencia de la cadena tampoco corresponde: no hubo cadena.
+    expect(sem.advertencias.some(a => a === AVISO_DE_LA_CADENA.advertencia)).toBe(false);
+  });
+
+  it('sin el dato, el aviso del invierno sigue saliendo', () => {
+    const cad = indicesPorAnio({
+      serie: SERIE.map(d => ({ ...d, rs_mj_m2: 15, t_max_c: 20, t_min_c: 5 })),
+      ventanas: VENTANAS, aw_por_capa_mm: AW, coeficientes_eo: COEF_DE_PRUEBA,
+    })!;
+    expect(cad.agua_inicial_medida).toBe(false);
+    expect(cad.avisos.some(a => a.aviso === AVISO_DEL_INVIERNO.aviso)).toBe(true);
+    expect(cad.advertencias.some(a => a === AVISO_DE_LA_CADENA.advertencia)).toBe(true);
+  });
+});
+
+describe('lo que el agua medida le hizo a las mediciones de Sidney', () => {
+  it('contra los doce, el error se parte al medio y el techo baja', () => {
+    const d = LA_CADENA_LEE_ALTO_CONTRA_LOS_DOCE;
+    expect(d.con_el_agua_medida.eam).toBeLessThan(d.con_el_factor.eam / 1.9);
+    expect(d.con_el_agua_medida.en_el_techo).toBeLessThan(d.con_el_factor.en_el_techo);
+    expect(d.con_el_agua_medida.r).toBeGreaterThan(d.con_el_factor.r);
+    // Sigue leyendo alto, que es lo que el aviso tiene que decir.
+    expect(d.con_el_agua_medida.sesgo).toBeGreaterThan(0);
+    // Y sin 1971 el error vuelve a caer a la mitad.
+    expect(d.sin_1971.eam).toBeLessThan(d.con_el_agua_medida.eam / 1.5);
+    expect(d.con_el_agua_medida_queda).toEqual([1971]);
+  });
+
+  it('el invierno dejó de decidir la cola seca: el p10 se mueve 1,2 veces y no 3,3', () => {
+    const i = EL_INVIERNO_DECIDE_LA_COLA_SECA;
+    expect(i.ya_no_decide.con_el_agua_medida.el_p10_se_mueve_veces)
+      .toBeLessThan(i.el_p10_se_mueve_veces / 2);
+    // Los dos tratamientos de Jensen-Haise pasan a ser la misma corrida.
+    expect(i.ya_no_decide.con_el_agua_medida.el_hibrido_es_el_mismo).toBe(true);
+    // Y el cociente declarado es el que sale de los dos p10 de la tabla.
+    const t = i.ya_no_decide.con_el_agua_medida;
+    expect(t.jensen_haise.p10 / t.eto_de_fao_56.p10)
+      .toBeCloseTo(t.el_p10_se_mueve_veces, 2);
+  });
+
+  it('la nieve dejó de mover nada, porque lo que movía era el invierno simulado', () => {
+    expect(LA_NIEVE_NO_SE_ACUMULA.con_el_agua_medida.p10_pct).toBe(0);
+    expect(LA_NIEVE_NO_SE_ACUMULA.con_el_agua_medida.dejo_de_aplicar).toBe(true);
+    // Con la cadena sí movía, poco pero no cero.
+    expect(Math.abs(LA_NIEVE_NO_SE_ACUMULA.medido_con_deshielo_diferido.con_jensen_haise.p10_pct))
+      .toBeGreaterThan(0);
+  });
+
+  it('la distribución se abrió y se acercó al «al menos la mitad» publicado', () => {
+    const m = EL_PROMEDIO_SOBREESTOCA.medido_en_sidney;
+    expect(m.fraccion_bajo_el_promedio_pct)
+      .toBeGreaterThan(m.con_la_cadena_daba.fraccion_bajo_el_promedio_pct);
+    expect(m.ancho).toBeGreaterThan(m.con_la_cadena_daba.ancho);
+    expect(m.anios).toBe(m.con_la_cadena_daba.anios + 2);
+    // Y sigue sin llegar a la mitad, por la asimetría que el texto explica.
+    expect(m.fraccion_bajo_el_promedio_pct).toBeLessThan(50);
+  });
+
+  it('la lluvia de la temporada explica más que antes, y sigue sin alcanzar', () => {
+    const l = LA_LLUVIA_ANUAL_NO_PREDICE_EL_ANIO;
+    expect(l.r2_contra_lluvia_de_la_temporada)
+      .toBeGreaterThan(l.con_la_cadena_daba.r2_temporada);
+    expect(l.r2_contra_lluvia_de_la_temporada).toBeLessThan(0.6);
+    expect(l.agua_inicial_medida_mm.promedio)
+      .toBeLessThan(l.con_la_cadena_daba.agua_inicial_mm.promedio);
+  });
+
+  it('la tendencia por década sigue sin existir aunque se haya duplicado', () => {
+    const t = LA_DISTRIBUCION_ES_DEL_PASADO;
+    expect(Math.abs(t.pendiente_del_indice_por_decada))
+      .toBeGreaterThan(Math.abs(t.con_la_cadena_daba.pendiente_por_decada));
+    expect(t.r2_de_la_tendencia).toBeLessThan(0.05);
+    // Y el p10 sigue apuntando al revés que la pendiente.
+    expect(t.mitades.segunda.p10).toBeGreaterThan(t.mitades.primera.p10);
   });
 });
 

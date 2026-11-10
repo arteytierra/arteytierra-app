@@ -233,7 +233,8 @@ razón por la que este documento existe antes que la función.
 | precipitación diaria | POWER y Daymet, ya en el motor de clima |
 | `Eo` / ETP diaria | ya se calcula, y la app ya corrigió que `T2M_MAX/MIN` de POWER son récords y no medias |
 | `AW` por capa | SoilGrids y HWSD v2, con el reparto que la ficha declara |
-| temperatura del suelo | se puede derivar de la del aire, con una fuente aparte |
+| temperatura del suelo | ERA5-Land, capa de 28 a 100 cm (montado el 09/11/2026) |
+| `SWS` al arranque | ERA5-Land, humedad de suelo por capa (montado el 10/11/2026) |
 
 **Lo que acequia no tiene, y hay que decir qué se hace:**
 
@@ -252,6 +253,20 @@ razón por la que este documento existe antes que la función.
    suelo sale de ERA5-Land. Ver `FORRAJE_ACTIVIDAD_RADICULAR.md` y
    `apps/terreno/lib/actividadRadicular.ts`. Sigue en pie la advertencia de
    región: la curva se aproximó de datos de Saskatchewan.
+4. ~~**El `SWS` de cada capa al arranque de la estación**, que ellos medían con
+   sonda de neutrones el 15 de abril.~~ **Resuelto el 10/11/2026**: sale de la
+   humedad de suelo de ERA5-Land convertida a agua útil con la Tabla 8.9 del IFS
+   CY45R1, y está medido contra las 158 mediciones con sonda que publica la
+   **Figura 5** del propio artículo: sesgo +0,046 de agua útil, y 9,65 mm sobre
+   150 en el día del rebrote. Ver `FORRAJE_AGUA_INICIAL.md` y
+   `apps/terreno/lib/aguaDelPerfil.ts`.
+
+> **La Figura 5 también saldó un supuesto.** El arnés venía suponiendo **50 mm
+> de agua útil por capa de 30 cm**, 150 en el perfil, sin respaldo y declarado
+> como decisión nuestra. Digitalizada, la envolvente de las cuatro temporadas
+> que la figura publica da 57,6 / 53,3 / 49,4 mm de rango por capa: los 50 mm
+> eran los correctos, y la capa superficial tiene más rango porque el trabajo la
+> deja secar por debajo del punto de marchitez.
 
 ---
 

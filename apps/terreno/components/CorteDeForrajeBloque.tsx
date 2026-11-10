@@ -44,6 +44,7 @@ import {
   type CorteDeclarado, type CuandoSeCorto, type QueSeCorto, type BaseDePeso,
   type QueHabia, type DiaDeSerie, type YpDelCorte,
 } from '@/lib/forrajeCorte';
+import { aguaInicialPorCapaMm } from '@/lib/aguaDelPerfil';
 import type { Insumos } from '@/lib/forrajeMedido';
 import type { DatosSuelo } from '@/lib/suelos';
 
@@ -116,6 +117,13 @@ interface RespuestaDeAnios {
    * sin factor los dos índices tampoco son comparables.
    */
   actividad_radicular: boolean;
+  /**
+   * Si cada temporada arrancó con el agua del perfil medida —la humedad de suelo
+   * del reanálisis— en vez de con la que dejó el invierno simulado. Se compara
+   * igual que lo demás: en Sidney la mediana del índice se mueve 0,10 entre una
+   * cosa y la otra, y el forraje del año seco hasta un 39 %.
+   */
+  agua_inicial_medida: boolean;
 }
 
 interface Props {
@@ -153,6 +161,8 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
   const [coefDelCorte, setCoefDelCorte] = useState<CoeficientesEo | null>(null);
   /** Si la ventana del corte corrió con el factor de actividad radicular. */
   const [factorDelCorte, setFactorDelCorte] = useState<boolean | null>(null);
+  /** Si la ventana del corte arrancó con el agua del perfil medida. */
+  const [aguaDelCorte, setAguaDelCorte] = useState<boolean | null>(null);
 
   // El segundo pedido: la serie entera, para repartir el techo del sitio en los
   // años que de verdad pasaron.
@@ -203,6 +213,7 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
         nulos?: number;
         coeficientes_eo?: CoeficientesEo | null;
         actividad_radicular?: boolean;
+        agua_inicial_medida?: boolean;
       };
       if (!r.ok || !j.dias) {
         setErrorSerie(j.error ?? 'No se pudo traer la serie diaria de este punto.');
@@ -225,17 +236,27 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
       setCoefDelCorte(coefEo);
       const temporada = ventanaDeBalance(j.dias, desde, hasta, coefEo);
       setFactorDelCorte(temporada?.actividad_radicular ?? null);
+      setAguaDelCorte(temporada === null ? null : temporada.agua_inicial_util !== null);
       const previos = ventanaDeBalance(j.dias, arranque, sumarDias(desde, -1), coefEo);
       if (temporada === null) {
         setErrorSerie('La serie no cubre completa la temporada que declaraste.');
         return;
       }
 
+      // El agua del perfil el día del rebrote. Si el reanálisis la trae, el `Yp`
+      // es un punto y no una banda, y no hace falta calentar el perfil: ver
+      // `aguaDelPerfil.ts`.
+      const aguaInicial = temporada.agua_inicial_util === null
+        ? null
+        : aguaInicialPorCapaMm(temporada.agua_inicial_util, agua);
+
       const salida = ypDelCorte({
         corte,
         dias: temporada.dias,
         aw_por_capa_mm: agua,
-        ...(previos !== null ? { dias_previos: previos.dias } : {}),
+        ...(aguaInicial !== null
+          ? { agua_inicial_por_capa_mm: aguaInicial }
+          : previos !== null ? { dias_previos: previos.dias } : {}),
         avisos_previos: temporada.avisos,
       });
       setRes({
@@ -327,6 +348,18 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
     return anios.actividad_radicular === factorDelCorte;
   }, [anios, factorDelCorte]);
 
+  /**
+   * Y con qué agua arrancó cada corrida, que es el tercero del mismo guardarrail
+   * y el que más pesa: entre arrancar la temporada con el agua medida y con la
+   * que deja el invierno simulado, en Sidney la mediana del índice va de 0,83 a
+   * 0,93 y el forraje del año seco cambia hasta un 39 %. Pasa si la humedad de
+   * suelo llega en un pedido y no en el otro.
+   */
+  const mismaAgua = useMemo(() => {
+    if (anios === null || aguaDelCorte === null) return true;
+    return anios.agua_inicial_medida === aguaDelCorte;
+  }, [anios, aguaDelCorte]);
+
   const ypParaRepartir = useMemo(() => {
     if (anios === null || banda === null) return null;
     const anioDelCorte = Number(desde.slice(0, 4));
@@ -338,10 +371,10 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
   }, [anios, banda, desde, rendimiento]);
 
   const forrajes = useMemo<ForrajeDeUnAnio[] | null>(
-    () => (anios !== null && ypParaRepartir !== null && mismaEo && mismoFactor
+    () => (anios !== null && ypParaRepartir !== null && mismaEo && mismoFactor && mismaAgua
       ? forrajePorAnio(ypParaRepartir.yp, anios.anios)
       : null),
-    [anios, ypParaRepartir, mismaEo, mismoFactor],
+    [anios, ypParaRepartir, mismaEo, mismoFactor, mismaAgua],
   );
 
   return (
@@ -584,6 +617,13 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
                       Una de las dos corridas restringió la extracción de las capas profundas por
                       temperatura de suelo y la otra no, así que los dos índices no son
                       comparables. Volvé a pedir las dos cosas en un rato.
+                    </p>
+                  ) : !mismaAgua ? (
+                    <p className="text-[10px] text-clay-700 leading-relaxed flex gap-1.5">
+                      <TriangleAlert className="w-3.5 h-3.5 shrink-0" />
+                      Una de las dos corridas arrancó la temporada con el agua del perfil medida y
+                      la otra con la que deja el balance de invierno, y entre las dos los kilos del
+                      año seco cambian hasta un 39 %. Volvé a pedir las dos cosas en un rato.
                     </p>
                   ) : anios.distribucion === null || forrajes === null || forrajes.length === 0 ? (
                     <p className="text-[10px] text-clay-700 leading-relaxed flex gap-1.5">

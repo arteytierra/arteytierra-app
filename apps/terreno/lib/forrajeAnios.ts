@@ -97,6 +97,7 @@
 import {
   type DiaDeBalance,
   type EntradasBalanceForraje,
+  type ResultadoBalanceForraje,
   ADVERTENCIAS,
   B_PRADERA_MIXTA,
   EO_DIARIA_DE_LA_PRUEBA,
@@ -120,6 +121,7 @@ import {
   actividadDeLasCapas,
   AVISO_ACTIVIDAD_RADICULAR,
 } from './actividadRadicular';
+import { avisoDelAguaInicial } from './aguaDelPerfil';
 
 // ─── El sitio donde se midió todo lo de este archivo ─────────────────────────
 
@@ -170,10 +172,10 @@ export const SITIO_DE_LA_MEDICION = {
  *
  * ```
  *                            mediana del índice      p10
- *  arranque −15 días              1,065×            1,239×
- *  arranque +15 días              0,758×            0,871×
- *  largo 68 días (mínimo)         1,100×            1,278×
- *  largo 99 días (máximo)         0,717×            0,769×
+ *  arranque −15 días              0,971×            1,106×
+ *  arranque +15 días              0,871×            0,801×
+ *  largo 68 días (mínimo)         0,968×            1,029×
+ *  largo 99 días (máximo)         0,941×            0,867×
  * ```
  *
  * Dos cosas para leer de ahí. La primera es que **la ventana importa**: quince
@@ -199,6 +201,17 @@ export const LA_VENTANA_NO_SE_MUEVE_CON_EL_ANIO = {
   del_trabajo: { arranque: '04-15', dias_minimo: 68, dias_maximo: 99, dias_mediana: 84 },
   /** Cociente contra la ventana del trabajo, en la mediana del índice y en el p10. */
   cocientes: {
+    arranque_menos_15: { mediana: 0.971, p10: 1.106 },
+    arranque_mas_15: { mediana: 0.871, p10: 0.801 },
+    largo_68: { mediana: 0.968, p10: 1.029 },
+    largo_99: { mediana: 0.941, p10: 0.867 },
+  },
+  /**
+   * Con el invierno simulado de la cadena, antes de sembrar el perfil con la
+   * humedad del reanálisis. La mediana no se movía casi nada porque estaba
+   * pegada al techo; ahora que bajó a 0,83 se mueve hasta un 13 %.
+   */
+  con_la_cadena_daba: {
     arranque_menos_15: { mediana: 1.0003, p10: 1.104 },
     arranque_mas_15: { mediana: 0.962, p10: 0.759 },
     largo_68: { mediana: 1.006, p10: 1.101 },
@@ -218,10 +231,11 @@ export const LA_VENTANA_NO_SE_MUEVE_CON_EL_ANIO = {
   no_desplaza_la_distribucion: true,
   /** El patrón real, asimétrico, de las cuatro filas medidas. */
   el_p10_se_mueve_mas:
-    'en las cuatro variantes: de 10 a 24 % contra 0 a 3,8 % de la mediana. La ventana se ve casi '
-    + 'entera en la cola seca, que es justo la que decide una carga animal. Con el factor de '
-    + 'actividad radicular la mediana se despegó del techo y el p10 se mueve menos, pero el '
-    + 'patrón —el p10 se lleva casi todo— no cambió.',
+    'en tres de las cuatro variantes: el p10 se mueve de 2,9 a 19,9 % y la mediana de 2,9 a '
+    + '12,9 %. La excepción es acortar la temporada a 68 días, donde los dos se mueven casi lo '
+    + 'mismo. Con el agua inicial medida la mediana se despegó del techo —0,83 contra 0,93— así '
+    + 'que ahora también tiene a dónde moverse, y la asimetría de antes se achicó: lo que sigue '
+    + 'en pie es que la ventana se ve más en la cola seca, que es la que decide una carga.',
   /**
    * Medido antes con la ETo de FAO-56, el patrón era asimétrico: el p10 se movía
    * más sólo cuando la ventana le daba más agua. Con la `Eo` de Jensen-Haise se
@@ -300,6 +314,13 @@ export const LA_CADENA_OLVIDA_EL_ARRANQUE = {
   no_cubre_el_invierno:
     'La convergencia dice que se olvida el estado inicial, no que la demanda de fuera de '
     + 'temporada esté bien. Esa se repite cada año y no se cancela nunca.',
+  /**
+   * Y desde el 09/11/2026 esto es el **camino de respaldo**: si la serie trae la
+   * humedad de suelo del reanálisis, cada temporada arranca con el agua medida y
+   * no hay cadena, ni inviernos que correr, ni temporadas que descartar. Todo
+   * esto sigue valiendo para una serie que no la traiga. Ver `aguaDelPerfil.ts`.
+   */
+  ya_no_es_el_camino_principal: true,
 } as const;
 
 /**
@@ -353,6 +374,17 @@ export const LA_NIEVE_NO_SE_ACUMULA = {
     con_la_eto_de_fao_56: { p10_pct: 11.0, agua_inicial_pct: 16.1 },
     eo_de_los_dias_bajo_cero_mm_dia: { jensen_haise: 0.122, eto_fao_56: 0.719, dias: 6992 },
   },
+  /**
+   * Y con el agua inicial medida la degradación **desaparece**, que es el
+   * resultado esperable y conviene tenerlo medido: diferir el deshielo mueve el
+   * `p10` y la mediana **0,00 %**, exactamente cero.
+   *
+   * El motivo es que la nieve nunca molestó adentro de la temporada: molestaba
+   * en el invierno que la cadena simulaba para llegar al 15 de abril. Si el agua
+   * de ese 15 de abril está medida, lo que haya hecho la nieve antes ya está
+   * adentro del dato.
+   */
+  con_el_agua_medida: { p10_pct: 0, mediana_pct: 0, dejo_de_aplicar: true },
 } as const;
 
 // ─── Lo que apareció al medir ────────────────────────────────────────────────
@@ -394,15 +426,15 @@ export const EL_PROMEDIO_SOBREESTOCA = {
   tambien_publicado:
     'el mismo trabajo dice que en uno de cada dos años la lluvia queda por debajo de la media',
   medido_en_sidney: {
-    anios: 63,
-    anios_bajo_el_promedio: 18,
-    fraccion_bajo_el_promedio_pct: 28.6,
+    anios: 65,
+    anios_bajo_el_promedio: 27,
+    fraccion_bajo_el_promedio_pct: 41.5,
     indice: {
-      minimo: 0.161, p10: 0.672, p25: 0.852, mediana: 0.935,
-      p75: 0.975, p90: 0.990, maximo: 1, promedio: 0.869,
+      minimo: 0.166, p10: 0.451, p25: 0.611, mediana: 0.831,
+      p75: 0.938, p90: 0.984, maximo: 1, promedio: 0.755,
     },
     /** `p90/p10`: cuántas veces más forraje da un año bueno que uno malo. */
-    ancho: 1.473,
+    ancho: 2.18,
     /**
      * El cuarto de arriba **se despegó del techo** al montar el factor de
      * actividad radicular: antes `p75`, `p90` y el máximo eran los tres 1,000 y
@@ -412,6 +444,20 @@ export const EL_PROMEDIO_SOBREESTOCA = {
      * `ancho` sigue sin medir lo que parece medir.
      */
     el_cuarto_de_arriba_esta_en_el_techo: false,
+    /**
+     * Con el invierno simulado de la cadena, antes de sembrar el perfil con la
+     * humedad del reanálisis: la distribución entera estaba corrida para arriba
+     * y sólo 28,6 % de los años quedaban bajo el promedio. Con el agua medida da
+     * **41,5 %**, que es bastante más cerca del «al menos la mitad» publicado.
+     */
+    con_la_cadena_daba: {
+      anios: 63, anios_bajo_el_promedio: 18, fraccion_bajo_el_promedio_pct: 28.6,
+      indice: {
+        minimo: 0.161, p10: 0.672, p25: 0.852, mediana: 0.935,
+        p75: 0.975, p90: 0.990, maximo: 1, promedio: 0.869,
+      },
+      ancho: 1.473,
+    },
     sin_el_factor_daba: {
       indice: { minimo: 0.157, p10: 0.741, p25: 0.896, mediana: 0.999, p75: 1, p90: 1, promedio: 0.908 },
       ancho: 1.35,
@@ -465,10 +511,20 @@ export const EL_PROMEDIO_SOBREESTOCA = {
  * balance diario calcula y una escalera por totales no puede.
  */
 export const LA_LLUVIA_ANUAL_NO_PREDICE_EL_ANIO = {
-  r2_contra_lluvia_del_anio: 0.256,
-  r2_contra_lluvia_de_la_temporada: 0.428,
-  /** El agua con la que la cadena arrancó cada temporada, en mm, sobre 150 de tope. */
-  agua_inicial_medida_mm: { minimo: 32.3, maximo: 150, promedio: 121.1 },
+  r2_contra_lluvia_del_anio: 0.265,
+  r2_contra_lluvia_de_la_temporada: 0.546,
+  /** El agua con la que arrancó cada temporada, en mm, sobre 150 de tope. */
+  agua_inicial_medida_mm: { minimo: 19.2, maximo: 150, promedio: 79.6 },
+  /**
+   * Con el invierno simulado de la cadena daban 0,256 y 0,428, con el perfil
+   * arrancando en 121,1 mm de promedio. Sembrar la temporada con la humedad
+   * medida **sube** lo que explica la lluvia de la temporada: con el perfil casi
+   * lleno todos los años, la lluvia tenía menos de qué decidir.
+   */
+  con_la_cadena_daba: {
+    r2_anual: 0.256, r2_temporada: 0.428,
+    agua_inicial_mm: { minimo: 32.3, maximo: 150, promedio: 121.1 },
+  },
   /** Sin el factor de actividad radicular daban 0,219 y 0,357. */
   sin_el_factor_daba: { r2_anual: 0.219, r2_temporada: 0.357 },
   /** Con la ETo de FAO-56 daban 0,207 y 0,522, y el agua inicial 0,1 a 147,6. */
@@ -522,6 +578,8 @@ export const LA_LLUVIA_ANUAL_NO_PREDICE_EL_ANIO = {
 export const EL_ANIO_SECO_LO_DECIDE_LA_EO = {
   /** La `Eo` de Jensen-Haise en la temporada de Sidney, mm/día. */
   eo_del_modelo_mm_dia: { media_62_anios: 3.945, media_1968_1979: 3.816, minimo: 3.267, maximo: 5.443 },
+  /** Sobre las 65 temporadas que quedan con el agua medida: 3,949 mm/día. */
+  eo_del_modelo_sobre_65_anios_mm_dia: 3.949,
   /** La ETo de FAO-56 de ERA5 en la misma ventana, que es lo que se usaba antes. */
   eto_era5_mm_dia: { media_62_anios: 4.611, media_1968_1979: 4.415, minimo: 3.705, maximo: 6.647 },
   /** La `Eo` deducida de la Tabla 1 del trabajo, mm/día. */
@@ -600,7 +658,22 @@ export const LA_CADENA_LEE_ALTO_CONTRA_LOS_DOCE = {
   publicado: { minimo: 0.402, mediana: 0.904, maximo: 0.985 },
   /**
    * Error absoluto medio, sesgo, temporadas en el techo y correlación contra los
-   * doce publicados, con el factor de actividad radicular montado.
+   * doce publicados, con el agua inicial de cada temporada **medida** de la
+   * humedad de suelo del reanálisis. Es el camino principal desde el
+   * 09/11/2026: ver `LA_CADENA_ARRANCA_HUMEDA_DE_MAS` en `aguaDelPerfil.ts`.
+   */
+  con_el_agua_medida: { eam: 0.064, sesgo: 0.061, en_el_techo: 2, r: 0.858 },
+  /**
+   * Y sin 1971, que es la única temporada que queda lejos: **EAM 0,037 y sesgo
+   * +0,033 sobre once**. 1971 es también la temporada donde la lluvia de ERA5
+   * más difiere del pluviómetro del trabajo: 243,5 mm contra 141, un 73 % más.
+   * No es prueba de nada —sobre las otras once el residuo no correlaciona con esa
+   * diferencia, r = 0,08— pero es la coincidencia que hay.
+   */
+  sin_1971: { anios: 11, eam: 0.037, sesgo: 0.033 },
+  /**
+   * Lo mismo con el invierno simulado de la cadena, que es como corría hasta el
+   * 09/11/2026 y es como sigue corriendo cuando no hay humedad de suelo.
    */
   con_el_factor: { eam: 0.133, sesgo: 0.132, en_el_techo: 4, r: 0.704 },
   /** Lo mismo, antes de montarlo. El techo era lo que más molestaba. */
@@ -612,19 +685,24 @@ export const LA_CADENA_LEE_ALTO_CONTRA_LOS_DOCE = {
     'La entrada no es la misma: la lluvia sale de ERA5 y el trabajo midió con pluviómetro, con '
     + 'hasta 100 mm de diferencia en una temporada. Es una cota de parecido, no una validación.',
   por_que_lee_alto:
-    'Las tres degradaciones declaradas del balance empujaban para el mismo lado. Una ya se pagó '
-    + '—el factor de actividad radicular, el 09/11/2026— y se llevó la sexta parte del sesgo y '
-    + 'seis de las diez temporadas que estaban en el techo. Quedan el escurrimiento nulo, el '
-    + 'agua bajo el límite inferior, el agua con la que arranca cada temporada y la lluvia de '
-    + 'ERA5, que difiere hasta 100 mm de la medida con pluviómetro.',
+    'Las degradaciones declaradas del balance empujaban todas para el mismo lado, y en dos lotes '
+    + 'del 09/11/2026 se pagaron las dos que tenían fuente: el factor de actividad radicular, que '
+    + 'se llevó la sexta parte del sesgo y seis de las diez temporadas que estaban en el techo, y '
+    + 'el agua inicial medida, que se llevó la mitad de lo que quedaba. Quedan el escurrimiento '
+    + 'nulo, el agua bajo el límite inferior y la lluvia de ERA5, que difiere hasta 103 mm de la '
+    + 'medida con pluviómetro.',
   /**
-   * Y dónde quedó el resto, que es lo que señala a dónde ir: **las tres peores
-   * temporadas publicadas son las tres que más lejos quedan**. 1977 publica 0,40
-   * y la cadena da 0,88; 1971 publica 0,58 y da 0,96; 1968 publica 0,56 y da
-   * 0,72. Son las tres que el trabajo arrancó con el perfil seco y la cadena
-   * arranca con 132, 137 y 88 mm de los 150.
+   * Dónde quedaba el resto cuando el invierno lo simulaba la cadena: **las tres
+   * peores temporadas publicadas eran las tres que más lejos quedaban**. 1977
+   * publicaba 0,40 y la cadena daba 0,88; 1971 publica 0,58 y daba 0,96; 1968
+   * publica 0,56 y daba 0,72. Son las tres que el trabajo arrancó con el perfil
+   * seco y la cadena arrancaba con 132, 137 y 88 mm de los 150.
+   *
+   * Con el agua medida dos de las tres se acomodaron solas —1977 a 0,44 y 1968 a
+   * 0,61— y queda **sólo 1971**, que para el reanálisis no arrancó seca.
    */
   el_resto_esta_en_los_anios_secos: [1977, 1971, 1968],
+  con_el_agua_medida_queda: [1971],
   que_aguanta: 'el orden de los años y la mediana; no el valor de la cola seca',
 } as const;
 
@@ -702,8 +780,10 @@ export const EL_FACTOR_DESTAPA_EL_TECHO_PERO_NO_EL_SESGO = {
    */
   lo_que_mueve_en_los_kilos_pct: { yp: -0.8, mediana_del_anio: 3.2, p90: 11.9, maximo: 17.3 },
   lo_que_queda:
-    'el agua inicial de las temporadas secas, el escurrimiento nulo, el agua bajo el límite '
-    + 'inferior y la lluvia de ERA5',
+    'Era el agua inicial de las temporadas secas, el escurrimiento nulo, el agua bajo el límite '
+    + 'inferior y la lluvia de ERA5. El primero se pagó el mismo día: con la humedad de suelo de '
+    + 'ERA5-Land el sesgo baja de +0,132 a +0,061 y quedan el escurrimiento nulo, el agua bajo el '
+    + 'límite inferior y la lluvia. Ver LA_CADENA_ARRANCA_HUMEDA_DE_MAS en aguaDelPerfil.ts.',
   /**
    * Y una cosa que no era obvia y la encontró el test: **el factor no baja el
    * índice temporada por temporada**. En una ventana suelta sólo puede bajarlo,
@@ -812,7 +892,38 @@ export const EL_INVIERNO_DECIDE_LA_COLA_SECA = {
     + 'Eo de los días helados —0,12 mm/día contra 0,72 de la ETo de referencia— es la física del '
     + 'problema. Partirla en dos tratamientos para acercar la cola sería ajustar contra el '
     + 'resultado.',
-  que_se_hace: 'se declara en AVISO_DEL_INVIERNO y la cola seca no se presenta como una cifra',
+  que_se_hace:
+    'Se declaraba en AVISO_DEL_INVIERNO, y ese aviso sigue saliendo cuando la serie no trae '
+    + 'humedad de suelo. Cuando la trae, no hay invierno que correr.',
+  /**
+   * Y acá se cierra, el mismo día que se abrió.
+   *
+   * Con el agua del rebrote medida la cadena no corre ningún invierno, así que
+   * los tres tratamientos dejan de ser tres: **«Jensen-Haise todo el año» y «el
+   * híbrido» pasan a ser literalmente la misma corrida** —p10 0,451 los dos,
+   * EAM 0,0641 contra 0,0640— porque lo único que los distinguía era la `Eo` de
+   * fuera de temporada, que ya no se usa. Y lo que separa al tercero es sólo la
+   * `Eo` de adentro de la temporada:
+   *
+   * ```
+   *                                        p10      mediana    EAM contra los 12
+   *   Jensen-Haise (y el híbrido)         0,451      0,831     0,064  (+0,061)
+   *   ETo de FAO-56                       0,372      0,690     0,087  (−0,032)
+   * ```
+   *
+   * **El `p10` pasa de moverse 3,3 veces a moverse 1,21.** Y la incomodidad del
+   * lote anterior —que el híbrido medía mejor que el elegido compensando un
+   * sesgo con otro— se disuelve: el híbrido es el elegido.
+   */
+  ya_no_decide: {
+    con_el_agua_medida: {
+      jensen_haise: { p10: 0.451, mediana: 0.831, eam: 0.064, sesgo: 0.061 },
+      el_hibrido_es_el_mismo: true,
+      eto_de_fao_56: { p10: 0.372, mediana: 0.690, eam: 0.087, sesgo: -0.032 },
+      el_p10_se_mueve_veces: 1.21,
+    },
+    por_que: 'sin invierno simulado no hay demanda de fuera de temporada que tratar de tres formas',
+  },
 } as const;
 
 /**
@@ -843,8 +954,8 @@ export const EL_INVIERNO_DECIDE_LA_COLA_SECA = {
 export const EL_ANIO_MAS_SECO_ES_EL_QUE_FUE = {
   anio: 1988,
   puesto: 1,
-  de: 63,
-  indice: 0.161,
+  de: 65,
+  indice: 0.166,
   estacion: {
     fuente:
       'Eastern Agricultural Research Center, Sidney, Montana (Montana State University) — '
@@ -853,8 +964,10 @@ export const EL_ANIO_MAS_SECO_ES_EL_QUE_FUE = {
     abril_a_junio_pulgadas: { medido: 2.23, promedio: 5.9, fraccion_pct: 37.8 },
   },
   era5_en_la_ventana: { medido_mm: 77.5, media_mm: 178.8, fraccion_pct: 43.4 },
-  agua_inicial_del_perfil_mm: { ese_anio: 32.3, promedio: 121.1, tope: 150 },
-  los_cinco_peores: [1988, 1980, 1984, 1990, 2021],
+  agua_inicial_del_perfil_mm: { ese_anio: 30.7, promedio: 79.6, tope: 150 },
+  /** Con el invierno simulado de la cadena daban 32,3 y 121,1 mm, e índice 0,161. */
+  con_la_cadena_daba: { indice: 0.161, agua_inicial_mm: 32.3, promedio_mm: 121.1, de: 63 },
+  los_cinco_peores: [1988, 1980, 1990, 2021, 2008],
   /**
    * Y ahora sí hay cinco mejores que nombrar. Sin el factor de actividad
    * radicular una temporada de cada cuatro llegaba al techo del índice y
@@ -907,11 +1020,22 @@ export const EL_ANIO_MAS_SECO_ES_EL_QUE_FUE = {
  * un pronóstico, y la tendencia no está removida.
  */
 export const LA_DISTRIBUCION_ES_DEL_PASADO = {
-  pendiente_del_indice_por_decada: -0.009,
-  r2_de_la_tendencia: 0.010,
+  pendiente_del_indice_por_decada: -0.021,
+  r2_de_la_tendencia: 0.033,
   mitades: {
-    primera: { anios: '1962-1992', mediana: 0.940, p10: 0.444, tp_mm_dia: 1.477 },
-    segunda: { anios: '1993-2024', mediana: 0.918, p10: 0.755, tp_mm_dia: 1.440 },
+    primera: { anios: '1960-1991', mediana: 0.880, p10: 0.406, tp_mm_dia: 1.481 },
+    segunda: { anios: '1992-2024', mediana: 0.772, p10: 0.515, tp_mm_dia: 1.440 },
+  },
+  /**
+   * Con el invierno simulado de la cadena daba −0,009 por década con R² 0,010.
+   * Con el agua medida la pendiente se duplica y el R² se triplica, y **sigue
+   * siendo nada**: 3,3 % de la varianza del índice. Y el `p10` sigue apuntando
+   * al revés, ahora más marcado: 0,406 en la primera mitad contra 0,515 en la
+   * segunda.
+   */
+  con_la_cadena_daba: {
+    pendiente_por_decada: -0.009, r2: 0.010,
+    mitades: { primera_mediana: 0.940, segunda_mediana: 0.918 },
   },
   /**
    * Con el factor de actividad radicular la pendiente pasa de −0,005 a −0,009 por
@@ -936,7 +1060,7 @@ export const LA_DISTRIBUCION_ES_DEL_PASADO = {
     mitades: { primera_mediana: 0.708, segunda_mediana: 0.568 },
   },
   por_que_no_se_recorta_la_ventana:
-    'La tendencia explica el 1 % de la varianza del índice, o sea nada, y en la cola seca '
+    'La tendencia explica el 3 % de la varianza del índice, o sea nada, y en la cola seca '
     + 'apunta al revés: el p10 de la segunda mitad es MÁS alto. Recortar a veinte años dejaría '
     + 'el p10 decidido por dos temporadas.',
   que_hay_que_decir: 'es la distribución de lo que pasó, no un pronóstico, y la tendencia no está removida',
@@ -1132,6 +1256,14 @@ export interface IndicesPorAnio {
    * el `Yp`: con factor y sin factor los índices no son comparables.
    */
   actividad_radicular: boolean;
+  /**
+   * Si cada temporada arrancó con el agua del perfil **medida** —la humedad de
+   * suelo del reanálisis, por `aguaDelPerfil.ts`— en vez de con la que dejó el
+   * invierno simulado de la cadena. Tiene que coincidir con el de la corrida del
+   * corte de la que salió el `Yp`: sembrada y encadenada, los índices no son
+   * comparables, y en la mediana de Sidney difieren 0,10.
+   */
+  agua_inicial_medida: boolean;
   advertencias: string[];
   avisos: AvisoDeCorte[];
 }
@@ -1221,66 +1353,127 @@ export function indicesPorAnio(e: EntradasIndicesPorAnio): IndicesPorAnio | null
     });
   }
 
-  // ── Las dos cadenas ───────────────────────────────────────────────────────
+  // ── Con cuánta agua arranca cada temporada ────────────────────────────────
   //
-  // Se corre del perfil lleno y del perfil vacío, y la diferencia entre las dos
-  // es lo que dice **cuándo el arranque dejó de pesar**. No se elige una punta:
-  // elegirla sería volver a inventar el dato que este archivo existe para no
-  // inventar, y cuántas temporadas tarda en olvidarse depende del clima del sitio
-  // —tres en Sidney, más de cuatro en un clima árido—, así que no se puede clavar.
-  const correr = (fraccion: number) => correrBalanceForraje({
-    ...(e.opciones ?? {}),
-    dias,
-    capas: capasDe90(e.aw_por_capa_mm, fraccion, e.agua_bajo_el_limite_mm),
+  // Dos caminos, y cuál corre lo decide el dato, no una opción.
+  //
+  // **Sembrada.** Si el primer día de todas las ventanas trae la fracción de
+  // agua útil del reanálisis, cada temporada se corre sola arrancando de ahí,
+  // que es exactamente lo que hacía el trabajo: medir el perfil con sonda de
+  // neutrones el 15 de abril. No hay invierno que correr —y era la decisión más
+  // frágil del motor, la que movía el `p10` 3,3 veces—, no hay arranque que
+  // olvidar y las primeras temporadas de la serie dejan de descartarse. Medido
+  // contra los doce índices publicados el error se parte al medio:
+  // `LA_CADENA_ARRANCA_HUMEDA_DE_MAS`.
+  //
+  // **Encadenada.** Si falta en alguna ventana corre la cadena continua de
+  // siempre: dos corridas, del perfil lleno y del vacío, y la diferencia entre
+  // las dos marca qué temporadas todavía arrastran el arranque. Media serie
+  // sembrada y media encadenada no es ninguno de los dos modelos, así que es
+  // todo o nada.
+  const fracciones = dentro.map(({ i0 }) => {
+    const f = e.serie[i0]?.agua_util_por_capa ?? null;
+    return f !== null && f !== undefined
+      && f.length === e.aw_por_capa_mm.length
+      && f.every(v => Number.isFinite(v))
+      ? f
+      : null;
   });
-  const lleno = correr(1);
-  const vacio = correr(0);
-  if (lleno === null || vacio === null) return null;
-
-  const acumular = (res: typeof lleno, i0: number, i1: number) => {
-    let tp = 0;
-    let t = 0;
-    let pptn = 0;
-    for (let i = i0; i <= i1; i++) {
-      const dc = res.serie[i];
-      if (dc === undefined) continue;
-      tp += dc.tp_mm;
-      t += dc.t_mm;
-      pptn += dc.pptn_mm;
-    }
-    return { tp, t, pptn, indice: tp > 0 ? t / tp : null };
-  };
+  const sembrada = fracciones.every(f => f !== null);
 
   const umbral = e.umbral_de_convergencia_pct
     ?? LA_CADENA_OLVIDA_EL_ARRANQUE.umbral_por_defecto_pct;
 
-  const anios: IndiceDeUnAnio[] = dentro.map(({ v, i0, i1 }) => {
-    const a = acumular(lleno, i0, i1);
-    const b = acumular(vacio, i0, i1);
-    // Si alguna de las dos no tiene cociente, la temporada no se puede comparar
-    // y queda marcada: 100 % es «no se sabe», no «difiere cien por ciento».
-    const dif = a.indice !== null && b.indice !== null && a.indice > 0
-      ? Math.abs(b.indice - a.indice) / a.indice * 100
-      : 100;
-    // El agua del perfil el día antes del rebrote, de la cadena que se informa.
-    const previo = i0 > 0 ? lleno.serie[i0 - 1] : undefined;
-    const sws = previo !== undefined
-      ? previo.sws_mm.reduce((x, y) => x + y, 0)
-      : e.aw_por_capa_mm.reduce((x, y) => x + y, 0);
-    return {
-      anio: v.anio,
-      desde: v.desde,
-      hasta: v.hasta,
-      indice: a.indice,
-      tp_mm: a.tp,
-      t_mm: a.t,
-      pptn_mm: a.pptn,
-      sws_inicial_mm: sws,
-      dias: i1 - i0 + 1,
-      diferencia_de_arranque_pct: dif,
-      el_arranque_todavia_pesa: dif > umbral,
+  let anios: IndiceDeUnAnio[];
+  let advertenciasDelBalance: readonly string[];
+
+  if (sembrada) {
+    const corridas = dentro.map(({ i0, i1 }, k) => correrBalanceForraje({
+      ...(e.opciones ?? {}),
+      dias: dias.slice(i0, i1 + 1),
+      capas: capasDe90(e.aw_por_capa_mm, 0, e.agua_bajo_el_limite_mm).map((c, j) => ({
+        ...c,
+        sws_inicial_mm: c.aw_mm
+          * Math.max(0, Math.min(1, (fracciones[k] as readonly number[])[j] as number)),
+      })),
+    }));
+    if (corridas.some(r => r === null)) return null;
+    advertenciasDelBalance = (corridas[0] as ResultadoBalanceForraje).advertencias;
+    anios = dentro.map(({ v, i0, i1 }, k) => {
+      const r = corridas[k] as ResultadoBalanceForraje;
+      return {
+        anio: v.anio,
+        desde: v.desde,
+        hasta: v.hasta,
+        indice: r.indice,
+        tp_mm: r.tp_mm,
+        t_mm: r.t_mm,
+        pptn_mm: r.pptn_mm,
+        sws_inicial_mm: r.almacenaje_inicial_mm,
+        dias: i1 - i0 + 1,
+        // Con el arranque medido no hay dos puntas que comparar: la diferencia
+        // es cero por construcción y ninguna temporada se descarta.
+        diferencia_de_arranque_pct: 0,
+        el_arranque_todavia_pesa: false,
+      };
+    });
+  } else {
+    // No se elige una punta: elegirla sería volver a inventar el dato que este
+    // archivo existe para no inventar, y cuántas temporadas tarda en olvidarse
+    // depende del clima del sitio —dos en Sidney, más de cuatro en un clima
+    // árido—, así que no se puede clavar.
+    const correr = (fraccion: number) => correrBalanceForraje({
+      ...(e.opciones ?? {}),
+      dias,
+      capas: capasDe90(e.aw_por_capa_mm, fraccion, e.agua_bajo_el_limite_mm),
+    });
+    const lleno = correr(1);
+    const vacio = correr(0);
+    if (lleno === null || vacio === null) return null;
+    advertenciasDelBalance = lleno.advertencias;
+
+    const acumular = (res: ResultadoBalanceForraje, i0: number, i1: number) => {
+      let tp = 0;
+      let t = 0;
+      let pptn = 0;
+      for (let i = i0; i <= i1; i++) {
+        const dc = res.serie[i];
+        if (dc === undefined) continue;
+        tp += dc.tp_mm;
+        t += dc.t_mm;
+        pptn += dc.pptn_mm;
+      }
+      return { tp, t, pptn, indice: tp > 0 ? t / tp : null };
     };
-  });
+
+    anios = dentro.map(({ v, i0, i1 }) => {
+      const a = acumular(lleno, i0, i1);
+      const b = acumular(vacio, i0, i1);
+      // Si alguna de las dos no tiene cociente, la temporada no se puede comparar
+      // y queda marcada: 100 % es «no se sabe», no «difiere cien por ciento».
+      const dif = a.indice !== null && b.indice !== null && a.indice > 0
+        ? Math.abs(b.indice - a.indice) / a.indice * 100
+        : 100;
+      // El agua del perfil el día antes del rebrote, de la cadena que se informa.
+      const previo = i0 > 0 ? lleno.serie[i0 - 1] : undefined;
+      const sws = previo !== undefined
+        ? previo.sws_mm.reduce((x, y) => x + y, 0)
+        : e.aw_por_capa_mm.reduce((x, y) => x + y, 0);
+      return {
+        anio: v.anio,
+        desde: v.desde,
+        hasta: v.hasta,
+        indice: a.indice,
+        tp_mm: a.tp,
+        t_mm: a.t,
+        pptn_mm: a.pptn,
+        sws_inicial_mm: sws,
+        dias: i1 - i0 + 1,
+        diferencia_de_arranque_pct: dif,
+        el_arranque_todavia_pesa: dif > umbral,
+      };
+    });
+  }
 
   // ── Las advertencias, corregidas para una corrida de décadas ───────────────
   //
@@ -1297,7 +1490,7 @@ export function indicesPorAnio(e: EntradasIndicesPorAnio): IndicesPorAnio | null
   //
   // Un aviso que sale siempre no avisa nada: es la forma más barata de que
   // alguien deje de leerlos. Así que las dos se recalculan sobre las ventanas.
-  const advertencias = lleno.advertencias.filter(
+  const advertencias = advertenciasDelBalance.filter(
     a => a !== ADVERTENCIAS.temporada_fuera_de_rango && a !== ADVERTENCIAS.eo_fuera_de_rango,
   );
   const largo = dentro[0]!.i1 - dentro[0]!.i0 + 1;
@@ -1324,7 +1517,7 @@ export function indicesPorAnio(e: EntradasIndicesPorAnio): IndicesPorAnio | null
   if (e.opciones?.b_constante === undefined) advertencias.push(ADVERTENCIAS.b_por_defecto);
 
   const descartados = anios.filter(a => a.el_arranque_todavia_pesa).length;
-  advertencias.push(AVISO_DE_LA_CADENA.advertencia);
+  if (!sembrada) advertencias.push(AVISO_DE_LA_CADENA.advertencia);
   if (descartados > 0) {
     advertencias.push(
       `${descartados} de las ${anios.length} temporadas quedan marcadas y no entran en la `
@@ -1346,7 +1539,8 @@ export function indicesPorAnio(e: EntradasIndicesPorAnio): IndicesPorAnio | null
   const avisos: AvisoDeCorte[] = [
     avisoDeLaEo,
     { ...AVISO_DE_LA_VENTANA },
-    ...(e.coeficientes_eo ? [{ ...AVISO_DEL_INVIERNO }] : []),
+    ...(!sembrada && e.coeficientes_eo ? [{ ...AVISO_DEL_INVIERNO }] : []),
+    ...(sembrada ? [avisoDelAguaInicial('indice')] : []),
     ...(conActividad
       ? [{
         aviso: AVISO_ACTIVIDAD_RADICULAR.aviso,
@@ -1361,6 +1555,7 @@ export function indicesPorAnio(e: EntradasIndicesPorAnio): IndicesPorAnio | null
     dias_corridos: hastaDia + 1,
     anios_sin_serie,
     actividad_radicular: conActividad,
+    agua_inicial_medida: sembrada,
     advertencias,
     avisos,
   };

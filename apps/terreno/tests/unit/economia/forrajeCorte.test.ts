@@ -711,6 +711,91 @@ describe('el agua inicial no se olvida en la temporada seca', () => {
   });
 });
 
+describe('el agua del perfil al arranque, medida', () => {
+  /** Una ventana de serie diaria con la humedad del reanálisis adentro. */
+  function serieConAgua(frac: readonly number[] | null): DiaDeSerie[] {
+    const salida: DiaDeSerie[] = [];
+    for (let i = 0; i < 90; i += 1) {
+      const t = Date.parse('2020-04-15T00:00:00Z') + i * 86_400_000;
+      salida.push({
+        fecha: new Date(t).toISOString().slice(0, 10),
+        precip_mm: i % 7 === 0 ? 6 : 0,
+        et0_mm: 4,
+        ...(frac !== null ? { agua_util_por_capa: frac } : {}),
+      });
+    }
+    return salida;
+  }
+
+  it('ventanaDeBalance devuelve la fracción del primer día de la ventana', () => {
+    const v = ventanaDeBalance(serieConAgua([0.8, 0.4, 0.2]), '2020-04-15', '2020-07-13');
+    expect(v).not.toBeNull();
+    expect(v!.agua_inicial_util).toEqual([0.8, 0.4, 0.2]);
+  });
+
+  it('y null cuando la serie no la trae', () => {
+    const v = ventanaDeBalance(serieConAgua(null), '2020-04-15', '2020-07-13');
+    expect(v!.agua_inicial_util).toBeNull();
+  });
+
+  it('cuando la trae, avisa, y el aviso del Yp va para abajo', () => {
+    const v = ventanaDeBalance(serieConAgua([0.8, 0.4, 0.2]), '2020-04-15', '2020-07-13')!;
+    const aviso = v.avisos.find(a => a.aviso.includes('humedad de suelo de ERA5-Land'));
+    expect(aviso).toBeDefined();
+    // El reanálisis lee húmedo, así que el índice sale alto y el Yp que se
+    // despeja dividiendo por él sale bajo. Son las dos direcciones.
+    expect(aviso!.sesgo).toBe('bajo');
+  });
+
+  it('con el agua medida el Yp es un punto sin declarar fracción inicial', () => {
+    const dias = temporada(200);
+    const sinNada = ypDelCorte({ corte: CORTE_LIMPIO, dias, aw_por_capa_mm: AW });
+    expect(sinNada.yp_kg_ha).toBeNull();
+    expect(sinNada.banda_kg_ha).not.toBeNull();
+
+    const conAgua = ypDelCorte({
+      corte: CORTE_LIMPIO, dias, aw_por_capa_mm: AW,
+      agua_inicial_por_capa_mm: [40, 30, 20],
+    });
+    expect(conAgua.yp_kg_ha).not.toBeNull();
+    // La banda se sigue devolviendo, porque dice cuánto se jugaba.
+    expect(conAgua.banda_kg_ha).not.toBeNull();
+    // Y el punto cae adentro de la banda, que es lo mínimo que tiene que pasar.
+    expect(conAgua.yp_kg_ha!).toBeLessThanOrEqual(conAgua.banda_kg_ha!.perfil_seco);
+    expect(conAgua.yp_kg_ha!).toBeGreaterThanOrEqual(conAgua.banda_kg_ha!.perfil_lleno);
+  });
+
+  it('más agua en el perfil da un Yp más chico, porque el despeje divide', () => {
+    const dias = temporada(150);
+    const seco = ypDelCorte({
+      corte: CORTE_LIMPIO, dias, aw_por_capa_mm: AW, agua_inicial_por_capa_mm: [5, 5, 5],
+    });
+    const humedo = ypDelCorte({
+      corte: CORTE_LIMPIO, dias, aw_por_capa_mm: AW, agua_inicial_por_capa_mm: [45, 45, 45],
+    });
+    expect(seco.yp_kg_ha!).toBeGreaterThan(humedo.yp_kg_ha!);
+  });
+
+  it('el agua medida manda sobre el calentamiento: no se calienta nada', () => {
+    const r = ypDelCorte({
+      corte: CORTE_LIMPIO, dias: temporada(200), aw_por_capa_mm: AW,
+      dias_previos: serieDePrueba(31, 120, 130, 1.5),
+      agua_inicial_por_capa_mm: [40, 30, 20],
+    });
+    expect(r.avisos.some(a => a.aviso.includes('calentamiento'))).toBe(false);
+    expect(r.yp_kg_ha).not.toBeNull();
+  });
+
+  it('una lista de largo equivocado se ignora en vez de romper el perfil', () => {
+    const dias = temporada(200);
+    const r = ypDelCorte({
+      corte: CORTE_LIMPIO, dias, aw_por_capa_mm: AW, agua_inicial_por_capa_mm: [40, 30],
+    });
+    expect(r.yp_kg_ha).toBeNull();
+    expect(r.banda_kg_ha).not.toBeNull();
+  });
+});
+
 describe('la serie dekadal no reemplaza a la diaria', () => {
   const indice = (dias: DiaDeBalance[]): number => {
     const r = correrBalanceForraje({ dias, capas: capasDe90(AW, 0.5) });

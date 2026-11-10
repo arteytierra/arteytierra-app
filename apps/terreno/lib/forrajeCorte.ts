@@ -107,6 +107,7 @@ import {
   actividadDeLasCapas,
   AVISO_ACTIVIDAD_RADICULAR,
 } from './actividadRadicular';
+import { avisoDelAguaInicial } from './aguaDelPerfil';
 
 // ─── Lo que está medido, y que es el argumento de cada rechazo ───────────────
 
@@ -885,6 +886,17 @@ export interface DiaDeSerie {
    * advierte. Ver `actividadRadicular.ts`.
    */
   t_suelo_30_90_c?: number | null;
+  /**
+   * La **fracción de agua útil** de cada capa del modelo ese día, 0 a 1, de la
+   * superficie hacia abajo.
+   *
+   * Sale de la humedad de suelo de ERA5-Land pasada por `aguaDelPerfil.ts`. Si
+   * el primer día de la ventana la trae, el agua con la que arranca la
+   * temporada **deja de ser un supuesto**: no hay banda, no hay calentamiento y
+   * no hace falta correr el invierno. Contra las 158 mediciones con sonda de la
+   * Figura 5 del trabajo el dato lee 0,046 de agua útil alto, y eso se declara.
+   */
+  agua_util_por_capa?: readonly number[] | null;
 }
 
 /**
@@ -919,6 +931,13 @@ export interface VentanaDeBalance {
    * producto saldría mal sin que nada se rompa.
    */
   actividad_radicular: boolean;
+  /**
+   * La fracción de agua útil de cada capa el **primer día** de la ventana, o
+   * `null` si ese día no la trajo. Multiplicada por el `AW` de cada capa da con
+   * cuánta agua arrancó la temporada, que es la entrada que más mueve el
+   * modelo. Ver `aguaDelPerfil.ts`.
+   */
+  agua_inicial_util: readonly number[] | null;
 }
 
 /**
@@ -983,7 +1002,17 @@ export function ventanaDeBalance(
       sesgo: AVISO_ACTIVIDAD_RADICULAR.sesgo_del_yp,
     });
   }
-  return { dias, desde, hasta, avisos, actividad_radicular: conActividad };
+  // El agua del perfil el día del rebrote. Se mira el primer día de la ventana
+  // y nada más: lo que pasó antes no importa si el estado está medido.
+  const primero = dentro[0];
+  const aguaInicial = primero?.agua_util_por_capa ?? null;
+  const agua_inicial_util = aguaInicial !== null && aguaInicial.length > 0
+    && aguaInicial.every(v => Number.isFinite(v))
+    ? aguaInicial
+    : null;
+  if (agua_inicial_util !== null) avisos.push(avisoDelAguaInicial('yp'));
+
+  return { dias, desde, hasta, avisos, actividad_radicular: conActividad, agua_inicial_util };
 }
 
 /**
@@ -1118,6 +1147,17 @@ export interface EntradasYpDelCorte {
    * medición está en `EL_AGUA_INICIAL_NO_SE_OLVIDA`.
    */
   dias_previos?: readonly DiaDeBalance[];
+  /**
+   * El agua útil que tenía cada capa el día del rebrote, en mm, de la superficie
+   * hacia abajo.
+   *
+   * Es el dato que Wight y Hanks medían con sonda de neutrones. Si viene, manda:
+   * el `Yp` es un punto y no una banda, no se calienta el perfil y
+   * `fraccion_inicial` deja de usarse. Sale de `aguaDelPerfil.ts` multiplicando
+   * la fracción del reanálisis por el `AW` de cada capa, y trae su propio aviso
+   * con las dos direcciones.
+   */
+  agua_inicial_por_capa_mm?: readonly number[];
   /** El resto de las opciones del balance: `kc`, `c`, `b_constante`, el umbral. */
   opciones?: Omit<EntradasBalanceForraje, 'dias' | 'capas'>;
   /** Avisos que trae el armado de la serie, por ejemplo el de la ETo. */
@@ -1177,7 +1217,15 @@ export function ypDelCorte(e: EntradasYpDelCorte): YpDelCorte {
   if (!compuerta.sirve) return vacio(compuerta.rechazos);
   avisos.push(...compuerta.avisos);
 
-  const calienta = (e.dias_previos ?? []).length > 0;
+  // Si el agua del perfil al arranque viene medida, manda sobre todo lo demás:
+  // no hay nada que calentar ni banda que abrir.
+  const medida = e.agua_inicial_por_capa_mm !== undefined
+    && e.agua_inicial_por_capa_mm.length === e.aw_por_capa_mm.length
+    && e.agua_inicial_por_capa_mm.every(v => Number.isFinite(v))
+    ? e.agua_inicial_por_capa_mm
+    : null;
+
+  const calienta = medida === null && (e.dias_previos ?? []).length > 0;
   if (calienta) avisos.push({ ...AVISO_CALENTAMIENTO });
 
   const corrida = (fraccion: number): { yp: YpDespejado; advertencias: string[] } | null => {
@@ -1215,6 +1263,40 @@ export function ypDelCorte(e: EntradasYpDelCorte): YpDelCorte {
   const banda = seco !== null && lleno !== null
     ? { perfil_seco: seco.yp.yp_kg_ha, perfil_lleno: lleno.yp.yp_kg_ha }
     : null;
+
+  // ── El agua del perfil, medida ───────────────────────────────────────────
+  //
+  // La banda se sigue devolviendo porque dice cuánto se jugaba, pero el `Yp` ya
+  // es un punto: el estado inicial dejó de ser un supuesto.
+  if (medida !== null) {
+    avisos.push(avisoDelAguaInicial('yp'));
+    const res = correrBalanceForraje({
+      ...(e.opciones ?? {}),
+      dias: e.dias,
+      capas: e.aw_por_capa_mm.map((aw, i) => ({
+        espesor_cm: PERFIL_DEL_MODELO.espesor_cm,
+        aw_mm: aw,
+        sws_inicial_mm: Math.max(0, Math.min(aw, medida[i] as number)),
+      })),
+    });
+    const yp = res === null ? null : despejarYp({
+      rendimiento_kg_ha: compuerta.rendimiento_kg_ha,
+      base: compuerta.base,
+      tp_mm: res.tp_mm,
+      t_mm: res.t_mm,
+    });
+    if (res !== null && yp !== null) {
+      return {
+        yp_kg_ha: yp.yp_kg_ha,
+        banda_kg_ha: banda,
+        indice: yp.indice,
+        rechazos: [],
+        avisos,
+        advertencias: [...res.advertencias, ...yp.advertencias],
+        sesgo: sesgoNeto(avisos),
+      };
+    }
+  }
 
   if (e.fraccion_inicial === undefined) {
     const advertencias = [...new Set([

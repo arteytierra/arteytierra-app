@@ -38,6 +38,10 @@ import {
   coeficientesEo, normalesDelMesMasCalido,
   type CoeficientesEo, type DiaConRadiacion,
 } from '@/lib/eoJensenHaise';
+import {
+  aguaUtilDelPerfil, texturaDelPixel,
+  type TexturaDelPixel,
+} from '@/lib/aguaDelPerfil';
 
 const HDRS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': SITE_ORIGIN };
 
@@ -116,7 +120,7 @@ export async function GET(req: Request) {
     return error('lat/lng no son números.', 400);
   }
 
-  const dbKey = `clima-ventana-v2:${latR},${lngR},${desde},${hasta}`;
+  const dbKey = `clima-ventana-v3:${latR},${lngR},${desde},${hasta}`;
   const hit = await cacheGet<{ raw: string }>(dbKey);
   if (hit?.raw) return new Response(hit.raw, { status: 200, headers: HDRS });
 
@@ -124,7 +128,9 @@ export async function GET(req: Request) {
     + `?latitude=${latR}&longitude=${lngR}`
     + `&start_date=${desde}&end_date=${hasta}`
     + '&daily=precipitation_sum,et0_fao_evapotranspiration,shortwave_radiation_sum,'
-    + 'temperature_2m_max,temperature_2m_min,soil_temperature_28_to_100cm_mean&timezone=auto';
+    + 'temperature_2m_max,temperature_2m_min,soil_temperature_28_to_100cm_mean,'
+    + 'soil_moisture_0_to_7cm_mean,soil_moisture_7_to_28cm_mean,'
+    + 'soil_moisture_28_to_100cm_mean&timezone=auto';
 
   let res: Response;
   try {
@@ -144,6 +150,9 @@ export async function GET(req: Request) {
       temperature_2m_max?: Array<number | null>;
       temperature_2m_min?: Array<number | null>;
       soil_temperature_28_to_100cm_mean?: Array<number | null>;
+      soil_moisture_0_to_7cm_mean?: Array<number | null>;
+      soil_moisture_7_to_28cm_mean?: Array<number | null>;
+      soil_moisture_28_to_100cm_mean?: Array<number | null>;
     };
   };
   try {
@@ -166,6 +175,19 @@ export async function GET(req: Request) {
   const tsuelo = d.soil_temperature_28_to_100cm_mean ?? [];
   const sueloCompleto = tsuelo.length === d.time.length
     && tsuelo.every(v => v !== null && v !== undefined && Number.isFinite(v));
+  // Y la humedad de suelo, que es lo que permite arrancar la temporada con el
+  // agua **medida**. La textura del píxel no se puede identificar con una
+  // ventana de una temporada —hace falta ver el máximo de décadas— así que viene
+  // del mismo pedido largo que las normales de la `Eo`. Ver `aguaDelPerfil.ts`.
+  const { coef: coeficientes, textura } = await datosDelPunto(latR, lngR, raw.elevation);
+  const sm1 = d.soil_moisture_0_to_7cm_mean ?? [];
+  const sm2 = d.soil_moisture_7_to_28cm_mean ?? [];
+  const sm3 = d.soil_moisture_28_to_100cm_mean ?? [];
+  const agua = textura === null
+    ? []
+    : d.time.map((_, i) => aguaUtilDelPerfil(sm1[i], sm2[i], sm3[i], textura.textura));
+  const aguaCompleta = agua.length === d.time.length && agua.every(v => v !== null);
+
   const dias = d.time.map((fecha, i) => ({
     fecha,
     // Sin rellenar: un hueco del reanálisis no es un día sin lluvia.
@@ -175,14 +197,12 @@ export async function GET(req: Request) {
     t_max_c: tmax[i] ?? null,
     t_min_c: tmin[i] ?? null,
     ...(sueloCompleto ? { t_suelo_30_90_c: tsuelo[i] as number } : {}),
+    ...(aguaCompleta ? { agua_util_por_capa: agua[i] as readonly number[] } : {}),
   }));
   const nulos = dias.filter(
     x => x.precip_mm === null || x.et0_mm === null || x.rs_mj_m2 === null
       || x.t_max_c === null || x.t_min_c === null,
   ).length;
-
-  // Los coeficientes de la `Eo`, que son del punto y no de la ventana.
-  const coeficientes = await coeficientesDelPunto(latR, lngR, raw.elevation);
 
   const payload = JSON.stringify({
     dias,
@@ -207,6 +227,18 @@ export async function GET(req: Request) {
      * componente compara las dos antes de multiplicar.
      */
     actividad_radicular: sueloCompleto,
+    /**
+     * Si la ventana trae la humedad de suelo que hace falta para arrancar la
+     * temporada con el agua del perfil medida. La ruta de índices devuelve lo
+     * mismo y el componente compara las dos antes de multiplicar.
+     */
+    agua_inicial_medida: aguaCompleta,
+    /** La clase de textura de H-TESSEL que se identificó para el píxel. */
+    textura_del_pixel: textura === null ? null : {
+      clase: textura.textura.clase,
+      agua_util_m3_m3: textura.textura.agua_util,
+      maximo_de_la_serie: textura.maximo_de_la_serie,
+    },
     fuente: coeficientes
       ? 'Open-Meteo / ERA5 (reanálisis, ~10 km). La Eo del balance se calcula por Jensen-Haise '
         + 'modificada, que es el método con el que Wight y Hanks ajustaron su Kc y su b: ver '
@@ -216,6 +248,11 @@ export async function GET(req: Request) {
             + 'lib/actividadRadicular.ts.'
           : ' Sin temperatura de suelo, las capas profundas corren sin el factor de actividad '
             + 'radicular y el índice sale alto.')
+        + (aguaCompleta
+          ? ' El agua del perfil al arranque sale de la humedad de suelo de ERA5-Land, así que '
+            + 'el Yp es un punto y no una banda: ver lib/aguaDelPerfil.ts.'
+          : ' Sin humedad de suelo, el agua del perfil al arranque no está medida y el Yp sale '
+            + 'como banda.')
       : 'Open-Meteo / ERA5 (reanálisis, ~10 km). Sin coeficientes de Jensen-Haise, el balance usa '
         + 'et0_mm, que es la ETo de referencia de FAO-56 y no la Eo de Wight y Hanks: ver '
         + 'ETO_NO_ES_EO en lib/forrajeCorte.ts.',
@@ -241,44 +278,51 @@ export async function GET(req: Request) {
  * serie no alcanza: ahí el balance cae a la ETo de FAO-56 con su aviso, que es
  * la degradación declarada y no un silencio.
  */
-async function coeficientesDelPunto(
+async function datosDelPunto(
   latR: string,
   lngR: string,
   elevacion?: number,
-): Promise<CoeficientesEo | null> {
-  if (elevacion === undefined || !Number.isFinite(elevacion)) return null;
+): Promise<{ coef: CoeficientesEo | null; textura: TexturaDelPixel | null }> {
+  const vacio = { coef: null, textura: null };
+  if (elevacion === undefined || !Number.isFinite(elevacion)) return vacio;
 
-  const key = `clima-eo-coef-v1:${latR},${lngR},${elevacion}`;
-  const hit = await cacheGet<{ coef: CoeficientesEo | null }>(key);
-  if (hit !== null && hit !== undefined && 'coef' in hit) return hit.coef;
+  const key = `clima-eo-coef-v2:${latR},${lngR},${elevacion}`;
+  const hit = await cacheGet<{ coef: CoeficientesEo | null; textura: TexturaDelPixel | null }>(key);
+  if (hit !== null && hit !== undefined && 'coef' in hit) {
+    return { coef: hit.coef, textura: hit.textura ?? null };
+  }
 
   const url = 'https://archive-api.open-meteo.com/v1/archive'
     + `?latitude=${latR}&longitude=${lngR}`
     + `&start_date=${NORMALES_DESDE}&end_date=${NORMALES_HASTA}`
-    + '&daily=temperature_2m_max,temperature_2m_min&timezone=auto';
+    + '&daily=temperature_2m_max,temperature_2m_min,soil_moisture_0_to_7cm_mean,'
+    + 'soil_moisture_7_to_28cm_mean,soil_moisture_28_to_100cm_mean&timezone=auto';
 
   let res: Response;
   try {
     res = await fetch(url, { signal: AbortSignal.timeout(30_000) });
   } catch {
-    return null;
+    return vacio;
   }
-  if (!res.ok) return null;
+  if (!res.ok) return vacio;
 
   let raw: {
     daily?: {
       time?: string[];
       temperature_2m_max?: Array<number | null>;
       temperature_2m_min?: Array<number | null>;
+      soil_moisture_0_to_7cm_mean?: Array<number | null>;
+      soil_moisture_7_to_28cm_mean?: Array<number | null>;
+      soil_moisture_28_to_100cm_mean?: Array<number | null>;
     };
   };
   try {
     raw = await res.json();
   } catch {
-    return null;
+    return vacio;
   }
   const d = raw.daily;
-  if (!d?.time?.length) return null;
+  if (!d?.time?.length) return vacio;
   const tmax = d.temperature_2m_max ?? [];
   const tmin = d.temperature_2m_min ?? [];
   const serie: DiaConRadiacion[] = d.time.map((fecha, i) => ({
@@ -298,6 +342,21 @@ async function coeficientesDelPunto(
     normales_de_reanalisis: true,
   });
 
-  await cacheSet(key, { coef }, CACHE_TTL);
-  return coef;
+  // La textura de H-TESSEL del píxel, que es lo único que convierte contenido
+  // volumétrico en agua útil. Se identifica con el máximo de toda la serie, que
+  // por eso se pide acá y no en la ventana de una temporada.
+  let maximo = 0;
+  for (const lista of [
+    d.soil_moisture_0_to_7cm_mean ?? [],
+    d.soil_moisture_7_to_28cm_mean ?? [],
+    d.soil_moisture_28_to_100cm_mean ?? [],
+  ]) {
+    for (const v of lista) {
+      if (v !== null && v !== undefined && Number.isFinite(v) && v > maximo) maximo = v;
+    }
+  }
+  const textura = texturaDelPixel(maximo, d.time.length);
+
+  await cacheSet(key, { coef, textura }, CACHE_TTL);
+  return { coef, textura };
 }
