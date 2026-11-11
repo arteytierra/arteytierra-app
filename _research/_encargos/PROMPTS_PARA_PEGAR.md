@@ -1,6 +1,6 @@
 # Los prompts para GPT, listos para pegar
 
-*Al 06/11/2026. Un chat nuevo y suelto por encargo: sin Proyecto, sin memoria,
+*Al 11/11/2026. Un chat nuevo y suelto por encargo: sin Proyecto, sin memoria,
 sin conectores, sin el de GitHub, y con «mejorar el modelo para todos» apagado.
 Cada encargo se cierra al terminar — arrastrar veinte lotes en un mismo hilo
 significa pagar los veinte en cada respuesta nueva.*
@@ -19,16 +19,60 @@ archivos se contradicen, manda el encargo, y eso ya está dicho adentro.
 
 | # | Qué pegar | Qué destraba | Dónde cae |
 |---|---|---|---|
-| **1** | `ENCARGO_FASE_4_LOTES_07_08.md` | Las dos turberas: ECO_ID 286 y 280. Cada una tiene una práctica entregada y verificada que no se puede montar sin la ficha. | `entregas\fichas-indomalaya\07.json` y `08.json` |
-| **2** | `ENCARGO_FASE_6_REPESCA.md` | Seis blancos con nombre. Si entran, Indomalaya baja de 13 fichas sin práctica a 8. | `entregas\practicas-indomalaya\11.json` |
+| **1** | `ENCARGO_FASE_4_LOTES_09_10.md` | Las otras dos turberas: ECO_ID 221 (Borneo, 67.620 km²) y 264 (Malaca). Cierran el conjunto de cuatro «peat swamp forests» de RESOLVE y completan la calibración del módulo de turba. Y traen la pregunta que más vale: el sagú y el jelutong, que son la única respuesta al `forestal 0` y todavía no tienen id en el catálogo. | `entregas\fichas-indomalaya\09.json` y `10.json` |
 
-Uno por chat, y **el orden importa**: el de las turberas primero, porque dos de
-las entradas que la repesca no tiene que mandar son justamente las que esas dos
-fichas destraban.
+Uno por chat. Es una sola fila porque las dos anteriores cerraron el 06 y el
+11/11/2026, y porque **este es el último encargo del patrón bueno**: ficha que
+completa algo medido, con las rutas ya probadas y el piso ya escrito. Lo que
+queda después es relevamiento nuevo, que rinde menos por token, y la lista está
+al final.
 
-Son los dos últimos encargos del patrón que viene funcionando —ficha que
-destraba trabajo ya hecho, y repesca de blancos ya verificados—. Lo que queda
-después es relevamiento nuevo, que rinde menos por token.
+### Lo que cerró el 11/11/2026
+
+~~`ENCARGO_FASE_6_REPESCA.md`~~ **volvió con cuatro entradas y dos vacías
+declaradas, y entraron tres.** Por primera vez en la fase **ninguna se cayó por
+la fuente**: las cuatro fuentes decían lo que la entrega decía. Montado en el
+commit `a4199e9`; el veredicto entero está en
+`_research/_encargos/RESPUESTAS_PRACTICAS_FASE_6_REPESCA.md`.
+
+- **Dos abren ficha, las dos del taluka de Mulshi.** El devrai de Kolavade da 254
+  y el riego de Paud da 253; las dos estaban en cero. Indomalaya baja de 13 fichas
+  sin ninguna práctica a **11**, no a 8.
+- **La del devrai costó cuatro rutas cerradas.** Hindawi, Wiley y CORE —la que
+  trajo la entrega— contestan las tres con la verificación anti-bot de Cloudflare,
+  también desde un navegador real, y la Wayback Machine, que tiene el PDF
+  archivado, estaba caída ese día. Abrió por la copia de Semantic Scholar, que se
+  encuentra con el DOI: **`api.openalex.org/works/doi:<DOI>` y
+  `api.semanticscholar.org/graph/v1/paper/DOI:<DOI>?fields=openAccessPdf` devuelven
+  el PDF abierto con su licencia.** Es herramienta nueva para el circuito.
+- **La tercera se movió de polígono por una medición y no por una discusión.** El
+  control mecánico de defoliadores de Wayanad llegó para el 270, y los cinco
+  sitios de encuesta que el artículo publica con coordenada dan **los cinco 271**.
+  Fue a `ghats_sur_montano`. El detalle que queda anotado: la coordenada que el
+  artículo imprime al lado de «Pulpally» cae trece kilómetros al sur del pueblo de
+  Pulpally, que sí da 270.
+- **Y la frontera que esa entrada obligó a escribir.** El ensayo del trabajo midió
+  las formulaciones que se pulverizan, **no** el método mecánico de las ramas.
+  Atribuirle a las ramas el 33,7-41,5 % → 14,2-18,5 % habría sido la fuente
+  correcta midiendo otra magnitud, que es la falla que este circuito ya cometió.
+- **La cuarta es el cuarto fracaso seguido de `pinar_toba`, y el encargo tuvo la
+  mitad de la culpa:** dijo «Siulak y las laderas del Gunung Kerinci», y Siulak da
+  305 pero las tres aldeas de Kayu Aro Barat donde fue la entrega dan 279. El
+  polígono del 305 quedó medido parte por parte en el veredicto: tiene cinco
+  pedazos y sólo uno está en Kerinci. **Esa ficha no se vuelve a pedir sin esa
+  tabla a la vista.**
+- **Quinta variedad de fuente cerrada:** `repository.pertanian.go.id` **no tiene
+  registro A**. No es un 403, ni un anti-bot, ni un 200 engañoso: el nombre no
+  resuelve en ningún DNS mientras el dominio padre sí.
+- **Una falta de forma en las cuatro entradas:** ninguna puso los autores, y hubo
+  que buscarlos en los cuatro casos.
+
+~~`ENCARGO_FASE_4_LOTES_07_08.md`~~ **entró entero el 06/11/2026** (commit
+`c7a563d`). Las dos turberas están montadas —`pantanos_tonle_sap_mekong_turba` y
+`pantanos_turba_sumatra`— con el modificador forestal reescrito y el límite de
+napa agregado. Veredicto en
+`_research/_encargos/RESPUESTAS_FICHAS_FASE_4_LOTES_07_08.md`. De ahí sale el
+encargo de la fila 1: quedan dos de las cuatro.
 
 ### Lo que cerró el 06/11/2026, por la tarde
 
@@ -178,8 +222,17 @@ No pegarlos todavía; están acá para que no se pierdan.
 - **Fase 3, Australasia después del 216.** Nueve: 191, 207, 212, 215, 209, 210,
   211, 208, 214.
 - **Fase 6, bloques 2 y 3.**
-- **Cuatro entradas de prácticas de Indomalaya** que volvieron y necesitan fuente
-  de reemplazo.
+- **Fase 4, Indomalaya después de las cuatro turberas.** El hueco quedó medido el
+  11/11/2026: de las 106 ecorregiones de Indomalaya, **42 tienen ficha**, y de las
+  que heredan el bosque tropical húmedo quedan 68 sin ninguna entre Indomalaya y
+  Australasia. El lote que más rinde de los que quedan es **Sulawesi y las
+  Molucas** —156 y 157 (Sulawesi bajo y montano), 140 (Halmahera), 138 (Buru) y
+  151 (Seram)—, porque son cinco fichas en cero sobre islas volcánicas con
+  población rural y ahí el `huerta −25` del bioma, escrito sobre el oxisol
+  amazónico, es el que miente más. Después de eso quedan Borneo 219 y 220 y
+  Palawan 262, que son el caso opuesto y hay que escribirlos como tales.
+- **Australasia sigue casi en cero: 2 fichas de 83.** Es el hueco más grande del
+  catálogo después de Afrotropic (8 de 116).
 
 ---
 
