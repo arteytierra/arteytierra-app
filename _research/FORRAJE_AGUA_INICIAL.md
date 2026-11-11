@@ -137,6 +137,23 @@ Sidney da **0,157** contra el 0,151 publicado del punto de marchitez.
 Dónde falla: serie corta o píxel que nunca se satura. Ahí `texturaDelPixel`
 devuelve `null`, no se siembra y vuelve la banda.
 
+> **Corregido el 11/11/2026.** Dos cosas de esta sección quedaron mal y se
+> arreglaron en `_research/FORRAJE_TEXTURA.md`.
+>
+> La primera: la columna «margen al segundo» de la tabla mide la **diferencia de
+> distancias**, y con eso la regla **no podía devolver `media-fina` para ningún
+> máximo posible**, porque `media` y `media-fina` tienen los techos a nueve
+> milésimas y el margen pedía veinte. Tampoco verificaba que el máximo rozara el
+> techo, así que un píxel de arena con máximo 0,360 salía `gruesa` con el techo 43
+> milésimas arriba. Hoy la regla toma el techo más bajo que el máximo no pasó,
+> exige que lo roce y declara la duda en vez de anular.
+>
+> La segunda: el 0,434 de Sidney que anota esta tabla sale de un pedido en **UTC**,
+> y la ruta de producción pide en hora local, donde el mismo píxel da **0,430**.
+> Open-Meteo entrega medias diarias y el huso define el día, así que el máximo se
+> mueve ±4 milésimas según qué 24 horas se promedian —en Swift Current para el
+> otro lado, de 0,435 a 0,439—. El dato no cambió; el huso lo mueve.
+
 ### La geometría, que cuesta
 
 Las tres capas del modelo contra las cuatro del reanálisis. La de 0-30 cm se arma

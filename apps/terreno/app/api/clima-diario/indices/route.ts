@@ -50,7 +50,7 @@ import {
   indicesQueSirven,
   ventanasDeCadaAnio,
 } from '@/lib/forrajeAnios';
-import { humedadDeLaSerie } from '@/lib/aguaDelPerfil';
+import { humedadDeLaSerie, ADVERTENCIAS_AGUA_DEL_PERFIL } from '@/lib/aguaDelPerfil';
 
 const HDRS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': SITE_ORIGIN };
 
@@ -137,7 +137,7 @@ export async function GET(req: Request) {
 
   // Todo lo que cambia el resultado entra en la clave. Si falta un parámetro acá,
   // dos corridas distintas se sirven la misma respuesta.
-  const dbKey = `clima-indices-v5:${latR},${lngR},${arranque},${dias},${awCrudo.join('-')},`
+  const dbKey = `clima-indices-v6:${latR},${lngR},${arranque},${dias},${awCrudo.join('-')},`
     + `${kc ?? ''},${c ?? ''},${b ?? ''},${aguaBajo ?? ''},${cn ?? ''}`;
   const hit = await cacheGet<{ raw: string }>(dbKey);
   if (hit?.raw) return new Response(hit.raw, { status: 200, headers: HDRS });
@@ -269,7 +269,12 @@ export async function GET(req: Request) {
     anios_sin_serie: r.anios_sin_serie,
     anios_descartados: r.anios_descartados,
     dias_corridos: r.dias_corridos,
-    advertencias: r.advertencias,
+    advertencias: [
+      ...r.advertencias,
+      ...(humedad !== null && humedad.textura.en_duda.length > 0
+        ? [ADVERTENCIAS_AGUA_DEL_PERFIL.textura_en_duda]
+        : []),
+    ],
     avisos: r.avisos,
     serie: { desde: START, hasta: END },
     /**
@@ -298,11 +303,25 @@ export async function GET(req: Request) {
      * dos sentidos.
      */
     escurrimiento: r.escurrimiento,
-    /** La clase de textura de H-TESSEL que se identificó para el píxel. */
+    /**
+     * La clase de textura de H-TESSEL que se identificó para el píxel, con la
+     * duda declarada. `en_duda` trae las clases cuya saturación la serie no
+     * alcanza a descartar —son `media` y `media-fina` o nada, porque es el único
+     * par de la tabla con los techos a nueve milésimas— y `discrepancia` lo que
+     * costaría haber errado, en fracción de agua útil. Ver
+     * `LAS_CLASES_QUE_NO_SE_SEPARAN`.
+     */
     textura_del_pixel: humedad === null ? null : {
       clase: humedad.textura.textura.clase,
       agua_util_m3_m3: humedad.textura.textura.agua_util,
       maximo_de_la_serie: humedad.textura.maximo_de_la_serie,
+      /** Cuánto le faltó al máximo para llegar al techo de su clase, en m³/m³. */
+      acercamiento: humedad.textura.acercamiento,
+      en_duda: humedad.textura.en_duda.map(t => t.clase),
+      discrepancia: humedad.textura.discrepancia,
+      advertencia: humedad.textura.en_duda.length > 0
+        ? ADVERTENCIAS_AGUA_DEL_PERFIL.textura_en_duda
+        : null,
     },
     fuente: coeficientes
       ? 'Open-Meteo / ERA5 (reanálisis, ~10 km). La Eo del balance se calculó por Jensen-Haise '

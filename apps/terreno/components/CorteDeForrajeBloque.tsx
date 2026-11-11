@@ -132,6 +132,23 @@ interface RespuestaDeAnios {
    * los dos sentidos.
    */
   escurrimiento: boolean;
+  /**
+   * La clase de textura de H-TESSEL con la que la cadena pasó de contenido
+   * volumétrico a agua útil. **Las dos rutas la identifican por separado**, cada
+   * una del máximo de su propio pedido, y los máximos no son el mismo: la
+   * ventana del corte son unos meses y la serie son sesenta años, así que la
+   * ventana puede no haberse acercado a ningún techo. Si cada una eligió una
+   * clase distinta, los dos índices salieron de dos suelos distintos.
+   */
+  textura_del_pixel: {
+    clase: string;
+    agua_util_m3_m3: number;
+    maximo_de_la_serie: number;
+    acercamiento: number;
+    en_duda: string[];
+    discrepancia: number;
+    advertencia: string | null;
+  } | null;
 }
 
 interface Props {
@@ -171,6 +188,8 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
   const [factorDelCorte, setFactorDelCorte] = useState<boolean | null>(null);
   /** Si la ventana del corte arrancó con el agua del perfil medida. */
   const [aguaDelCorte, setAguaDelCorte] = useState<boolean | null>(null);
+  /** Con qué clase de textura corrió la ventana del corte, si pudo identificarla. */
+  const [texturaDelCorte, setTexturaDelCorte] = useState<string | null>(null);
 
   // El segundo pedido: la serie entera, para repartir el techo del sitio en los
   // años que de verdad pasaron.
@@ -236,6 +255,7 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
         coeficientes_eo?: CoeficientesEo | null;
         actividad_radicular?: boolean;
         agua_inicial_medida?: boolean;
+        textura_del_pixel?: { clase: string } | null;
       };
       if (!r.ok || !j.dias) {
         setErrorSerie(j.error ?? 'No se pudo traer la serie diaria de este punto.');
@@ -259,6 +279,7 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
       const temporada = ventanaDeBalance(j.dias, desde, hasta, coefEo);
       setFactorDelCorte(temporada?.actividad_radicular ?? null);
       setAguaDelCorte(temporada === null ? null : temporada.agua_inicial_util !== null);
+      setTexturaDelCorte(j.textura_del_pixel?.clase ?? null);
       const previos = ventanaDeBalance(j.dias, arranque, sumarDias(desde, -1), coefEo);
       if (temporada === null) {
         setErrorSerie('La serie no cubre completa la temporada que declaraste.');
@@ -398,6 +419,24 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
     return anios.escurrimiento === (cnDelPredio !== null);
   }, [anios, cnDelPredio]);
 
+  /**
+   * Y el quinto: que las dos corridas hayan usado la misma clase de textura.
+   *
+   * Las dos rutas la identifican por separado, cada una del máximo de su propio
+   * pedido, y el máximo de unos meses no es el de sesenta años. Mezclar dos
+   * clases es mezclar dos suelos: entre `media` y `media-fina`, que es el par que
+   * la huella no separa, la fracción de agua útil del mismo día difiere hasta
+   * 0,144 —unos 22 mm sobre 150—. Si una de las dos no identificó nada no hay
+   * nada que comparar, porque entonces esa corrida no arrancó con el agua medida
+   * y eso ya lo agarra `mismaAgua`.
+   */
+  const mismaTextura = useMemo(() => {
+    if (anios === null || texturaDelCorte === null) return true;
+    const suya = anios.textura_del_pixel?.clase ?? null;
+    if (suya === null) return true;
+    return suya === texturaDelCorte;
+  }, [anios, texturaDelCorte]);
+
   const ypParaRepartir = useMemo(() => {
     if (anios === null || banda === null) return null;
     const anioDelCorte = Number(desde.slice(0, 4));
@@ -410,10 +449,10 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
 
   const forrajes = useMemo<ForrajeDeUnAnio[] | null>(
     () => (anios !== null && ypParaRepartir !== null
-      && mismaEo && mismoFactor && mismaAgua && mismoEscurrimiento
+      && mismaEo && mismoFactor && mismaAgua && mismoEscurrimiento && mismaTextura
       ? forrajePorAnio(ypParaRepartir.yp, anios.anios)
       : null),
-    [anios, ypParaRepartir, mismaEo, mismoFactor, mismaAgua, mismoEscurrimiento],
+    [anios, ypParaRepartir, mismaEo, mismoFactor, mismaAgua, mismoEscurrimiento, mismaTextura],
   );
 
   return (
@@ -663,6 +702,14 @@ export function CorteDeForrajeBloque({ datosSuelo, forrajeActual, onForraje, onI
                       Una de las dos corridas arrancó la temporada con el agua del perfil medida y
                       la otra con la que deja el balance de invierno, y entre las dos los kilos del
                       año seco cambian hasta un 39 %. Volvé a pedir las dos cosas en un rato.
+                    </p>
+                  ) : !mismaTextura ? (
+                    <p className="text-[10px] text-clay-700 leading-relaxed flex gap-1.5">
+                      <TriangleAlert className="w-3.5 h-3.5 shrink-0" />
+                      Las dos corridas identificaron una clase de textura distinta para el mismo
+                      píxel, así que pasaron la humedad del reanalísis a agua útil con dos suelos
+                      distintos: entre las dos clases más parecidas el agua del mismo día cambia
+                      hasta 22 mm sobre 150. Volvé a pedir las dos cosas en un rato.
                     </p>
                   ) : !mismoEscurrimiento ? (
                     <p className="text-[10px] text-clay-700 leading-relaxed flex gap-1.5">

@@ -40,9 +40,23 @@
  * marchitez permanente y residual para las seis clases de textura del esquema.
  *
  * HTESSEL **no usa una textura única**: toma la dominante de cada punto del mapa
- * de la FAO. Ese campo (`slt`) no viaja por Open-Meteo, así que la clase se
- * identifica desde la propia serie, y se puede: ver
- * `COMO_SE_IDENTIFICA_LA_TEXTURA`.
+ * de la FAO. Ese campo (`slt`) no viaja por Open-Meteo —y tampoco está en el
+ * catálogo de ERA5-Land, según el propio ECMWF—, así que la clase se identifica
+ * desde la propia serie: el contenido volumétrico no puede pasar la saturación
+ * de su clase y en sesenta años la roza. Ver `COMO_SE_IDENTIFICA_LA_TEXTURA`.
+ *
+ * Esa huella se arregló el **11/11/2026** y vale la pena saber qué tenía, porque
+ * era justamente el modo de falla que este repo persigue —un número plausible y
+ * equivocado— y uno de apagado silencioso:
+ *
+ * - la regla **decía** que el máximo roza el techo pero no lo verificaba, así que
+ *   un píxel de arena del Kalahari que llega a 0,360 salía `gruesa` con el techo
+ *   43 milésimas arriba, y errarle a `media-fina` cuesta 0,556 de fracción de
+ *   agua útil, o sea 83 mm sobre 150;
+ * - y el margen se medía entre *diferencias* de distancia, cosa que no puede
+ *   separar dos clases más juntas que el propio margen: `media-fina` era
+ *   inalcanzable y en Sidney, el sitio de calibración, la textura devolvía
+ *   `null`. Ver `LAS_CLASES_QUE_NO_SE_SEPARAN` y `EL_HUSO_MUEVE_EL_MAXIMO`.
  *
  * ## Qué está medido contra qué
  *
@@ -142,51 +156,284 @@ export const TEXTURAS_DE_HTESSEL: readonly TexturaDeHTessel[] = [
  *
  * El mapa de textura de H-TESSEL (`slt`, paramId 43) se distribuye por el CDS de
  * Copernicus y **no viaja por Open-Meteo**, que es por donde acequia pide los
- * datos. Pero la clase deja una huella que la propia serie delata: **el
- * contenido volumétrico nunca puede pasar la saturación de su clase**, y en una
- * serie larga alguna vez la toca.
+ * datos; para ERA5-Land ECMWF dice además que ese campo invariante «todavía no
+ * está en el catálogo». Pero la clase deja una huella que la propia serie
+ * delata: **el contenido volumétrico nunca puede pasar la saturación de su
+ * clase**, y en una serie larga alguna vez la roza.
  *
- * Así que la regla es: de las clases cuya saturación el máximo de la serie no
- * pasa, se queda la que ese máximo roza. Probado en cuatro píxeles de climas
- * distintos, con 35 a 65 años de serie:
+ * La regla tiene tres partes y las tres hacen falta:
+ *
+ * 1. **El techo descarta.** De las seis clases quedan sólo las que el máximo de
+ *    la serie no pasó. Es la única parte dura de todo esto: si el máximo pasó
+ *    una saturación, esa clase está descartada y no hay vuelta.
+ * 2. **La elegida es la de techo más bajo** de las que quedaron, que es la que
+ *    el máximo roza.
+ * 3. **Y tiene que rozarlo de verdad.** Si el máximo queda más de
+ *    `acercamiento_maximo` por debajo de ese techo, la serie no se acercó a
+ *    ninguna saturación: hay cinco o seis clases posibles y la más cercana no es
+ *    evidencia de nada. Devuelve `null`.
+ *
+ * La tercera parte es nueva del 11/11/2026 y **cierra un agujero**: hasta ese
+ * día, un máximo de 0,360 en la arena del Kalahari devolvía «gruesa» por ser la
+ * saturación más cercana, con el máximo 43 milésimas abajo del techo. Entre
+ * «gruesa» y «media-fina» hay 0,556 de fracción de agua útil de diferencia, o
+ * sea 83 mm sobre 150: una apuesta de ese tamaño sobre una brecha de 43
+ * milésimas es justo el número plausible y equivocado que este código no tiene
+ * que imprimir.
+ *
+ * Probado en ocho píxeles de climas y suelos distintos, con 65 años de serie. En
+ * siete de los ocho el máximo cae a 6 milésimas o menos de la saturación de una
+ * clase, que es la huella; el octavo no se identifica:
  *
  * ```
- *                          máximo   clase      saturación   margen al segundo
- *  Sidney, Montana          0,434   media          0,439          0,081
- *  Swift Current, Sask.     0,435   media          0,439          0,081
- *  Pampa argentina          0,515   fina           0,520          0,094
- *  Quindío, Colombia        0,438   media          0,439          0,081
+ *                        máximo   clase         se acerca a
+ *  Sidney, Montana        0,434   media              0,005
+ *  Swift Current, Sask.   0,435   media              0,004
+ *  Sand Hills, Nebraska   0,435   media              0,004
+ *  Loess de Iowa          0,438   media              0,001
+ *  Quindío, Colombia      0,438   media              0,001
+ *  Pampa argentina        0,515   fina               0,005
+ *  Sahel de Malí          0,424   media-fina         0,006
+ *  Kalahari               0,360   (ninguna)          0,043
  * ```
  *
- * En los cuatro el máximo cae a 5 milésimas de la saturación de una clase y a
- * más de 80 de la siguiente: no es un ajuste fino, es una huella. Y hay una
- * segunda verificación que no entra en la decisión: el piso de la capa profunda
- * tiene que quedar cerca del punto de marchitez de la clase elegida. En Sidney
- * el percentil 1 de la capa de 28-100 cm da **0,157** contra el 0,151 publicado.
+ * Y una segunda verificación que no entra en la decisión: el piso de la capa
+ * profunda tiene que quedar cerca del punto de marchitez de la clase elegida. En
+ * Sidney el percentil 1 de la capa de 28-100 cm da **0,157** contra el 0,151
+ * publicado. **No se puede usar para decidir** y conviene saber por qué: en
+ * Quindío ese percentil da 0,344 porque el perfil nunca se seca, y en Swift
+ * Current baja a 0,045 porque el agua líquida se va cuando el suelo se congela.
+ * El piso mide el clima, no la textura.
  *
- * **Dónde falla.** Con una serie corta, o en un píxel que nunca se satura —riego
- * ausente, clima árido sin un solo evento grande—, el máximo queda por debajo de
- * su propia clase y la identificación elige una más gruesa, o directamente queda
- * ambigua. Por eso `texturaDelPixel` pide un mínimo de días y un margen mínimo
- * al segundo candidato, y devuelve `null` si no los hay: sin textura no se
- * siembra el perfil y se vuelve a la banda, que es la degradación declarada.
+ * ## Dónde falla
+ *
+ * Con una serie corta, o en un píxel que nunca se satura —árido sin un solo
+ * evento grande—, el máximo no llega a ningún techo y la identificación no sale.
+ * Ahí devuelve `null`, no se siembra el perfil y se vuelve a la banda, que es la
+ * degradación declarada.
+ *
+ * Y hay un par de clases que esta huella **no puede separar nunca**, porque sus
+ * saturaciones están más cerca entre sí que el ruido del propio estimador:
+ * `LAS_CLASES_QUE_NO_SE_SEPARAN`. Ese caso no devuelve `null` —ver ahí por
+ * qué—: devuelve la más ajustada y **declara la duda** en `en_duda`.
  */
 export const COMO_SE_IDENTIFICA_LA_TEXTURA = {
   regla: 'el máximo de la serie no puede pasar la saturación de su clase, y la roza',
+  /** Cuánto se le perdona al máximo pasarse de un techo, en m³/m³. */
   tolerancia_por_arriba: 0.003,
   dias_minimos: 3650,
+  /**
+   * Cuánto puede quedar el máximo **por debajo** del techo elegido y seguir
+   * contando como huella, en m³/m³. En los ocho píxeles probados el máximo cae a
+   * 6 milésimas o menos; 20 deja holgura para el ruido del huso horario
+   * (`EL_HUSO_MUEVE_EL_MAXIMO`) y descarta al que no se acerca a nada.
+   */
+  acercamiento_maximo: 0.02,
+  /**
+   * A cuánto por encima del máximo tiene que estar el techo siguiente para que
+   * la serie lo descarte, en m³/m³. Más cerca que esto, el píxel podría ser de
+   * esa otra clase y nunca haber tocado su saturación.
+   */
   margen_minimo_al_segundo: 0.02,
+  /**
+   * Cuánta fracción de agua útil se tolera que cueste equivocarse entre dos
+   * clases que la serie no separa, adimensional. Ver
+   * `LAS_CLASES_QUE_NO_SE_SEPARAN`: el único par que el techo no separa cuesta
+   * 0,144 y el par que le sigue 0,308, así que el tope cae en el medio.
+   */
+  discrepancia_maxima: 0.20,
   probada_en: [
-    { sitio: 'Sidney, Montana', maximo: 0.434, clase: 'media', saturacion: 0.439, margen: 0.081 },
-    { sitio: 'Swift Current, Saskatchewan', maximo: 0.435, clase: 'media', saturacion: 0.439, margen: 0.081 },
-    { sitio: 'Pampa argentina (-34,0 / -61,0)', maximo: 0.515, clase: 'fina', saturacion: 0.520, margen: 0.094 },
-    { sitio: 'Quindío, Colombia', maximo: 0.438, clase: 'media', saturacion: 0.439, margen: 0.081 },
+    { sitio: 'Sidney, Montana', maximo: 0.434, clase: 'media', saturacion: 0.439, acercamiento: 0.005 },
+    { sitio: 'Swift Current, Saskatchewan', maximo: 0.435, clase: 'media', saturacion: 0.439, acercamiento: 0.004 },
+    { sitio: 'Sand Hills, Nebraska', maximo: 0.435, clase: 'media', saturacion: 0.439, acercamiento: 0.004 },
+    { sitio: 'Loess de Iowa', maximo: 0.438, clase: 'media', saturacion: 0.439, acercamiento: 0.001 },
+    { sitio: 'Quindío, Colombia', maximo: 0.438, clase: 'media', saturacion: 0.439, acercamiento: 0.001 },
+    { sitio: 'Pampa argentina (-34,0 / -61,0)', maximo: 0.515, clase: 'fina', saturacion: 0.520, acercamiento: 0.005 },
+    { sitio: 'Sahel de Malí (14,5 / -4,0)', maximo: 0.424, clase: 'media-fina', saturacion: 0.430, acercamiento: 0.006 },
   ],
+  /** El que no se identifica, y es el que justifica `acercamiento_maximo`. */
+  el_que_no_sale: {
+    sitio: 'Kalahari (-22,0 / 22,0), arena profunda',
+    maximo: 0.360,
+    el_techo_mas_bajo_que_queda: 0.403,
+    acercamiento: 0.043,
+    que_devolvia_antes: 'gruesa',
+    lo_que_costaba_errar: 0.556,
+  },
   verificacion_que_no_decide: {
     que: 'el piso de la capa profunda contra el punto de marchitez de la clase elegida',
     sidney: { percentil_1_de_la_serie: 0.157, marchitez_publicada: 0.151 },
+    por_que_no_decide:
+      'mide el clima y no la textura: en Quindío da 0,344 porque el perfil nunca se seca y en '
+      + 'Swift Current 0,045 porque el agua líquida se va al congelarse el suelo',
   },
-  cuando_no_se_puede: 'serie corta o píxel que nunca se satura: devuelve null y no se siembra',
+  cuando_no_se_puede:
+    'serie corta, píxel que nunca se acerca a un techo, o dos clases que la serie no separa y '
+    + 'cuya diferencia cuesta más que `discrepancia_maxima`: devuelve null y no se siembra',
+} as const;
+
+/**
+ * El par de clases que esta huella no puede separar, y por qué igual se usa.
+ *
+ * `media` satura en 0,439 y `media-fina` en 0,430: **nueve milésimas**. Un
+ * máximo compatible con el techo de una es compatible con el de la otra, porque
+ * una serie puede perfectamente quedarse nueve milésimas corta de su propia
+ * saturación. La información no está en el dato y no hay regla que la saque.
+ *
+ * Es el único par así: de los quince pares de la tabla, los otros catorce tienen
+ * las saturaciones a 27 milésimas o más, o sea arriba de
+ * `margen_minimo_al_segundo`.
+ *
+ * Hasta el 11/11/2026 el código resolvía esto devolviendo `null`, y eso tenía dos
+ * consecuencias que nadie había medido:
+ *
+ * - **`media-fina` no salía nunca**, para ningún máximo posible, y `media` salía
+ *   sólo en una ventana de 8,5 milésimas;
+ * - y en Sidney —el sitio contra el que está medido todo este motor— el máximo
+ *   pedido como lo pide la ruta de producción da 0,430 justo, así que **el
+ *   camino estaba apagado en el propio sitio de calibración**.
+ *
+ * Lo que decide el asunto es cuánto cuesta equivocarse, y está medido dos veces.
+ * La primera, contra la literatura: las 159 mediciones con sonda de neutrones de
+ * la Figura 5 **no separan las dos clases** —EAM 0,1725 con `media` contra
+ * 0,1742 con `media-fina`, y el RMSE las ordena al revés—. La segunda, aguas
+ * abajo, en `LA_DUDA_CUESTA_MENOS_QUE_CAERSE`: elegir mal entre las dos mueve
+ * los kilos de la cola seca un 2 %, y caerse a la cadena los mueve un 33 %.
+ *
+ * Así que la elección no se esquiva: se toma la de techo más ajustado, se deja
+ * la otra escrita en `en_duda` y se declara lo que costaría haber errado en
+ * `discrepancia`. Lo que sí devuelve `null` es una duda **cara**: si las clases
+ * que la serie no descarta difieren en más de `discrepancia_maxima` de fracción
+ * de agua útil, no hay respuesta que valga la pena dar.
+ */
+export const LAS_CLASES_QUE_NO_SE_SEPARAN = {
+  que_mide:
+    'la máxima diferencia de fracción de agua útil entre dos clases, barriendo el contenido '
+    + 'volumétrico compartido; adimensional, 0 a 1, y se multiplica por el AW del predio',
+  pares_en_la_tabla: 15,
+  el_unico_par: {
+    clases: ['media', 'media-fina'] as const,
+    distancia_de_saturaciones: 0.009,
+    discrepancia: 0.144,
+    donde_peor: 0.347,
+  },
+  el_par_que_le_sigue: {
+    clases: ['muy-fina', 'organica'] as const,
+    distancia_de_saturaciones: 0.152,
+    discrepancia: 0.308,
+  },
+  /** El tope cae entre los dos, y por eso se puede justificar dónde. */
+  por_eso_el_tope: 0.20,
+  contra_la_figura_5: {
+    n: 159,
+    media: { eam: 0.1725, rmse: 0.2193 },
+    media_fina: { eam: 0.1742, rmse: 0.2163 },
+    que_dice: 'las dos reproducen la sonda igual de bien; el EAM prefiere media y el RMSE media-fina',
+    las_otras_cuatro: 'EAM de 0,39 a 0,41, o sea dos veces y media peor',
+  },
+  el_resto_de_la_tabla:
+    'las otras catorce parejas tienen las saturaciones a 0,027 o más, así que el techo las separa',
+} as const;
+
+/**
+ * El huso horario con el que se pide la serie mueve el máximo, y cuánto.
+ *
+ * Open-Meteo entrega **medias diarias** y el día lo define el huso que se pida.
+ * La saturación, en cambio, es un techo instantáneo. Promediar 24 horas no puede
+ * dar más que el máximo horario, y qué 24 horas se promedian cambia el resultado:
+ * el mismo píxel, la misma serie, pedido en UTC y en hora local, da máximos que
+ * difieren **4 milésimas**, para un lado o para el otro.
+ *
+ * ```
+ *                        UTC     hora local   diferencia
+ *  Sidney, Montana      0,4340     0,4300       -0,0040
+ *  Swift Current        0,4350     0,4390       +0,0040
+ *  Pampa argentina      0,5150     0,5150        0,0000
+ * ```
+ *
+ * Cuatro milésimas es poco para casi todo y **decisivo para esto**, porque las
+ * dos clases más comunes tienen los techos a nueve. En Swift Current el máximo
+ * local cae en 0,4390 clavado, la saturación de `media`: el techo existe y se
+ * toca. En Sidney el mismo dato en hora local se queda en 0,4300, que es la
+ * saturación de `media-fina` clavada, y ahí la huella ya no distingue.
+ *
+ * Por eso la regla no se juega a un filo: `acercamiento_maximo` es cinco veces
+ * este ruido, y cuando el ruido alcanza para cambiar de clase la respuesta sale
+ * con la duda declarada en vez de con un `null`.
+ *
+ * **Y por eso la ruta no cambió de huso.** Pedir la serie en UTC arreglaría
+ * Sidney y rompería el balance, que necesita que el día sea el día del predio:
+ * la lluvia de un día y la evapotranspiración de ese día tienen que ser del
+ * mismo día local.
+ */
+export const EL_HUSO_MUEVE_EL_MAXIMO = {
+  por_que: 'Open-Meteo entrega medias diarias y el huso define el día; la saturación es un techo instantáneo',
+  medido: [
+    { sitio: 'Sidney, Montana', utc: 0.4340, local: 0.4300, huso: 'America/Denver' },
+    { sitio: 'Swift Current, Saskatchewan', utc: 0.4350, local: 0.4390, huso: 'America/Swift_Current' },
+    { sitio: 'Pampa argentina', utc: 0.5150, local: 0.5150, huso: 'America/Argentina/Buenos_Aires' },
+  ],
+  ruido: 0.004,
+  los_dos_techos_mas_juntos: 0.009,
+  por_que_no_se_cambia_el_huso:
+    'el balance necesita que el día sea el día local, porque la lluvia y la evapotranspiración '
+    + 'de un día tienen que ser del mismo día',
+  como_se_absorbe: 'acercamiento_maximo es cinco veces el ruido, y la duda se declara en vez de anular',
+} as const;
+
+/**
+ * Lo que cuesta la duda y lo que cuesta caerse, medido en Sidney.
+ *
+ * Las 66 temporadas de Sidney corridas con cada una de las dos clases que la
+ * serie no separa, y sin textura —que es la cadena simulando el invierno, la
+ * degradación a la que se caía antes—:
+ *
+ * ```
+ *                contra los doce      distribución        Yp      kilos
+ *                 EAM     sesgo      p10    mediana     kg/ha    en el p10
+ *  media         0,072   +0,070     0,452    0,820      1.449       655
+ *  media-fina    0,061   +0,057     0,432    0,774      1.550       670
+ *  sin textura   0,142   +0,140     0,677    0,935      1.283       869
+ * ```
+ *
+ * Tres cosas que importan.
+ *
+ * **Las dos clases se parecen mucho más entre sí que cualquiera de las dos a la
+ * cadena.** Contra los doce índices publicados, las dos cortan el error de la
+ * cadena a menos de la mitad.
+ *
+ * **Y en los kilos se parecen todavía más, porque el error se cancela.** La clase
+ * más húmeda baja el índice y el `Yp` se despeja **dividiendo** por el índice, así
+ * que sube: 0,452 × 1.449 contra 0,432 × 1.550 son 655 y 670 kg/ha, un 2 % de
+ * diferencia. Es la primera vez en este bloque que las dos direcciones juegan a
+ * favor.
+ *
+ * **Caerse cuesta dieciséis veces más.** La cadena pone 869 kg/ha en la cola
+ * seca, un 33 % arriba, y es la cola seca la que dimensiona la carga.
+ *
+ * O sea que devolver `null` para no tener que elegir entre dos clases que
+ * difieren un 2 % costaba un 33 %. Eso es lo que cambió el 11/11/2026.
+ */
+export const LA_DUDA_CUESTA_MENOS_QUE_CAERSE = {
+  sitio: 'Sidney, Montana, ventana de 84 días desde el 15 de abril',
+  por_clase: [
+    { clase: 'media', n: 66, eam: 0.072, sesgo: 0.070, p10: 0.452, mediana: 0.820, yp_kg_ha: 1449, kilos_en_el_p10: 655 },
+    { clase: 'media-fina', n: 66, eam: 0.061, sesgo: 0.057, p10: 0.432, mediana: 0.774, yp_kg_ha: 1550, kilos_en_el_p10: 670 },
+    { clase: null, n: 64, eam: 0.142, sesgo: 0.140, p10: 0.677, mediana: 0.935, yp_kg_ha: 1283, kilos_en_el_p10: 869 },
+  ],
+  el_yp_sale_de: 'un corte de 1.200 kg/ha en la temporada de índice mediano',
+  los_kilos_salen_de: 'el Yp por el índice del p10, que es la cuenta con la que se dimensiona la carga',
+  /**
+   * Los dos porcentajes van contra `media`, que es la clase que el máximo pedido
+   * en UTC identifica y la más baja de las dos en la cola seca. Contra
+   * `media-fina` errar sigue siendo 2 % y caerse da 30 %.
+   */
+  errar_entre_las_dos_pct: 2,
+  caerse_a_la_cadena_pct: 33,
+  por_que_se_cancela:
+    'la clase más húmeda baja el índice y el Yp se despeja dividiendo por el índice, así que sube',
+  en_el_dia_del_rebrote_mm:
+    'media-fina entrega al rebrote 5,8 mm menos que media sobre 150, con extremos de -19 y +6,4',
 } as const;
 
 /**
@@ -507,9 +754,17 @@ export const ADVERTENCIAS_AGUA_DEL_PERFIL = {
     + 'de suelo seco al aire; el reanálisis se recorta en el marchitez. Contra la Figura 5 eso '
     + 'hace que la capa de 0-30 cm lea 0,074 de agua útil alta, el doble que las dos de abajo.',
   textura_sin_identificar:
-    'No se pudo identificar la clase de textura del píxel: la serie es corta o nunca se acercó a '
-    + 'la saturación de ninguna clase. Sin textura no hay cómo pasar de contenido volumétrico a '
-    + 'agua útil, y el agua inicial vuelve a ser una banda.',
+    'No se pudo identificar la clase de textura del píxel, por una de tres razones: la serie es '
+    + 'más corta que diez años, el máximo nunca se acercó a la saturación de ninguna clase, o las '
+    + 'clases que la serie no alcanza a descartar difieren tanto entre sí que elegir una sería '
+    + 'una apuesta. Sin textura no hay cómo pasar de contenido volumétrico a agua útil, y el agua '
+    + 'inicial vuelve a ser una banda.',
+  textura_en_duda:
+    'La textura del píxel quedó identificada pero no sola: hay otra clase cuya saturación la '
+    + 'serie no alcanza a descartar, porque una serie puede quedarse unas milésimas corta de su '
+    + 'propio techo. Se tomó la de techo más ajustado. Las 159 mediciones con sonda de la Figura '
+    + '5 tampoco separan al único par que cae acá —`media` y `media-fina`—, y aguas abajo elegir '
+    + 'mal mueve los kilos de la cola seca un 2 %, contra el 33 % que mueve no elegir.',
   sin_humedad_de_suelo:
     'La serie no trae humedad de suelo, así que el agua con la que arranca la temporada no está '
     + 'medida: o se declara, o sale la banda entre el perfil seco y el lleno, o la simula la '
@@ -557,44 +812,122 @@ export interface TexturaDelPixel {
   textura: TexturaDeHTessel;
   /** El máximo de la serie que la identificó, en m³/m³. */
   maximo_de_la_serie: number;
-  /** Cuánto más lejos quedó el segundo candidato, en m³/m³. */
+  /**
+   * Cuánto le faltó al máximo para llegar al techo de la clase elegida, en
+   * m³/m³. Es la huella: en los ocho píxeles probados da 6 milésimas o menos.
+   * Puede salir levemente negativo si el máximo pasó el techo adentro de
+   * `tolerancia_por_arriba`.
+   */
+  acercamiento: number;
+  /** Cuánto más arriba del máximo quedó el techo siguiente, en m³/m³. */
   margen_al_segundo: number;
+  /**
+   * Las clases que la serie **no alcanza a descartar**: su saturación está arriba
+   * del máximo pero a menos de `margen_minimo_al_segundo`, así que el píxel
+   * podría ser de una de ellas y nunca haber tocado su propia saturación. Vacío
+   * es una identificación limpia. Ver `LAS_CLASES_QUE_NO_SE_SEPARAN`.
+   */
+  en_duda: readonly TexturaDeHTessel[];
+  /**
+   * Cuánta fracción de agua útil costaría haber errado contra la peor de las
+   * clases de `en_duda`, adimensional. Cero cuando no hay duda. Si pasa
+   * `discrepancia_maxima` la función devuelve `null` en vez de elegir.
+   */
+  discrepancia: number;
   dias: number;
+}
+
+/**
+ * Cuánto se parecen dos clases **en lo que el motor realmente usa**.
+ *
+ * No alcanza con saber que dos clases son parecidas: lo que importa es si dan la
+ * misma fracción de agua útil, que es lo único que sale de este archivo hacia el
+ * balance. Devuelve la máxima diferencia absoluta de `fraccionDeAguaUtil` entre
+ * las dos, barriendo el contenido volumétrico desde 0 hasta la más baja de las
+ * dos saturaciones. Adimensional, 0 a 1; multiplicado por el `AW` de las capas
+ * del predio da milimetros.
+ *
+ * La función es lineal por tramos con quiebres en el marchitez y en la capacidad
+ * de campo de cada clase, así que el máximo cae **siempre** en un quiebre o en
+ * un extremo: evaluar esos seis puntos es exacto, no un muestreo.
+ */
+export function discrepanciaDeAguaUtil(a: TexturaDeHTessel, b: TexturaDeHTessel): number {
+  const hasta = Math.min(a.saturacion, b.saturacion);
+  let peor = 0;
+  for (const theta of [0, a.marchitez, b.marchitez, a.capacidad, b.capacidad, hasta]) {
+    if (theta < 0 || theta > hasta) continue;
+    const fa = fraccionDeAguaUtil(theta, a);
+    const fb = fraccionDeAguaUtil(theta, b);
+    if (fa === null || fb === null) continue;
+    const d = Math.abs(fa - fb);
+    if (d > peor) peor = d;
+  }
+  return peor;
 }
 
 /**
  * Qué clase de textura de H-TESSEL le tocó al píxel, leída de la propia serie.
  *
  * Entra el **máximo de contenido volumétrico** que la serie alcanzó en cualquiera
- * de sus capas, en m³/m³, y cuántos días tiene la serie. Sale la clase cuya
- * saturación ese máximo no pasa y más de cerca roza, o `null` si la serie es
- * corta, si el máximo pasa la saturación de todas las clases, o si dos clases
- * quedan demasiado cerca para distinguirlas.
+ * de sus capas, en m³/m³, y cuántos días tiene la serie. Sale la clase de techo
+ * más bajo entre las que el máximo no pasó —la que roza— con la duda declarada,
+ * o `null`.
  *
- * Ver `COMO_SE_IDENTIFICA_LA_TEXTURA` para la regla, los cuatro píxeles donde se
- * probó y dónde falla.
+ * Devuelve `null` en cuatro casos, y los cuatro son degradaciones honestas:
+ *
+ * - la serie es más corta que `dias_minimos`;
+ * - el máximo pasó la saturación de todas las clases;
+ * - el máximo no se acerca a ningún techo a menos de `acercamiento_maximo`, así
+ *   que no hay huella de nada;
+ * - las clases que la serie no descarta difieren en más de `discrepancia_maxima`
+ *   de fracción de agua útil, así que elegir una sería una apuesta cara.
+ *
+ * Ver `COMO_SE_IDENTIFICA_LA_TEXTURA` para la regla y los ocho píxeles donde se
+ * probó, `LAS_CLASES_QUE_NO_SE_SEPARAN` para el único par que no separa y
+ * `EL_HUSO_MUEVE_EL_MAXIMO` para el ruido del propio máximo.
  */
 export function texturaDelPixel(
   maximo_de_la_serie: number,
   dias: number,
   dias_minimos = COMO_SE_IDENTIFICA_LA_TEXTURA.dias_minimos,
 ): TexturaDelPixel | null {
+  const C = COMO_SE_IDENTIFICA_LA_TEXTURA;
   if (!Number.isFinite(maximo_de_la_serie) || maximo_de_la_serie <= 0) return null;
   if (!Number.isFinite(dias) || dias < dias_minimos) return null;
-  const tope = maximo_de_la_serie - COMO_SE_IDENTIFICA_LA_TEXTURA.tolerancia_por_arriba;
+
+  // 1. El techo descarta: quedan las clases cuya saturación el máximo no pasó.
+  //    Ordenadas por saturación, la primera es la del techo más ajustado.
   const candidatas = TEXTURAS_DE_HTESSEL
-    .filter(t => t.saturacion >= tope)
-    .map(t => ({ t, d: Math.abs(t.saturacion - maximo_de_la_serie) }))
-    .sort((a, b) => a.d - b.d);
-  const primera = candidatas[0];
-  if (primera === undefined) return null;
+    .filter(t => t.saturacion >= maximo_de_la_serie - C.tolerancia_por_arriba)
+    .slice()
+    .sort((a, b) => a.saturacion - b.saturacion);
+  const elegida = candidatas[0];
+  if (elegida === undefined) return null;
+
+  // 2. Y lo tiene que rozar: si el máximo quedó lejos del techo más bajo, la
+  //    serie no se acercó a ninguna saturación y la más cercana no prueba nada.
+  const acercamiento = elegida.saturacion - maximo_de_la_serie;
+  if (acercamiento > C.acercamiento_maximo) return null;
+
+  // 3. Las clases que la serie no alcanza a descartar, y lo que costaría errar.
+  const en_duda = candidatas
+    .slice(1)
+    .filter(t => t.saturacion - maximo_de_la_serie < C.margen_minimo_al_segundo);
+  let discrepancia = 0;
+  for (const t of en_duda) {
+    const d = discrepanciaDeAguaUtil(elegida, t);
+    if (d > discrepancia) discrepancia = d;
+  }
+  if (discrepancia > C.discrepancia_maxima) return null;
+
   const segunda = candidatas[1];
-  const margen = segunda === undefined ? Infinity : segunda.d - primera.d;
-  if (margen < COMO_SE_IDENTIFICA_LA_TEXTURA.margen_minimo_al_segundo) return null;
   return {
-    textura: primera.t,
+    textura: elegida,
     maximo_de_la_serie,
-    margen_al_segundo: Number.isFinite(margen) ? margen : 1,
+    acercamiento,
+    margen_al_segundo: segunda === undefined ? 1 : segunda.saturacion - maximo_de_la_serie,
+    en_duda,
+    discrepancia,
     dias,
   };
 }

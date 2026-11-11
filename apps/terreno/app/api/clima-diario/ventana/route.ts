@@ -39,7 +39,7 @@ import {
   type CoeficientesEo, type DiaConRadiacion,
 } from '@/lib/eoJensenHaise';
 import {
-  aguaUtilDelPerfil, texturaDelPixel,
+  aguaUtilDelPerfil, texturaDelPixel, ADVERTENCIAS_AGUA_DEL_PERFIL,
   type TexturaDelPixel,
 } from '@/lib/aguaDelPerfil';
 
@@ -233,11 +233,25 @@ export async function GET(req: Request) {
      * mismo y el componente compara las dos antes de multiplicar.
      */
     agua_inicial_medida: aguaCompleta,
-    /** La clase de textura de H-TESSEL que se identificó para el píxel. */
+    /**
+     * La clase de textura de H-TESSEL que se identificó para el píxel, con la
+     * duda declarada. `en_duda` trae las clases cuya saturación la serie no
+     * alcanza a descartar —son `media` y `media-fina` o nada, porque es el único
+     * par de la tabla con los techos a nueve milésimas— y `discrepancia` lo que
+     * costaría haber errado, en fracción de agua útil. Ver
+     * `LAS_CLASES_QUE_NO_SE_SEPARAN`.
+     */
     textura_del_pixel: textura === null ? null : {
       clase: textura.textura.clase,
       agua_util_m3_m3: textura.textura.agua_util,
       maximo_de_la_serie: textura.maximo_de_la_serie,
+      /** Cuánto le faltó al máximo para llegar al techo de su clase, en m³/m³. */
+      acercamiento: textura.acercamiento,
+      en_duda: textura.en_duda.map(t => t.clase),
+      discrepancia: textura.discrepancia,
+      advertencia: textura.en_duda.length > 0
+        ? ADVERTENCIAS_AGUA_DEL_PERFIL.textura_en_duda
+        : null,
     },
     fuente: coeficientes
       ? 'Open-Meteo / ERA5 (reanálisis, ~10 km). La Eo del balance se calcula por Jensen-Haise '
@@ -286,7 +300,7 @@ async function datosDelPunto(
   const vacio = { coef: null, textura: null };
   if (elevacion === undefined || !Number.isFinite(elevacion)) return vacio;
 
-  const key = `clima-eo-coef-v2:${latR},${lngR},${elevacion}`;
+  const key = `clima-eo-coef-v3:${latR},${lngR},${elevacion}`;
   const hit = await cacheGet<{ coef: CoeficientesEo | null; textura: TexturaDelPixel | null }>(key);
   if (hit !== null && hit !== undefined && 'coef' in hit) {
     return { coef: hit.coef, textura: hit.textura ?? null };

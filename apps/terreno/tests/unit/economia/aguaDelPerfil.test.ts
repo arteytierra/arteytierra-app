@@ -20,6 +20,9 @@ import {
   FUENTES_AGUA_DEL_PERFIL,
   TEXTURAS_DE_HTESSEL,
   COMO_SE_IDENTIFICA_LA_TEXTURA,
+  LAS_CLASES_QUE_NO_SE_SEPARAN,
+  EL_HUSO_MUEVE_EL_MAXIMO,
+  LA_DUDA_CUESTA_MENOS_QUE_CAERSE,
   CAPAS_DEL_REANALISIS,
   LOS_DIAS_FUERA_DE_RANGO,
   CONTRA_LA_FIGURA_5,
@@ -29,6 +32,7 @@ import {
   AVISO_AGUA_INICIAL,
   avisoDelAguaInicial,
   texturaDelPixel,
+  discrepanciaDeAguaUtil,
   fraccionDeAguaUtil,
   aguaUtilDelPerfil,
   aguaInicialPorCapaMm,
@@ -101,13 +105,17 @@ describe('la textura del píxel, leída de la propia serie', () => {
     expect(t!.margen_al_segundo).toBeGreaterThan(0.08);
   });
 
-  it('los cuatro píxeles donde se probó dan lo que dice la constante', () => {
+  it('los siete píxeles donde se probó dan lo que dice la constante', () => {
     for (const p of COMO_SE_IDENTIFICA_LA_TEXTURA.probada_en) {
       const t = texturaDelPixel(p.maximo, 12_000);
       expect(t).not.toBeNull();
       expect(t!.textura.clase).toBe(p.clase);
       expect(t!.textura.saturacion).toBeCloseTo(p.saturacion, 3);
-      expect(t!.margen_al_segundo).toBeCloseTo(p.margen, 2);
+      // La huella es el acercamiento al techo **propio**, no la distancia al
+      // techo de al lado: en los siete da seis milésimas o menos.
+      expect(t!.acercamiento).toBeCloseTo(p.acercamiento, 3);
+      expect(Math.round(t!.acercamiento * 1000) / 1000).toBeLessThanOrEqual(0.006);
+      expect(t!.acercamiento).toBeLessThanOrEqual(COMO_SE_IDENTIFICA_LA_TEXTURA.acercamiento_maximo);
     }
   });
 
@@ -120,10 +128,17 @@ describe('la textura del píxel, leída de la propia serie', () => {
     expect(texturaDelPixel(0.9, 20_000)).toBeNull();
   });
 
-  it('si dos clases quedan demasiado cerca, devuelve null', () => {
+  it('si dos clases quedan demasiado cerca, elige y declara la duda', () => {
     // 0,430 es la saturación de la media-fina y está a nueve milésimas de la
-    // media: no hay con qué distinguirlas.
-    expect(texturaDelPixel(0.430, 20_000)).toBeNull();
+    // media: no hay con qué distinguirlas. Hasta el 11/11/2026 esto devolvía
+    // `null`, y era el máximo que ve la ruta de producción en Sidney.
+    const t = texturaDelPixel(0.430, 20_000);
+    expect(t).not.toBeNull();
+    expect(t!.textura.clase).toBe('media-fina');
+    expect(t!.acercamiento).toBeCloseTo(0, 6);
+    expect(t!.en_duda.map(x => x.clase)).toEqual(['media']);
+    expect(t!.discrepancia).toBeCloseTo(0.144, 3);
+    expect(t!.discrepancia).toBeLessThanOrEqual(COMO_SE_IDENTIFICA_LA_TEXTURA.discrepancia_maxima);
   });
 
   it('rechaza un máximo que no es un número', () => {
@@ -364,6 +379,9 @@ describe('las advertencias y el rango', () => {
     expect(ADVERTENCIAS_AGUA_DEL_PERFIL.una_humedad_para_dos_capas).toMatch(/28-100/);
     expect(ADVERTENCIAS_AGUA_DEL_PERFIL.la_superficie_no_baja_a_seco).toMatch(/0,074/);
     expect(ADVERTENCIAS_AGUA_DEL_PERFIL.textura_sin_identificar).toMatch(/banda/);
+    expect(ADVERTENCIAS_AGUA_DEL_PERFIL.textura_sin_identificar).toMatch(/tres razones/);
+    expect(ADVERTENCIAS_AGUA_DEL_PERFIL.textura_en_duda).toMatch(/techo más ajustado/);
+    expect(ADVERTENCIAS_AGUA_DEL_PERFIL.textura_en_duda).toMatch(/2 %/);
     expect(ADVERTENCIAS_AGUA_DEL_PERFIL.sin_humedad_de_suelo).toMatch(/40 mm/);
   });
 
@@ -376,5 +394,199 @@ describe('las advertencias y el rango', () => {
     const sup = LOS_DIAS_FUERA_DE_RANGO.por_capa[0]!;
     expect(sup.bajo_marchitez_pct).toBeGreaterThan(5);
     expect(sup.sobre_capacidad_pct).toBeGreaterThan(10);
+  });
+});
+
+describe('la regla de identificación, arreglada el 11/11/2026', () => {
+  const clase = (c: string) => TEXTURAS_DE_HTESSEL.find(t => t.clase === c)!;
+  // Todos los pares de la tabla, que es con lo que se decide el tope de la duda.
+  const PARES: Array<[typeof MEDIA, typeof MEDIA]> = [];
+  for (let i = 0; i < TEXTURAS_DE_HTESSEL.length; i++) {
+    for (let j = i + 1; j < TEXTURAS_DE_HTESSEL.length; j++) {
+      PARES.push([TEXTURAS_DE_HTESSEL[i]!, TEXTURAS_DE_HTESSEL[j]!]);
+    }
+  }
+
+  it('las seis clases son alcanzables, barriendo todos los máximos posibles', () => {
+    // El defecto que esto arregla: con la regla vieja `media-fina` no salía
+    // **para ningún máximo** y `media` salía sólo en una ventana de 8,5
+    // milésimas, porque el margen se medía entre diferencias de distancia y eso
+    // no puede separar dos clases más juntas que el propio margen.
+    const salen = new Set<string>();
+    for (let x = 0.3; x <= 0.8001; x += 0.0005) {
+      const t = texturaDelPixel(Math.round(x * 10_000) / 10_000, 20_000);
+      if (t !== null) salen.add(t.textura.clase);
+    }
+    expect([...salen].sort()).toEqual(
+      [...TEXTURAS_DE_HTESSEL].map(t => t.clase).sort(),
+    );
+  });
+
+  it('la clase elegida es siempre la del techo más bajo que el máximo no pasó', () => {
+    // Cada clase se identifica a sí misma cuando el máximo le cae clavado en el
+    // techo, que es el caso de Swift Current con `media`.
+    for (const t of TEXTURAS_DE_HTESSEL) {
+      expect(texturaDelPixel(t.saturacion, 20_000)!.textura.clase).toBe(t.clase);
+    }
+    // Y para cualquier máximo, la regla es la misma: de las clases cuyo techo el
+    // máximo no pasó, gana la del techo más bajo, y tiene que rozarlo. Ojo que
+    // eso **no** es «cada clase sale en los 20 milésimos abajo de su techo»: a 19
+    // milésimas de `media` ya se cruzó el techo de `media-fina`, que es el más
+    // ajustado y por lo tanto el que gana.
+    const C = COMO_SE_IDENTIFICA_LA_TEXTURA;
+    for (let x = 0.3; x <= 0.8001; x += 0.0005) {
+      const mx = Math.round(x * 10_000) / 10_000;
+      const t = texturaDelPixel(mx, 20_000);
+      const quedan = TEXTURAS_DE_HTESSEL
+        .filter(c => c.saturacion >= mx - C.tolerancia_por_arriba)
+        .sort((a, b) => a.saturacion - b.saturacion);
+      const mas_bajo = quedan[0];
+      const roza = mas_bajo !== undefined && mas_bajo.saturacion - mx <= C.acercamiento_maximo;
+      if (!roza) {
+        expect(t).toBeNull();
+        continue;
+      }
+      expect(t).not.toBeNull();
+      expect(t!.textura.clase).toBe(mas_bajo!.clase);
+      expect(t!.acercamiento).toBeLessThanOrEqual(C.acercamiento_maximo + 1e-9);
+      expect(t!.acercamiento).toBeGreaterThanOrEqual(-C.tolerancia_por_arriba - 1e-9);
+      // La duda son las clases de arriba que la serie no alcanza a descartar.
+      for (const d of t!.en_duda) {
+        expect(d.saturacion - mx).toBeLessThan(C.margen_minimo_al_segundo);
+        expect(d.saturacion).toBeGreaterThan(mas_bajo!.saturacion);
+      }
+    }
+  });
+
+  it('la discrepancia entre dos clases es exacta en los quiebres', () => {
+    // `fraccionDeAguaUtil` es lineal por tramos con quiebres en el marchitez y
+    // en la capacidad de campo, así que el máximo cae siempre en un quiebre.
+    // Un barrido fino tiene que dar lo mismo que los seis puntos.
+    for (const [a, b] of PARES) {
+      const hasta = Math.min(a.saturacion, b.saturacion);
+      let peor = 0;
+      for (let th = 0; th <= hasta + 1e-9; th += 0.0001) {
+        const fa = fraccionDeAguaUtil(th, a)!;
+        const fb = fraccionDeAguaUtil(th, b)!;
+        peor = Math.max(peor, Math.abs(fa - fb));
+      }
+      expect(discrepanciaDeAguaUtil(a, b)).toBeCloseTo(peor, 4);
+      expect(discrepanciaDeAguaUtil(b, a)).toBeCloseTo(discrepanciaDeAguaUtil(a, b), 10);
+    }
+    // Y una clase contra sí misma no cuesta nada.
+    for (const t of TEXTURAS_DE_HTESSEL) expect(discrepanciaDeAguaUtil(t, t)).toBe(0);
+  });
+
+  it('de los quince pares, el techo sólo no separa a uno, y es el más barato', () => {
+    expect(PARES).toHaveLength(LAS_CLASES_QUE_NO_SE_SEPARAN.pares_en_la_tabla);
+    const juntos = PARES.filter(
+      ([a, b]) => Math.abs(a.saturacion - b.saturacion)
+        < COMO_SE_IDENTIFICA_LA_TEXTURA.margen_minimo_al_segundo,
+    );
+    expect(juntos).toHaveLength(1);
+    expect(juntos[0]!.map(t => t.clase).sort())
+      .toEqual([...LAS_CLASES_QUE_NO_SE_SEPARAN.el_unico_par.clases].sort());
+    // Y es también el más barato de los quince, por lejos: 0,144 contra 0,308
+    // del que le sigue. El tope de la duda cae en el medio y por eso se puede
+    // justificar dónde.
+    const ordenados = PARES
+      .map(([a, b]) => ({ par: [a.clase, b.clase], d: discrepanciaDeAguaUtil(a, b) }))
+      .sort((x, y) => x.d - y.d);
+    expect(ordenados[0]!.par.sort())
+      .toEqual([...LAS_CLASES_QUE_NO_SE_SEPARAN.el_unico_par.clases].sort());
+    expect(ordenados[0]!.d).toBeCloseTo(LAS_CLASES_QUE_NO_SE_SEPARAN.el_unico_par.discrepancia, 3);
+    expect(ordenados[1]!.par.sort())
+      .toEqual([...LAS_CLASES_QUE_NO_SE_SEPARAN.el_par_que_le_sigue.clases].sort());
+    expect(ordenados[1]!.d)
+      .toBeCloseTo(LAS_CLASES_QUE_NO_SE_SEPARAN.el_par_que_le_sigue.discrepancia, 3);
+    expect(LAS_CLASES_QUE_NO_SE_SEPARAN.por_eso_el_tope)
+      .toBe(COMO_SE_IDENTIFICA_LA_TEXTURA.discrepancia_maxima);
+    expect(ordenados[0]!.d).toBeLessThan(LAS_CLASES_QUE_NO_SE_SEPARAN.por_eso_el_tope);
+    expect(ordenados[1]!.d).toBeGreaterThan(LAS_CLASES_QUE_NO_SE_SEPARAN.por_eso_el_tope);
+    expect(LAS_CLASES_QUE_NO_SE_SEPARAN.el_unico_par.distancia_de_saturaciones)
+      .toBeCloseTo(Math.abs(clase('media').saturacion - clase('media-fina').saturacion), 4);
+  });
+
+  it('un máximo que no roza ningún techo devuelve null en vez de la clase más cercana', () => {
+    // El Kalahari: arena profunda, 65 años, máximo 0,360. La regla vieja decía
+    // «y la roza» pero no lo verificaba, así que devolvía `gruesa` con el techo
+    // 43 milésimas arriba. Errarle a `media-fina` cuesta 0,556 de fracción de
+    // agua útil, o sea 83 mm sobre 150: el número plausible y equivocado.
+    const k = COMO_SE_IDENTIFICA_LA_TEXTURA.el_que_no_sale;
+    expect(texturaDelPixel(k.maximo, 23_742)).toBeNull();
+    expect(k.el_techo_mas_bajo_que_queda).toBe(clase('gruesa').saturacion);
+    expect(k.acercamiento).toBeCloseTo(k.el_techo_mas_bajo_que_queda - k.maximo, 4);
+    expect(k.acercamiento).toBeGreaterThan(COMO_SE_IDENTIFICA_LA_TEXTURA.acercamiento_maximo);
+    expect(discrepanciaDeAguaUtil(clase('gruesa'), clase('media-fina')))
+      .toBeCloseTo(k.lo_que_costaba_errar, 3);
+  });
+
+  it('una identificación limpia deja la duda vacía y la discrepancia en cero', () => {
+    const t = texturaDelPixel(0.434, 23_742)!;
+    expect(t.textura.clase).toBe('media');
+    expect(t.en_duda).toEqual([]);
+    expect(t.discrepancia).toBe(0);
+    // El techo siguiente está a ocho centésimas: la serie lo descarta sola.
+    expect(t.margen_al_segundo).toBeGreaterThan(0.08);
+  });
+
+  it('el huso mueve el máximo menos de lo que la regla aguanta', () => {
+    const h = EL_HUSO_MUEVE_EL_MAXIMO;
+    for (const m of h.medido) expect(Math.abs(m.utc - m.local)).toBeLessThanOrEqual(h.ruido + 1e-9);
+    // El ruido es la mitad de la distancia entre los dos techos más juntos: por
+    // eso el huso alcanza para cambiar de clase y por eso la duda se declara.
+    expect(h.los_dos_techos_mas_juntos)
+      .toBeCloseTo(LAS_CLASES_QUE_NO_SE_SEPARAN.el_unico_par.distancia_de_saturaciones, 4);
+    expect(h.ruido * 2).toBeLessThan(h.los_dos_techos_mas_juntos);
+    // Y la holgura con la que se mide el acercamiento es cinco veces el ruido.
+    expect(COMO_SE_IDENTIFICA_LA_TEXTURA.acercamiento_maximo).toBeCloseTo(h.ruido * 5, 6);
+    // Los dos máximos de Sidney caen cada uno en una clase distinta, y los dos
+    // identifican: eso es lo que hace que el huso ya no apague el camino.
+    const sidney = h.medido.find(m => m.sitio.startsWith('Sidney'))!;
+    expect(texturaDelPixel(sidney.utc, 24_107)!.textura.clase).toBe('media');
+    expect(texturaDelPixel(sidney.local, 24_107)!.textura.clase).toBe('media-fina');
+    // Y en Swift Current el máximo local cae clavado en un techo.
+    const swift = h.medido.find(m => m.sitio.startsWith('Swift'))!;
+    expect(swift.local).toBeCloseTo(clase('media').saturacion, 4);
+  });
+
+  it('la duda cuesta un 2 % y caerse un 33 %, y los kilos salen del Yp por el p10', () => {
+    const d = LA_DUDA_CUESTA_MENOS_QUE_CAERSE;
+    for (const f of d.por_clase) {
+      // Los kilos de la cola seca son el Yp por el índice del p10, que es la
+      // cuenta con la que se dimensiona la carga.
+      expect(f.yp_kg_ha * f.p10).toBeCloseTo(f.kilos_en_el_p10, -1);
+    }
+    const med = d.por_clase.find(f => f.clase === 'media')!;
+    const mf = d.por_clase.find(f => f.clase === 'media-fina')!;
+    const nada = d.por_clase.find(f => f.clase === null)!;
+    const pct = (a: number, b: number) => Math.round((Math.abs(a - b) / Math.min(a, b)) * 100);
+    expect(pct(med.kilos_en_el_p10, mf.kilos_en_el_p10)).toBe(d.errar_entre_las_dos_pct);
+    // Los dos porcentajes se miden contra `media`, que es la clase a la que el
+    // máximo pedido en UTC identificaba: contra `media-fina` caerse da 30 %.
+    expect(pct(nada.kilos_en_el_p10, med.kilos_en_el_p10)).toBe(d.caerse_a_la_cadena_pct);
+    expect(pct(nada.kilos_en_el_p10, mf.kilos_en_el_p10)).toBe(30);
+    expect(d.caerse_a_la_cadena_pct).toBeGreaterThan(d.errar_entre_las_dos_pct * 10);
+    // La cancelación: la clase más húmeda baja el índice y sube el Yp.
+    expect(mf.p10).toBeLessThan(med.p10);
+    expect(mf.yp_kg_ha).toBeGreaterThan(med.yp_kg_ha);
+    // Y las dos se parecen mucho más entre sí que cualquiera a la cadena.
+    expect(Math.abs(med.eam - mf.eam)).toBeLessThan(nada.eam - Math.max(med.eam, mf.eam));
+    // La literatura tampoco las separa: el EAM prefiere una y el RMSE la otra.
+    const f5 = LAS_CLASES_QUE_NO_SE_SEPARAN.contra_la_figura_5;
+    expect(f5.media.eam).toBeLessThan(f5.media_fina.eam);
+    expect(f5.media_fina.rmse).toBeLessThan(f5.media.rmse);
+    expect(Math.abs(f5.media.eam - f5.media_fina.eam)).toBeLessThan(0.01);
+  });
+
+  it('humedadDeLaSerie arrastra la duda hasta el consumidor', () => {
+    // Si el máximo cae en la franja dudosa, la duda tiene que viajar entera:
+    // las dos rutas la declaran y `CorteDeForrajeBloque` compara la clase.
+    const n = COMO_SE_IDENTIFICA_LA_TEXTURA.dias_minimos;
+    const serie = Array.from({ length: n }, (_, i) => (i === 0 ? 0.430 : 0.3));
+    const h = humedadDeLaSerie(serie, serie, serie)!;
+    expect(h.textura.textura.clase).toBe('media-fina');
+    expect(h.textura.en_duda.map(t => t.clase)).toEqual(['media']);
+    expect(h.textura.discrepancia).toBeCloseTo(0.144, 3);
   });
 });

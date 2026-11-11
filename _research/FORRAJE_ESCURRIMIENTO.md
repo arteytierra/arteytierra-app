@@ -286,6 +286,17 @@ ruta de índices **cae a la cadena continua**. En Swift Current pasó de 0,435 a
 0,439. Lo más probable es que el reanálisis se haya revisado entre un día y el
 otro.
 
+> **No era eso. Corregido el 11/11/2026.** El reanálisis no se revisó: el máximo
+> lo mueve **el huso horario con el que se pide la serie**. Open-Meteo entrega
+> medias diarias y el huso define dónde empieza el día, mientras la saturación es
+> un techo instantáneo, así que qué 24 horas se promedian cambia el resultado en
+> ±4 milésimas. Sidney da 0,4340 en UTC y 0,4300 en `America/Denver`; Swift
+> Current da 0,4350 en UTC y 0,4390 en hora local, o sea para el otro lado. Las
+> dos mediciones eran correctas y medían pedidos distintos. Y el huso de la ruta
+> **no se cambia**, porque el balance necesita que el día sea el día local: la
+> lluvia de un día y la evapotranspiración de ese día tienen que ser del mismo
+> día. Lo que se cambió es la regla. Ver `_research/FORRAJE_TEXTURA.md`.
+
 Y hay algo peor, que no depende del dato sino de la aritmética de la regla.
 Barriendo todos los máximos posibles de tres en tres milésimas, las clases que la
 regla puede devolver son:
@@ -324,4 +335,9 @@ Quedó un encargo aparte para eso. No se tocó `aguaDelPerfil.ts` en este lote.
   que una capa profunda seca mantiene la retención alta aunque la superficie esté
   saturada. El suelo real se sella arriba.
 - **La inconsistencia con `coefEscorrentiaAnual`**, medida más arriba.
-- **La identificación de textura**, que es del lote anterior y está arriba.
+- ~~**La identificación de textura**, que es del lote anterior y está arriba.~~
+  **Arreglada el 11/11/2026**, y el diagnóstico de acá arriba estaba errado: no era
+  el dato revisado sino el huso horario. Ver `_research/FORRAJE_TEXTURA.md`. Sidney
+  vuelve a identificar —`media-fina`, con `media` en duda declarada— y los +0,070
+  de sesgo que este lote midió con la clase forzada son los que la ruta devuelve
+  ahora.
