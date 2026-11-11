@@ -32,10 +32,15 @@ describe('los polígonos que decidieron el lote', () => {
     // dos kilómetros al este ya da 253. La entrada iba propuesta en el 253.
     expect(fichaDeEcorregion(254)).toBe('ghats_norte_montano');
     expect(fichaDeEcorregion(253)).toBe('ghats_norte_deciduo');
-    // No entró igual, y no por el polígono: el artículo es CC-BY y las dos rutas
-    // —Wiley y el espejo de Hindawi— contestan con una verificación anti-bot.
-    expect(PRACTICAS_POR_FICHA['ghats_norte_montano']).toBeUndefined();
-    expect(PRACTICAS_POR_FICHA['ghats_norte_deciduo']).toBeUndefined();
+    // No entró en este lote, y no por el polígono: el artículo es CC-BY y las dos
+    // rutas —Wiley y el espejo de Hindawi— contestan con una verificación
+    // anti-bot. Entró el 11/11/2026 por una tercera copia abierta, con el mismo
+    // veredicto de polígono que este test fijó, y en el mismo movimiento entró la
+    // del deciduo, que es la que se había quedado sin candidata.
+    expect(practicasDeFicha('ghats_norte_montano')).toHaveLength(1);
+    expect(practicasDeFicha('ghats_norte_montano')[0]!.practica).toMatch(/devrai de Kolavade/);
+    expect(practicasDeFicha('ghats_norte_deciduo')).toHaveLength(1);
+    expect(practicasDeFicha('ghats_norte_deciduo')[0]!.practica).toMatch(/Paud/);
   });
 
   it('Semerap y Jujun son la punta del valle de Kerinci que NO es el pinar', () => {
@@ -82,8 +87,11 @@ describe('los polígonos que decidieron el lote', () => {
     // el núcleo documentado de los kurichiya y no por una coordenada.
     expect(fichaDeEcorregion(271)).toBe('ghats_sur_montano');
     expect(fichaDeEcorregion(270)).toBe('ghats_sur_deciduo');
-    expect(practicasDeFicha('ghats_sur_montano')).toHaveLength(1);
-    // El 270 volvió vacío del lote, y la entrega lo declaró así.
+    // Era una sola entrada hasta el 11/11/2026, cuando la repesca sumó la segunda
+    // —y también por coordenada, que es lo que este test pedía.
+    expect(practicasDeFicha('ghats_sur_montano')).toHaveLength(2);
+    // El 270 volvió vacío del lote, y la entrega lo declaró así. Sigue vacío: la
+    // repesca lo apuntó de nuevo y los cinco sitios publicados dieron 271.
     expect(PRACTICAS_POR_FICHA['ghats_sur_deciduo']).toBeUndefined();
   });
 });
@@ -226,8 +234,9 @@ describe('las fuentes y los totales del lote', () => {
   const FICHAS = ['ghats_sur_montano', 'sumatra_montano', 'java_occidental_bajo', 'gangetica_superior', 'luzon_bajo'];
 
   it('son siete entradas sobre cinco fichas, tres de ellas estrenando bloque', () => {
+    // `ghats_sur_montano` tenía una el 04/11/2026 y tiene dos desde el 11/11.
     const esperado: Record<string, number> = {
-      ghats_sur_montano: 1, java_occidental_bajo: 2, gangetica_superior: 1,
+      ghats_sur_montano: 2, java_occidental_bajo: 2, gangetica_superior: 1,
       sumatra_montano: 4, luzon_bajo: 6,
     };
     for (const [id, n] of Object.entries(esperado)) {
@@ -236,14 +245,15 @@ describe('las fuentes y los totales del lote', () => {
     }
   });
 
-  it('el catálogo quedó en 453 entradas sobre 221 fichas, y hoy va en 457 sobre 225', () => {
-    // Las cuatro de más son del 06/11/2026 y no son de un lote de prácticas:
-    // salieron de montar las tres fichas de fase 4 que destrabaron entradas ya
-    // verificadas, más la mitad de la de Myanmar que cae en el 235.
+  it('el catálogo quedó en 453 entradas sobre 221 fichas, y hoy va en 460 sobre 227', () => {
+    // Cuatro de más son del 06/11/2026 y no son de un lote de prácticas: salieron
+    // de montar las tres fichas de fase 4 que destrabaron entradas ya verificadas,
+    // más la mitad de la de Myanmar que cae en el 235. Las otras tres son la
+    // repesca del 11/11/2026, que estrenó dos fichas de los Ghats del norte.
     const fichas = Object.keys(PRACTICAS_POR_FICHA);
     const total = fichas.reduce((n, id) => n + practicasDeFicha(id).length, 0);
-    expect(fichas).toHaveLength(225);
-    expect(total).toBe(457);
+    expect(fichas).toHaveLength(227);
+    expect(total).toBe(460);
   });
 
   it('ninguna fuente cuelga de un repositorio que sólo aloja', () => {
@@ -263,18 +273,18 @@ describe('las fuentes y los totales del lote', () => {
     }
   });
 
-  it('Indomalaya quedó con 14 fichas sin ninguna práctica, y hoy son 13 de 38', () => {
+  it('Indomalaya quedó con 14 fichas sin ninguna práctica, y hoy son 11 de 38', () => {
     // `irrawaddy_deciduo` salió de la lista el 06/11/2026: le entró la rotación
     // de poroto negro de Pyinmana, que es la mitad de la entrada de Myanmar que
     // el polígono partió. Las tres fichas nuevas de fase 4 nacieron con práctica,
-    // así que no entran acá.
+    // así que no entran acá. Y el 11/11/2026 salieron las dos de los Ghats del
+    // norte, que son las dos que abrió la repesca.
     const ids = [
       'chao_phraya_deciduo', 'decan_central_hardwickia', 'decan_norte_sal',
-      'decan_sur_elefantes', 'ghats_norte_deciduo', 'ghats_norte_montano',
-      'ghats_sur_deciduo', 'luzon_montano', 'negros_panay',
+      'decan_sur_elefantes', 'ghats_sur_deciduo', 'luzon_montano', 'negros_panay',
       'pantanos_sumatra', 'pantanos_tonle_sap', 'pinar_toba', 'sri_lanka_montano',
     ];
-    expect(ids).toHaveLength(13);
+    expect(ids).toHaveLength(11);
     for (const id of ids) {
       expect(PRACTICAS_POR_FICHA[id], id).toBeUndefined();
     }

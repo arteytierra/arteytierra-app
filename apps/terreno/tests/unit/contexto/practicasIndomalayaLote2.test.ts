@@ -193,17 +193,24 @@ describe('las fuentes de este lote', () => {
     }
   });
 
-  it('de las cuatro que se cayeron por la fuente, tres siguen vacías', () => {
-    // El soppinabetta de Sringeri (certificado roto en el host del IISc), el
-    // arroz de recesión del Tonle Sap (403 en el PDF del gobierno de Camboya) y
-    // el pastoreo Toda (la URL era el índice de la revista, no el trabajo).
-    for (const id of ['ghats_norte_montano', 'pantanos_tonle_sap', 'ghats_norte_deciduo']) {
-      expect(PRACTICAS_POR_FICHA[id], id).toBeUndefined();
-    }
+  it('de las cuatro que se cayeron por la fuente, hoy sólo una sigue vacía', () => {
+    // Las cuatro eran el soppinabetta de Sringeri (certificado roto en el host del
+    // IISc), el arroz de recesión del Tonle Sap (403 en el PDF del gobierno de
+    // Camboya), el pastoreo Toda (la URL era el índice de la revista, no el
+    // trabajo) y el arroz de Wayanad (NOPR no servía). Sólo el Tonle Sap sigue sin
+    // entrada.
+    expect(PRACTICAS_POR_FICHA['pantanos_tonle_sap']).toBeUndefined();
+    // Las dos de los Ghats del norte entraron el 11/11/2026 con la repesca, y
+    // ninguna con la fuente que este lote había intentado: el devrai de Kolavade
+    // reemplaza al soppinabetta en el 254, y el riego de Paud al pastoreo Toda en
+    // el 253.
+    expect(practicasDeFicha('ghats_norte_montano')).toHaveLength(1);
+    expect(practicasDeFicha('ghats_norte_deciduo')).toHaveLength(1);
     // La cuarta volvió en el lote 4 con otra práctica del mismo pueblo y una
     // fuente que abre: los vayal kurichiya, en vez del arroz de Wayanad que NOPR
-    // no servía.
-    expect(practicasDeFicha('ghats_sur_montano')).toHaveLength(1);
+    // no servía. Y el 11/11/2026 el arroz de Wayanad volvió a entrar al lado, por
+    // la ruta de la revista: NOPR sigue sin responder, dos lotes después.
+    expect(practicasDeFicha('ghats_sur_montano')).toHaveLength(2);
     expect(practicasDeFicha('ghats_sur_montano')[0]!.practica).toMatch(/vayal/);
   });
 });

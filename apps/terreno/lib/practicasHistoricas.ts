@@ -37,7 +37,45 @@ import type { PracticaHistorica } from './biomaTipos';
  * práctica: no prueba que la fuente diga lo que decimos —eso no lo puede probar
  * un test— pero deja cada afirmación a un clic de ser desmentida.
  *
- * ESTADO, al 06/11/2026
+ * ESTADO, al 11/11/2026
+ *
+ * 460 entradas sobre 227 fichas, de un catálogo de 259. Indomalaya baja a 11
+ * fichas sin ninguna práctica, de 38.
+ *
+ * La repesca de fase 6 pidió seis blancos con nombre y volvió con cuatro
+ * entradas y dos vacías declaradas. Entraron tres, y el motivo del rechazo se
+ * movió otra vez: ninguna se cayó por la fuente.
+ *
+ * - **Dos abren ficha y las dos son del taluka de Mulshi.** El devrai de
+ *   Kolavade, con la coordenada que publica la tabla 1 del artículo, da 254; el
+ *   riego de Paud, del lado seco de la cresta, da 253. Las dos fichas estaban en
+ *   cero. La del devrai costó cuatro rutas cerradas —Hindawi, Wiley y CORE
+ *   responden con verificación anti-bot, y la Wayback, que tiene el PDF
+ *   archivado, estaba caída ese día—: abrió por la copia de Semantic Scholar, y
+ *   verificada dio más de lo que la entrega había usado.
+ * - **La tercera se mueve de polígono y se monta al lado.** El control mecánico
+ *   de defoliadores de Wayanad llegó propuesto para `ghats_sur_deciduo` (270) y
+ *   los cinco sitios de encuesta que el artículo publica con coordenada dan los
+ *   cinco 271. Va a `ghats_sur_montano`, que pasa de una entrada a dos. El 270
+ *   sigue en cero.
+ * - **La cuarta es el cuarto fracaso seguido de `pinar_toba`, y esta vez el
+ *   encargo tuvo la mitad de la culpa.** El encargo dijo "Siulak y las laderas
+ *   del Gunung Kerinci": Siulak da 305, pero las laderas no. Las tres aldeas de
+ *   Kayu Aro Barat donde la entrega fue a buscar —Sungai Asam, Kampung Baru y
+ *   Giri Mulyo— dan 279 las tres. Y hay un segundo motivo, nuevo en el circuito:
+ *   el host que cita, `repository.pertanian.go.id`, **no tiene registro A**. No
+ *   es un 403, ni un anti-bot, ni un 200 engañoso: el nombre no resuelve en
+ *   ningún DNS, mientras el dominio padre sí. Van cinco variedades de fuente
+ *   cerrada.
+ *
+ * Para el próximo encargo de este bloque, el 305 queda medido parte por parte:
+ * el polígono tiene cinco pedazos y sólo uno está en Kerinci, entre los 1,78° y
+ * los 2,32° de latitud sur sobre el filo oeste del valle —Siulak adentro, Sungai
+ * Penuh y el lago afuera—; los otros cuatro están en Tapanuli y en Aceh, en
+ * torno a 2,19/99,15, 2,77/98,90, 4,39/96,93 y 5,04/96,25. Pedirle una práctica
+ * al "pinar de Toba" es pedírsela a un nombre que el polígono no honra.
+ *
+ * ESTADO anterior, al 06/11/2026
  *
  * 457 entradas sobre 225 fichas, de un catálogo de 259. Indomalaya baja a 13
  * fichas sin ninguna práctica, de 38.
@@ -5786,6 +5824,47 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
   // que aguantó. El veredicto completo, con las nueve que no entraron, está en
   // `_research/_encargos/RESPUESTAS_PRACTICAS_FASE_6_LOTES_08_09_10.md`.
 
+  // ── Los Ghats del norte, las dos fichas que abren ───────────────────────────
+  // Las dos salen del mismo taluka de Mulshi, distrito de Pune, y las separa la
+  // cresta: Kolavade, con la coordenada que publica la propia tabla del artículo
+  // (18°27'18.66" N, 73°33'30.93" E), da 254; Paud, diez kilómetros al noreste y
+  // del lado seco, da 253. Las dos fichas estaban en cero, y la del deciduo se
+  // había quedado sin ninguna candidata justamente cuando la coordenada de
+  // Kolavade mudó esa entrada del 253 al 254.
+  ghats_norte_montano: [
+    {
+      practica: 'El devrai de Kolavade: el fideicomiso del templo aplica la regla del bosque',
+      periodo: 'Quince devrai del Mulshi relevados con siete entrevistas a sacerdotes y noventa y tres semiestructuradas; artículo publicado el 10 de noviembre de 2014, que fecha en las dos décadas anteriores la pérdida del sentimiento protector',
+      tipo: 'recoleccion',
+      vigencia: 'en_retroceso',
+      detalle:
+        'Los devrai son parches de bosque de una a ocho hectáreas dedicados a la deidad del lugar, y lo que los sostiene no es un alambrado sino una regla oral: qué recursos se pueden sacar y cuáles son tabú se transmite de persona a persona sin nada escrito, y lo saben no sólo los sacerdotes sino la mayoría de los vecinos de cada aldea. El relevamiento midió el uso real sobre los quince: en nueve se pueden juntar ramas caídas secas como leña, en seis se permite pastorear ganado, en ocho se juntan frutos de Mangifera indica y Artocarpus heterophyllus, de agosto a octubre se sobrecosechan flores de Curcuma elata para el Ganesh, y en dos se extrae toddy. En Kolavade —deidad Bhiravnath, estado "amenazado"— los vecinos constituyeron un fideicomiso del templo, y el fideicomiso es el que implementa las reglas locales. Dos cosas que un relevamiento de territorio puede usar directo: los parches no están medidos ni demarcados por el servicio forestal ni por el panchayat, así que el límite es flexible y lo marca el uso; y el artículo observa que los devrai suelen estar asociados a un manantial naciente y que su suelo es mejor que el de los terrenos vecinos, o sea que el devrai no está donde quedó lugar, está donde está el agua. El retroceso también está fechado: en las dos décadas anteriores al estudio se vendieron grandes paños a especuladores por la suba del precio de la tierra, y los sacerdotes jóvenes dejaron de hacer la ceremonia del grano (Kaul) con la que antes se negaba permiso para talar. Del total, 40 % protegidos, 40 % amenazados y 20 % destruidos.',
+      fuentes: [
+        { label: 'Vipat y Bharucha (2014) — Sacred Groves: The Consequence of Traditional Management, Journal of Anthropology 2014: 595314 (acceso abierto, CC BY; el sitio del editor y los espejos de CORE y Wiley responden con verificación anti-bot)', url: 'https://doi.org/10.1155/2014/595314' },
+        { label: 'Semantic Scholar — copia abierta del mismo PDF (CC BY), por si el editor sigue cerrado por el camino', url: 'https://pdfs.semanticscholar.org/9de4/b81aaeac6a88852ddf90b337874c1393bde8.pdf' },
+      ],
+    },
+  ],
+
+  // ── Los Ghats del norte, el deciduo ─────────────────────────────────────────
+  // La sexta de la repesca y la única que el encargo pidió sin tener candidata:
+  // una práctica del lado seco de la cresta, al este de Paud. Paud da 253 por el
+  // geocodificador y también noventa metros más al este, así que no está sobre el
+  // borde.
+  ghats_norte_deciduo: [
+    {
+      practica: 'El riego de Paud: agua del río o de la napa, y el equipo que se presta entre vecinos',
+      periodo: 'Aldea de Paud, taluka de Mulshi, distrito de Pune; la transformación que el estudio describe cubre los últimos cincuenta años y la situación es la del artículo, publicado el 17 de marzo de 2022',
+      tipo: 'agua',
+      vigencia: 'en_uso',
+      detalle:
+        'Paud son cuatro mil habitantes treinta kilómetros al oeste de Pune, al sur del río Mula, y el arrozal es uno de los medios de vida principales: en 2011 el 18 % de los residentes vivía del campo. Antes la siembra la decidía la lluvia del año; hoy depender de la precipitación es riesgoso por la variabilidad y porque las variedades nuevas piden más agua, así que muchos productores invirtieron en sistemas que traen agua del río o bombean de la napa. Lo que conviene no perder es la segunda mitad de la frase, porque es la parte de diseño: el acceso al agua pasó a depender de la capacidad financiera, y eso creó jerarquías entre usuarios. Como no hay asociaciones formales ni apoyo institucional, aparecieron acuerdos informales entre vecinos para compartir el acceso o el equipo —que es la pieza replicable—, pero el mismo vacío formal deja al productor de menos capital dependiendo del que puso la bomba. Para quien planifica un predio en este lado seco de la cresta: la obra de riego y el arreglo de quién la usa son la misma decisión, y la segunda no se resuelve después.',
+      fuentes: [
+        { label: 'Reddy, Butsch, Lossau y otros (2022) — Planning for Livelihoods Under Hydrosocial Uncertainty in Periurban Pune, Frontiers in Water 4: 831464 (acceso abierto)', url: 'https://doi.org/10.3389/frwa.2022.831464' },
+      ],
+    },
+  ],
+
   // ── Los Ghats del sur, el montano ───────────────────────────────────────────
   // La ficha es la que propuso la entrega y se queda, pero por el núcleo
   // documentado de la comunidad y no por una coordenada resuelta: las cuatro
@@ -5795,6 +5874,16 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
   // distrito, dan 270, que es `ghats_sur_deciduo` —la que volvió vacía en este
   // mismo lote—. La entrega dijo que la página no muestra fecha: la muestra en sus
   // propios metadatos, 12 de julio de 2004.
+  //
+  // La segunda entrada llegó el 11/11/2026 propuesta para `ghats_sur_deciduo`, el
+  // 270, y se queda acá por el mismo motivo pero medido mejor: el artículo publica
+  // cinco sitios de encuesta con coordenada —Mananthavady, Edavaka, Panamaram,
+  // Pulpally y Thrissileri— y **los cinco dan 271**. No hace falta discutir el
+  // caso raro: la coordenada que el artículo imprime al lado de "Pulpally"
+  // (11,6732 N / 76,1833 E) cae trece kilómetros al sur del pueblo de Pulpally, en
+  // el 271, mientras el pueblo mismo da 270. Cuando el lugar declarado y la
+  // coordenada publicada no coinciden, vale la coordenada: es la que dice dónde se
+  // relevó. El 270 sigue en cero.
   ghats_sur_montano: [
     {
       practica: 'Los tres vayal: el arrozal clasificado por dónde está en el valle',
@@ -5805,6 +5894,17 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         'Los kurichiya no tienen un arrozal, tienen tres, y los distinguen por cuatro cosas: agua disponible, composición del suelo, fertilidad y posición del lote. El kuni vayal es la media loma suave al pie del cerro, donde la pendiente se encuentra con el plano: más tierra y menos barro, poca capacidad de retención, casi nunca se encharca, se cultiva a secano con una sola cosecha en la temporada nancha —de mayo o junio a noviembre o diciembre—, lleva variedades cortas y tolerantes a la seca, y es el único que se abona, con ceniza y bosta, porque es el menos fértil. El kundu vayal es el plano del fondo del valle, con agua parada toda la temporada de lluvia, suelo arcilloso con poca arena que retiene mucho y drena mal, lo que lo deja mojado más tiempo y le sube el riesgo de plagas; va con variedades de ciclo medio. El koravu vayal, también llamado aathi, es la variante pantanosa y rara del anterior: el perfil es como un almohadón, prácticamente sin tierra ni arena, no se puede caminar encima sin hundirse —por eso todas las labores las hacen los hombres y no se puede arar con animales—, es naturalmente fértil así que no se abona o casi, y lleva variedades largas y tolerantes a la inundación. Para qué sirve la clasificación: para elegir la variedad y el insumo de cada lote, y para repartir el trabajo, porque el transplante necesita mucha gente junta y tener variedades de distinta duración permite correr las fechas en vez de amontonarlas. Dos cosas que la fuente agrega y conviene no perder: los kurichiya son matrilineales, la tierra es de propiedad colectiva y no la pasan a cultivos de renta; y cuentan que cuando un arrozal se convierte, las verduras silvestres que juntaban en él se vuelven raras y las que crecen en el bananal o el arecanal ya no se juntan por el agroquímico.',
       fuentes: [
         { label: 'LEISA India, AME Foundation — Vayals: a traditional classification of agricultural landscapes in Kerala', url: 'https://www.leisaindia.org/vayals-a-traditional-classification-of-agricultural-landscapes-in-kerala/' },
+      ],
+    },
+    {
+      practica: 'Las ramas que se mecen sobre el arrozal, para herir al defoliador escondido',
+      periodo: 'Encuestas en zonas arroceras tribales de Wayanad entre 2020 y 2022, con 348 productores entrevistados y 86 que dieron detalle de control de plagas; ensayos en las campañas Kharif de 2020 a 2022; publicado en julio de 2025',
+      tipo: 'cultivo',
+      vigencia: 'en_uso',
+      detalle:
+        'Contra las larvas y los defoliadores que se esconden dentro de la hoja enrollada, donde un barrido no llega, los productores mecen sobre el cultivo ramas de Ficus hispida, Artemisia nilagarica y Ziziphus oenopolia: la textura áspera de las hojas de las dos primeras y las espinas de la tercera son las que hieren a Cnaphalocrocis medinalis, Helcystogramma arotraeum y Leptispa pigmaea. Con el mismo gesto usan hojas de lemongrass (Cymbopogon citratus) picadas, cuya sílice y pelos rígidos lastiman a las orugas de C. medinalis o las dejan más expuestas a los pájaros. Alrededor hay un repertorio entero del mismo orden: barrido con muram —el aventador de bambú— o con red, recolección a mano de los estadios inmaduros, y olores como repelente, flores de Cycas circinalis y sardina seca contra las chinches del arroz. Lo que importa para no leer de más: el ensayo del trabajo midió las formulaciones que se pulverizan —suero diluido, aminoácidos de pescado, extracto de semilla de neem, emulsión de tabaco, jeevamrutham—, que bajaron la incidencia de un 33,7-41,5 % en el testigo a un 14,2-18,5 % tratado. El método mecánico de las ramas está documentado y descrito, pero no es uno de los tratamientos medidos, y los autores piden validación científica antes de integrar todo esto a un esquema formal de manejo de plagas.',
+      fuentes: [
+        { label: 'Sreejina, Nasser y Nandakumar (2025) — Compiling the wisdom of Kerala\'s indigenous farmers: A traditional rice pest management calendar, Indian Journal of Traditional Knowledge 24(7): 627-638 (acceso abierto; el repositorio NOPR del CSIR no responde, esta es la ruta de la revista)', url: 'https://or.niscpr.res.in/index.php/IJTK/article/view/10870' },
       ],
     },
   ],
