@@ -1,6 +1,6 @@
 # Los prompts para GPT, listos para pegar
 
-*Al 11/11/2026. Un chat nuevo y suelto por encargo: sin Proyecto, sin memoria,
+*Al 12/11/2026. Un chat nuevo y suelto por encargo: sin Proyecto, sin memoria,
 sin conectores, sin el de GitHub, y con «mejorar el modelo para todos» apagado.
 Cada encargo se cierra al terminar — arrastrar veinte lotes en un mismo hilo
 significa pagar los veinte en cada respuesta nueva.*
@@ -17,15 +17,76 @@ archivos se contradicen, manda el encargo, y eso ya está dicho adentro.
 
 ## Por orden de lo que destraba
 
-| # | Qué pegar | Qué destraba | Dónde cae |
-|---|---|---|---|
-| **1** | `ENCARGO_FASE_4_LOTES_09_10.md` | Las otras dos turberas: ECO_ID 221 (Borneo, 67.620 km²) y 264 (Malaca). Cierran el conjunto de cuatro «peat swamp forests» de RESOLVE y completan la calibración del módulo de turba. Y traen la pregunta que más vale: el sagú y el jelutong, que son la única respuesta al `forestal 0` y todavía no tienen id en el catálogo. | `entregas\fichas-indomalaya\09.json` y `10.json` |
+**No hay nada para pegar ahora mismo**, y es la primera vez en el circuito. El
+lote 09/10 cerró el 12/11/2026 y con él se terminó **el patrón bueno**: ficha que
+completa un conjunto ya medido, con las rutas probadas y el piso escrito. No
+quedan conjuntos a medio cerrar.
 
-Uno por chat. Es una sola fila porque las dos anteriores cerraron el 06 y el
-11/11/2026, y porque **este es el último encargo del patrón bueno**: ficha que
-completa algo medido, con las rutas ya probadas y el piso ya escrito. Lo que
-queda después es relevamiento nuevo, que rinde menos por token, y la lista está
-al final.
+Lo que viene es relevamiento nuevo, que rinde menos por token, y hay que elegir
+por dónde. Está medido cuál es el mejor y está al final, en la lista de lo que
+queda abierto: **Sulawesi y las Molucas**, cinco fichas en cero —156, 157, 140,
+138 y 151— sobre islas volcánicas con población rural, donde el `huerta −25` del
+bioma húmedo, que se escribió pensando en el oxisol amazónico, es el que miente
+más. Ese encargo **todavía no está escrito**; cuando se escriba vuelve a haber
+una fila acá.
+
+### Lo que cerró el 12/11/2026
+
+~~`ENCARGO_FASE_4_LOTES_09_10.md`~~ **volvió con las dos fichas y las dos
+entraron.** Con el `221` de Borneo y el `264` de la península malaya, las cuatro
+ecorregiones que RESOLVE llama «peat swamp forests» tienen ficha y el módulo de
+turba queda calibrado contra las que son turba. Indomalaya pasa de 41 ECO_ID y 40
+fichas a **43 y 42**. Veredicto completo en
+`_research/_encargos/RESPUESTAS_FICHAS_FASE_4_LOTES_09_10.md`.
+
+La entrega llegó corta y honesta —`confianza: media`, sin saberes, sin cultivos,
+sin modificadores propuestos, y declarando que no cruzó ninguna base de suelos con
+el polígono—, y casi todo lo que afirmaba se verificó palabra por palabra. Lo que
+hubo que corregirle:
+
+- **La respuesta a la pregunta que más valía estaba invertida.** El encargo
+  preguntaba si hay rendimiento publicado de sagú con la napa por encima de los
+  40 cm, y la entrega contestó que no. **Hay**, y es el único de los tres jardines
+  del estudio que funciona: turba somera, sin drenaje artificial, napa a unos
+  10 cm, más del 80 % formó tronco a los 5-6 años y maduró a los 10-11. El resumen
+  no da la profundidad; la sección de materiales la da. Es el caso inverso al del
+  lote anterior: ahí se le atribuyó un número a la magnitud equivocada, acá se
+  declaró ausente un número que estaba en el trabajo.
+- **Y lo que decide no es la napa, es el espesor.** En el jardín que fracasó la
+  napa también estuvo alta todo el año. La diferencia es que en turba somera —de
+  0,5 a 1,5 m— la raíz llega al subsuelo mineral y come de ahí, mientras la turba
+  profunda es extremadamente pobre en nutrientes. Eso convierte el `forestal 0` de
+  un «no drenes» en un diseño con condición medible, y es la única evidencia de
+  rendimiento paludícola **medida adentro** de una de las cuatro turberas: Mukah,
+  Sarawak, da 221.
+- **Una autoría fabricada.** El trabajo de jelutong llegó firmado con cinco
+  apellidos de los cuales cuatro no son de ese trabajo. Son cuatro autores: Tata,
+  van Noordwijk, Jasnari y Widayati. Hasta ahora la regla de los autores se rompía
+  por omisión; es la primera vez que se rompe por invención.
+- **La revista de al lado.** La síntesis de Kalimantan llegó como Nature
+  Communications y está en Scientific Reports. Las dos son de Nature Portfolio.
+- **El 221 no es «las turberas de Borneo», y eso hay que medirlo para saberlo.**
+  Son veintinueve parches de costa más los dos complejos de lagos interiores. Las
+  cúpulas grandes de Kalimantan central están afuera: Sebangau y Mawas dan **273**
+  y el borde norte de Sebangau da **281**. Y el Parque Nacional Tanjung Puting
+  está repartido entre cuatro ecorregiones, así que su «más de 200 especies de
+  aves» es una cifra del parque y no del polígono.
+- **Tres fuentes salieron de las fichas por no poder leerlas.** Kew POWO contesta
+  **403 también desde el navegador real**; la URL de IFAD no es una página sino una
+  descarga que el fetch rebota; UNDP Malaysia, 403. Con el documento de IFAD se
+  fueron sus números, y no costó nada: la entrega los usaba sólo para aclarar que
+  no eran comparables con el polígono. La nomenclatura se verificó contra el
+  **backbone de GBIF** y los nombres vulgares contra **ITIS**, que son abiertos.
+- **Sagú y jelutong siguen sin poder entrar al catálogo de cultivos**, y ahora se
+  sabe exactamente qué falta: temperatura base, GDD de ciclo, temperatura letal y
+  Kc. Ninguno de los dos trabajos los trae. Lo que sí hay vive en la razón del
+  modificador forestal, en prosa y con fuente.
+
+Y dos cosas que ya estaban mal antes del lote y quedaron arregladas de paso: la
+lista de cobertura de Indomalaya de `ecorregiones.test.ts` tenía 36 entradas
+contra 43 del mapa —las cinco del 05 y el 06/11 nunca se agregaron ahí, y el test
+sólo comprueba las que nombra—, y el encabezado de las fichas de Indomalaya decía
+38 fichas cuando había 40.
 
 ### Lo que cerró el 11/11/2026
 
@@ -136,9 +197,11 @@ números atribuidos a un documento que abre y que **no los contiene**. Es la
 primera falla del circuito que no se detecta abriendo la fuente sino leyéndola.
 El veredicto está al final de `_research/_encargos/RESPUESTAS_FORRAJE.md`.
 
-### Los dos que están arriba, con lo que traen adentro
+### Los encargos de turbera, con lo que traían adentro
 
-Se escribieron el 06/11/2026 y son las dos filas de la tabla.
+Se escribieron el 06 y el 11/11/2026 y los dos cerraron. Se dejan acá porque el
+razonamiento con el que se eligieron es el que hay que repetir al elegir el que
+viene.
 
 **`ENCARGO_FASE_4_LOTES_07_08.md` — las dos turberas.** El 286 es el pantano de
 turba del Tonle Sap y el Mekong, con el arroz de recesión de las doce fincas que

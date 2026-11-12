@@ -77,6 +77,13 @@ const FUERA_DE_LA_REGLA = [
   // HWSD ni de SoilGrids: no se pudo resumir ninguna de las dos bases sobre sus
   // polígonos, y se declara en vez de heredar el del vecino.
   'pantanos_turba_sumatra', 'pantanos_tonle_sap_mekong_turba',
+  // Y las otras dos turberas, del 12/11/2026, que cierran el conjunto de las
+  // cuatro que RESOLVE llama «peat swamp forests». Mismo bioma 1 y mismo motivo
+  // que las dos de arriba: confirman el −25 de huerta por oxidación y no por
+  // lixiviación, cancelan el +20 de forestal, y tampoco traen reparto de HWSD ni
+  // de SoilGrids sobre sus polígonos. La de Borneo agrega algo que ninguna de
+  // las otras tenía: la alternativa paludícola medida adentro del polígono.
+  'pantanos_turba_borneo', 'pantanos_turba_malaca',
 ];
 
 /** Las fichas que sí salieron de la regla: el cohorte sobre el que valen los
@@ -86,9 +93,9 @@ const DE_LA_REGLA = () =>
     .filter(([id]) => !FUERA_DE_LA_REGLA.includes(id));
 
 describe('el lote entero', () => {
-  it('son 40 fichas, 32 de la regla y 22 de ésas corrigen el número', () => {
+  it('son 42 fichas, 32 de la regla y 22 de ésas corrigen el número', () => {
     const ids = Object.keys(BIOMAS_REGIONALES_INDOMALAYA);
-    expect(ids).toHaveLength(40);
+    expect(ids).toHaveLength(42);
 
     const deLaRegla = DE_LA_REGLA().map(([id]) => id);
     expect(deLaRegla).toHaveLength(32);

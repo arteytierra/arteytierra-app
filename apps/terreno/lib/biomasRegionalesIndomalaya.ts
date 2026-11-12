@@ -1,5 +1,5 @@
 /**
- * Fichas regionales de Indomalaya: 38 fichas para 39 ECO_ID.
+ * Fichas regionales de Indomalaya: 42 fichas para 43 ECO_ID.
  *
  * El alcance y el porqué del recorte están en `ecorregionesIndomalaya.ts`. Acá
  * va lo que hay que saber para tocar los números.
@@ -194,6 +194,55 @@ const CAHYA = { label: 'Cahya, Suwignyo et al. 2022 — Increasing rice producti
 const KEW_MELALEUCA = { label: 'Plants of the World Online (Kew) — Melaleuca cajuputi Maton & Sm. ex R.Powell, nativa de Camboya y Vietnam', url: 'https://powo.science.kew.org/taxon/115161-3' };
 const TONLE_SAP_ARROZ = { label: 'Rice production in Tonle Sap floodplains in response to anthropogenic changes (Univ. of Washington): el arroz de recesión se siembra tras la bajante', url: 'https://digital.lib.washington.edu/bitstreams/bd67d9e6-9d59-485d-959b-93a2718c389f/download' };
 const ONE_EARTH_315 = { label: 'One Earth — ecorregión 315 «Deccan Thorn Scrub Forests»', url: 'https://www.oneearth.org/ecoregions/deccan-thorn-scrub-forests/' };
+
+// ─── Las dos turberas del 12/11/2026: Borneo (221) y la península malaya (264) ──
+
+const ONE_EARTH_221 = { label: 'One Earth — ecorregión 221 «Borneo Peat Swamp Forests»', url: 'https://www.oneearth.org/ecoregions/borneo-peat-swamp-forests/' };
+const ONE_EARTH_264 = { label: 'One Earth — ecorregión 264 «Peninsular Malaysian Peat Swamp Forests»', url: 'https://www.oneearth.org/ecoregions/peninsular-malaysian-peat-swamp-forests/' };
+
+/** El espesor de la turba del Kapuas, medido en los dos extremos del gradiente
+ *  y los dos adentro del polígono 221: la cúpula al sur de Putussibau y el
+ *  delta en Rasau Jaya. Acceso abierto CC BY. De acá salen los 18 m barrenados,
+ *  la media modelada de 5,16 ± 2,66 m sobre 3.833 km², los 2.790 ± 1.440 Mg C/ha
+ *  y el dato de agua que importa para diseño: la mitad de la cúpula está debajo
+ *  del lecho del río y el humedal guarda el doble de agua que el propio Kapuas. */
+const RUWAIMANA = { label: 'Ruwaimana, Anshari, Silva y Gavin 2020 — The oldest extant tropical peatland in the world: a major carbon reservoir for at least 47 000 years, Environmental Research Letters 15:114027, doi:10.1088/1748-9326/abb853 (acceso abierto, CC BY)', url: 'https://doi.org/10.1088/1748-9326/abb853' };
+
+/** Quince perfiles de Kalimantan con 55 fechados: de acá salen el promedio de
+ *  444 cm en turba costera contra 774 cm en la interior y —lo que más sirve— el
+ *  rango de napa, 5-50 cm en turba sin drenar y 60-90 cm en turba drenada.
+ *  Aviso de alcance: de sus cuatro regiones, Sentarum y el lago Siran caen
+ *  adentro del 221 y Mempawah no, así que el promedio mezcla adentro y afuera. */
+const ANSHARI_2026 = { label: 'Anshari, Ruwaimana, Ritonga, Gangga, Loisel, Galego-Sala, van der Kaars y Novita 2026 — Peatland inception and development across Kalimantan, Indonesia, Scientific Reports 16:5496, doi:10.1038/s41598-026-35152-x (acceso abierto, CC BY)', url: 'https://doi.org/10.1038/s41598-026-35152-x' };
+
+/** Fisonomía de una cúpula intacta del noroeste de Borneo con LiDAR aéreo. Está
+ *  **cerrado**: todo lo que la ficha le atribuye está en el resumen publicado y
+ *  nada sale del cuerpo del trabajo. Lo que falta, si alguien consigue el PDF,
+ *  es qué cúpula es: el resumen dice «noroeste de Borneo» y no la nombra, así
+ *  que no se puede resolver el sitio contra el polígono. */
+const NGUYEN_LIDAR = { label: 'Nguyen, Hutyra, Hardiman y Raciti 2016 — Characterizing forest structure variations across an intact tropical peat dome using field samplings and airborne LiDAR, Ecological Applications 26(2):587-601, doi:10.1890/15-0017 (leído el resumen)', url: 'https://doi.org/10.1890/15-0017' };
+
+/** La única evidencia de rendimiento paludícola que está medida **adentro** de
+ *  una de estas ecorregiones: los tres jardines de sagú están en Mukah,
+ *  Sarawak, y Mukah da 221. Acceso libre en J-Stage. Las tres condiciones son
+ *  turba profunda con drenaje mínimo, turba profunda con inundación estacional
+ *  y turba somera sin drenaje, y la tercera es la que funciona. */
+const JONG_SAGU = { label: 'Jong, Watanabe, Hirabayashi, Matsuda, Purwanto, Kakuda y Ando 2006 — Growth performance of sago palms (Metroxylon sagu Rottb.) in peat of different depth and soil water table, Sago Palm 14(2):59-64, doi:10.57418/sagopalm.14.2_59 (acceso libre)', url: 'https://doi.org/10.57418/sagopalm.14.2_59' };
+
+/** Jelutong. El estudio es de Jambi y Jambi da **280**, la turbera de Sumatra,
+ *  no éstas: acá se cita por dos cosas que sí valen para los dos polígonos, que
+ *  el área nativa de la especie cubre la península malaya, Sumatra y Borneo, y
+ *  que la plantación creció bien sobre turba sin drenar. Y por una tercera que
+ *  es la advertencia: de las 1.769 ha plantadas quedan unas 200, porque el fuego
+ *  se llevó 7.000 ha de la concesión en 1997 y otras 5.000 en 2003. */
+const TATA_JELUTONG = { label: 'Tata, van Noordwijk, Jasnari y Widayati 2016 — Domestication of Dyera polyphylla (Miq.) Steenis in peatland agroforestry systems in Jambi, Indonesia, Agroforestry Systems 90(4):617-630, doi:10.1007/s10457-015-9837-3 (acceso abierto, CC BY)', url: 'https://doi.org/10.1007/s10457-015-9837-3' };
+
+/** Nomenclatura. Se cita GBIF y no Kew POWO porque POWO contesta **403 incluso
+ *  desde un navegador real** —se probó el 12/11/2026, con la verificación
+ *  anti-bot de Cloudflare—, y un link que no abre no sirve de cita aunque sea el
+ *  canónico. Acá se verificaron seis binomios contra el backbone de GBIF y dos
+ *  nombres vulgares contra ITIS. */
+const GBIF_NOMBRES = { label: 'GBIF Secretariat 2023 — GBIF Backbone Taxonomy, doi:10.15468/39omei (nombres aceptados y sinónimos)', url: 'https://www.gbif.org/dataset/d7dddbf4-2cf0-4f39-9b2a-bb099caae36c' };
 
 /** El informe que contesta cuánto del polígono 323 es manglar y cuánto es isla
  *  habitada con terraplén. **La entrega lo citó por una URL que no lo sirve**:
@@ -777,9 +826,9 @@ export const BIOMAS_REGIONALES_INDOMALAYA: Record<string, BiomaFicha> = {
     cultivos: ['arroz'],
     aptitud: [
       { uso: 'huerta', delta: -25, razon: 'Se confirma el −25 del bioma húmedo pero por otro mecanismo: acá la limitante no es la pérdida de bases por lixiviación sino que una huerta convencional pide bajar la napa, y airear turba la oxida. Medido en plantaciones drenadas del Sudeste Asiático: 142 cm de hundimiento en los primeros cinco años y unos 5 cm por año después, con el 92 % del acumulado por oxidación a los dieciocho años. El número no se extrapola a un predio sin suelo orgánico ni a cultivos paludícolas sin drenaje.' },
-      { uso: 'forestal', delta: 0, razon: 'Se cancela el +20 del bioma húmedo. Ese +20 dice que el sistema que sostiene el bioma es agroforestal de varios estratos, y en turba eso sigue siendo cierto sólo si la napa no baja: el límite crítico son 40 cm y el reglamento indonesio lo fija. Lo que se cancela es la lectura de que el puntaje habilita el camino habitual para llegar ahí, que es drenar: Hooijer et al. miden que el hundimiento y la pérdida de carbono siguen siendo considerables incluso con la napa más alta que una plantación puede sostener. La versión que funciona es paludícola —sagú y jelutong, que todavía no tienen id en el catálogo— y la app no tiene cómo saber si el predio va a drenar, así que no regala el positivo.' },
+      { uso: 'forestal', delta: 0, razon: 'Se cancela el +20 del bioma húmedo. Ese +20 dice que el sistema que sostiene el bioma es agroforestal de varios estratos, y en turba eso sigue siendo cierto sólo si la napa no baja: el límite crítico son 40 cm y el reglamento indonesio lo fija. Lo que se cancela es la lectura de que el puntaje habilita el camino habitual para llegar ahí, que es drenar: Hooijer et al. miden que el hundimiento y la pérdida de carbono siguen siendo considerables incluso con la napa más alta que una plantación puede sostener. La versión que funciona es paludícola —sagú y jelutong, que todavía no tienen id en el catálogo—, y el jelutong tiene su evidencia adentro de este mismo polígono: la concesión de Jambi que plantó 1.769 ha de Dyera polyphylla sobre turba sin drenar está al lado del Parque Nacional de Berbak, que da 280, y creció bien; de esas 1.769 ha quedan unas 200, porque el fuego se llevó 7.000 ha de la concesión en 1997 y otras 5.000 en 2003, o sea que lo que decide no es la tolerancia de la especie sino el fuego del paisaje de alrededor— y la app no tiene cómo saber si el predio va a drenar, así que no regala el positivo.' },
     ],
-    fuentes: [ONE_EARTH_280, IMANUDIN, CAHYA, HOOIJER, RESOLVE],
+    fuentes: [ONE_EARTH_280, IMANUDIN, CAHYA, HOOIJER, TATA_JELUTONG, RESOLVE],
   },
 
   /**
@@ -815,6 +864,95 @@ export const BIOMAS_REGIONALES_INDOMALAYA: Record<string, BiomaFicha> = {
       { uso: 'forestal', delta: 0, razon: 'Se cancela el +20 del bioma húmedo, con la misma razón que en la turbera de Sumatra y una salvedad propia. El +20 dice que el sistema del bioma es agroforestal de varios estratos, y sobre turba eso vale sólo sin bajar la napa; lo que no se puede regalar es el positivo, porque la app no sabe si el predio cae en el sector de turba o en las arcillas aluviales, y en el primero el camino habitual para plantar es drenar. En las arcillas del mosaico el +20 sería correcto, así que acá el cero es una abstención por no poder distinguir dónde cae el predio, no un veredicto sobre todo el polígono.' },
     ],
     fuentes: [ONE_EARTH_286, TONLE_SAP_ARROZ, KEW_MELALEUCA, HOOIJER, RESOLVE],
+  },
+
+  /**
+   * El 221 es la turbera de Borneo, y lo primero de la ficha es **dónde no
+   * está**.
+   *
+   * El nombre invita a leerlo como «las turberas de Borneo», y el polígono no
+   * es eso: son veintinueve parches de la franja costera de toda la isla más
+   * los dos complejos de lagos interiores, el del Mahakam y el del Kapuas. Las
+   * cúpulas grandes de Kalimantan central —Sebangau, Mawas— caen en el 273 y en
+   * el 281, y el Parque Nacional Tanjung Puting está repartido entre cuatro
+   * ecorregiones, con sólo su sector sur acá. Eso importa en los dos sentidos:
+   * un predio sobre turba profunda de Kalimantan central no recibe esta ficha, y
+   * las cifras que las fuentes dan «de Tanjung Puting» no son de este polígono.
+   *
+   * La otra mitad de la ficha es el espesor, porque es lo que decide si la
+   * alternativa paludícola rinde o no, y está medido adentro del polígono.
+   */
+  pantanos_turba_borneo: {
+    id: 'pantanos_turba_borneo',
+    nombre: 'Turberas de Borneo',
+    emoji: '\u{1F33F}',
+    color: '#47765A',
+    resumen: '67.620 km² repartidos en veintinueve parches: la franja costera de Borneo —Indonesia, Malasia y Brunéi, los tres confirmados contra el polígono— y los complejos de lagos interiores del Mahakam y del Kapuas. One Earth dice que la turba puede pasar de 20 m, que alrededor del 14 % de la ecorregión está protegido y que la mayor parte de las turberas fue drenada y quemada. El polígono no es la suma de las turberas de la isla: las cúpulas grandes de Kalimantan central —Sebangau, Mawas— dan 273 y 281, y el Parque Nacional Tanjung Puting está repartido entre cuatro ecorregiones, con sólo su sector sur acá.',
+    vegetacion: 'Bosque anegado la mayor parte del año sobre arcillas ácidas, donde la anoxia frena la descomposición de la hojarasca. El dosel lo dominan Gonystylus bancanus, Dactylocladus stenostachys, Copaifera palustris y seis especies de Shorea, con Shorea albida formando a veces rodales puros; en el norte de la isla Shorea se reemplaza por Dacrydium beccarii y Casuarina. En los estratos medio e inferior, Alangium havilandii, Blumeodendron tokbrai, Ctenolophon parvifolius, dos Diospyros, Kokoona ovatolanceolata y Palaquium cochleariifolium. Pandanus ridleyi y Pandanus brevifolius aparecen donde la turba es más somera, y crecen más de treinta especies de palmera. De la fisonomía lo único medido viene de una cúpula intacta del noroeste de Borneo relevada con LiDAR aéreo: sobre un gradiente de 4 m de altura de cúpula, hacia el interior sube la densidad de tallos y bajan la altura del dosel, el área de copa y su rugosidad, con 217,7 ± 28,3 Mg C/ha de biomasa aérea medida en el terreno y 222,4 ± 24,4 estimados para toda la cúpula, más de lo publicado antes para turbera y para selva tropical en general. Ese gradiente es de altura de cúpula y no de espesor de turba, y los propios autores avisan que acá la altura de dosel que ve el LiDAR no predice bien la biomasa: su coeficiente de variación es 0,08, tres veces menor que el del diámetro de los tallos.',
+    fauna: 'One Earth señala densidades muy altas de primates endémicos donde la turbera sigue intacta: orangután de Borneo (Pongo pygmaeus), mono narigudo (Nasalis larvatus), langur bandeado de Borneo (Presbytis chrysomelas), langur rojo y un gibón que la página llama «southern Bornean gibbon». A ese nombre la ficha no le pone binomial, porque los dos candidatos son especies distintas: Hylobates albibarbis, que ITIS llama gibón de barba blanca de Borneo y cuyos registros con coordenada en GBIF se centran en el sur de la isla, e Hylobates muelleri, el gibón de Müller, cuyos registros se centran en el este. También varios félidos, entre ellos la pantera nebulosa de la Sonda (Neofelis diardi), endémica, y el gato cabeciplano. La diversidad de aves es más baja que en la selva de tierra firme, y el número que suele citarse —más de 200 especies— es del Parque Nacional Tanjung Puting, que está repartido entre cuatro ecorregiones. En los ríos y caños, arowana asiático (Scleropages formosus), nutrias, falso gavial y cocodrilos.',
+    suelos: 'Histosols: turba ácida, saturada y pobre en oxígeno sobre arcillas, y el espesor es el dato que decide todo lo demás. Está medido adentro del polígono y en los dos extremos del gradiente. Tierra adentro, en la cúpula al sur de Putussibau, Kapuas superior: 2-4 m en el borde y unos 17-18 m en el centro, con un máximo barrenado de 18 m y una media modelada de 5,16 ± 2,66 m sobre 3.833 km², que dan 2.790 ± 1.440 Mg C/ha —más del doble que la turba indonesia promedio y más que la boreal, de 600 a 700, o que la turba forestada más densa del Amazonas, 1.390—. En la costa, en Rasau Jaya, delta del Kapuas: 4-6 m donde la cúpula quedó intacta, con más del 90 % de materia orgánica, y menos de 1 m con apenas 20-30 % de orgánico —técnicamente ya no es turba— en los seis kilómetros del sur que el programa de transmigración de los años setenta cultivó y quemó. Una síntesis de quince perfiles de Kalimantan promedia 444 cm en la turba costera contra 774 cm en la interior; de sus cuatro regiones, Sentarum y el lago Siran caen adentro del 221 y Mempawah no, así que ese promedio mezcla adentro y afuera del polígono. No se pudo resumir HWSD v2, SoilGrids ni PEATMAP sobre el 221: no se afirma un porcentaje de Histosols y no se hereda el reparto del 219 ni del 273. Lo que sí hay es el rango de napa que publica esa misma síntesis: en turba tropical sin drenar la napa va de 5 a 50 cm y en turba drenada de 60 a 90 cm, contra el límite crítico de 40 cm que el reglamento indonesio PP 57/2016 fija para la turba. O sea que una turba drenada está pasada del límite por definición y no por accidente. Y hay un dato de agua que no es de suelo y vale para el diseño: la mitad de la cúpula de Putussibau está por debajo del lecho del Kapuas, y el humedal del Kapuas superior guarda alrededor del doble del volumen de agua que el propio río y sus lagos de planicie. La turba no está al lado del agua: es el almacenamiento.',
+    saberes: [],
+    especies: [
+      'Ramin (Gonystylus bancanus)',
+      'Shorea de turbera (Shorea albida)',
+      'Dactiloclado (Dactylocladus stenostachys)',
+      'Copaifera de turbera (Copaifera palustris)',
+      'Alangio de Borneo (Alangium havilandii)',
+      'Kokoona (Kokoona ovatolanceolata)',
+      'Pandano de turba somera (Pandanus ridleyi)',
+      'Dacrydium de Borneo (Dacrydium beccarii)',
+    ],
+    aptitud: [
+      { uso: 'huerta', delta: -25, razon: 'Se confirma el −25 del bioma húmedo pero por el mismo mecanismo que en la turbera de Sumatra y no por lixiviación: la limitante no es la pérdida de bases sino que una huerta convencional pide bajar la napa, y airear turba la oxida. Medido en plantaciones drenadas del Sudeste Asiático: 142 cm de hundimiento en los primeros cinco años y unos 5 cm por año después, con el 92 % del acumulado por oxidación a los dieciocho años. Acá se le puede poner número a la napa: sin drenar la turba tropical está entre 5 y 50 cm y drenada entre 60 y 90, contra un límite crítico reglamentario de 40 cm, así que el drenaje de huerta no se acerca al límite, lo pasa. Y la pérdida no termina en el predio: cada hectárea de turba perdida libera unos 2.800 Mg C, y la caída de captura de las turberas drenadas de Kalimantan es de 32,4 Mt C por año, unas 47,5 veces la caída natural de los últimos cuatro mil años. El número no se extrapola a un predio sin suelo orgánico ni a cultivos paludícolas sin drenaje.' },
+      { uso: 'forestal', delta: 0, razon: 'Se cancela el +20 del bioma húmedo, y acá por primera vez con la alternativa medida adentro del mismo polígono. El +20 dice que el sistema que sostiene el bioma es agroforestal de varios estratos, y sobre turba eso vale sólo si la napa no baja; lo que se cancela es la lectura de que el puntaje habilita el camino habitual para llegar ahí, que es drenar. La versión paludícola existe y está medida en Mukah, Sarawak, adentro de esta ecorregión: en turba somera —de 0,5 a 1,5 m según la definición de Sarawak—, sin drenaje artificial y con la napa unos 10 cm abajo de la superficie, más del 80 % de las palmas de sagú formó tronco a los 5-6 años y maduró a los 10-11, con 8 m de tronco y 45 cm de diámetro, sin una sola aplicación de fertilizante. En turba profunda no: con drenaje mínimo y la napa alta todo el año, apenas un 20 % formó tronco a los 10-15 años y ninguna maduró; con inundación estacional de más de 1 m, menos del 10 % a los ocho años. Lo que separa los dos resultados es el espesor y no el agua, porque en turba somera la raíz llega al subsuelo mineral y come de ahí mientras la turba profunda es extremadamente pobre en macro y micronutrientes. Por eso el cero y no un positivo: la app no sabe si el predio cae en el borde somero o en la cúpula, y en la cúpula no hay versión que funcione sin drenar.' },
+    ],
+    fuentes: [ONE_EARTH_221, RUWAIMANA, ANSHARI_2026, NGUYEN_LIDAR, JONG_SAGU, TATA_JELUTONG, HOOIJER, GBIF_NOMBRES, RESOLVE],
+  },
+
+  /**
+   * El 264 es la cuarta turbera del conjunto, y la que se distingue por lo que
+   * tiene **abajo**: arcilla marina sulfídica.
+   *
+   * Eso corta para los dos lados y las dos puntas están en la ficha. Drenar acá
+   * no sólo oxida la turba: acerca el aire a los sulfuros de la arcilla, que es
+   * la receta de un suelo sulfatado ácido. Y al mismo tiempo, el sagú está
+   * reportado creciendo sano justamente sobre suelos minerales sulfídicos de pH
+   * extremadamente bajo.
+   *
+   * Dos cosas de nomenclatura que la fuente trae mal y que acá quedan escritas
+   * para que nadie las copie de nuevo: One Earth escribe «S. teysmaniana» con
+   * una n de menos —es *teysmanniana*, y Kew la pasó al género *Rubroshorea*
+   * mientras el backbone de GBIF la sigue aceptando en *Shorea*— y
+   * «Crytostachys renda» por *Cyrtostachys renda*. Y una que no es grafía:
+   * *Pandanus atrocarpus*, que la página cita como pandano de la turbera, es
+   * **sinónimo**; el nombre aceptado es *Benstonea atrocarpa*.
+   */
+  pantanos_turba_malaca: {
+    id: 'pantanos_turba_malaca',
+    nombre: 'Turberas de la península malaya',
+    emoji: '\u{1F33F}',
+    color: '#47765A',
+    resumen: '3.630 km² en siete parches sobre las dos costas de la península malaya, todos en Malasia: el mayor en la costa oriental, en Pahang, y el segundo en la occidental, en el norte de Selangor, los dos confirmados contra el polígono. One Earth dice que casi todos los remanentes están talados o degradados y que queda muy poco bosque prístino, y le pone nivel de protección 1 sobre 10 —que es el porcentaje de la meta de la Red de Seguridad Global y no el porcentaje protegido—. Lo que distingue a esta turbera de las otras tres del conjunto es lo que hay abajo: arcilla marina sulfídica.',
+    vegetacion: 'Bosque de tierras bajas permanentemente anegado sobre turba de hojarasca semidescompuesta, con árboles de raíces zancudas, contrafuertes y neumatóforos, y dosel en tres estratos. Comparte la mayoría de sus especies con la selva baja vecina —Koompassia malaccensis, Durio carinatus, Bhesa paniculata, Shorea platycarpa, Shorea teysmanniana, Shorea uliginosa, Stemonurus scorpioides y otras—, y las que One Earth da como restringidas a la turbera son siete: Gonystylus bancanus, Macaranga pruinosa, Campnosperma coriaceum, Blumeodendron tokbrai, Parartocarpus venenosus, Ixora grandiflora y Pternandra galeata. Son comunes la palma lacre Cyrtostachys renda y los rodales del pandano Benstonea atrocarpa, y los Ficus estranguladores del borde dan fruto a aves, mamíferos y hasta a peces cuando cae al agua. Donde se taló quedan rodales puros de Macaranga pruinosa y Cratoxylum arborescens. One Earth no publica rango de lluvia ni calendario de meses secos para la ecorregión.',
+    fauna: 'Casi toda fauna de selva baja que también entra acá: tigre —al que la página nombra sin subespecie—, tapir malayo (Tapirus indicus), leopardo (Panthera pardus) y pantera nebulosa, más tres nutrias, la de nariz peluda (Lutra sumatrana), la lisa y la de uñas chicas, y el binturong, el civeta arborícola grande que casi no baja al suelo y al que por eso mismo la tala amenaza. Los relevamientos contaron 194 especies de aves en turbera talada, de ellas 15 de humedal y 29 migratorias, y la propia página avisa que en bosque intacto el número sería mayor.',
+    suelos: 'Histosols orgánicos, ácidos y pobres en nutrientes, con agua negra de taninos a pH 2,9-4,5, y abajo arcilla marina sulfídica o aluvión fluvial. Ese sustrato es lo propio de esta ficha y corta para los dos lados. Drenar turba la oxida y la hunde —142 cm en cinco años y unos 5 cm por año después en plantaciones drenadas de la región, con el 92 % del hundimiento por oxidación a los dieciocho años—, y acá el drenaje además acerca el aire a los sulfuros de la arcilla, que es como se fabrica un suelo sulfatado ácido. One Earth describe la acidez natural del agua pero no cuantifica cuánto baja el pH al oxidarse los sulfuros, ni en cuánto tiempo, ni con qué se corrige, y no se traslada acá el 12 % de Gleysols tiónicos que HWSD v2 da para el 285, que es otro polígono y otra cuenca. Tampoco se pudo resumir HWSD v2, SoilGrids ni PEATMAP sobre el 264: no hay porcentaje de Histosols ni medición de espesor para este polígono, y no se hereda el reparto del 265. Del otro lado, el mismo sustrato es donde una de las dos especies paludícolas anda bien: el sagú crece sano sobre suelos minerales sulfídicos de pH extremadamente bajo en Batu Pahat y en la estación de Rampangi, sobre suelo sulfatado ácido, aunque eso los autores lo reportan como observación propia y no como ensayo.',
+    saberes: [],
+    especies: [
+      'Ramin (Gonystylus bancanus)',
+      'Macaranga de turbera (Macaranga pruinosa)',
+      'Campnosperma de turbera (Campnosperma coriaceum)',
+      'Blumeodendron (Blumeodendron tokbrai)',
+      'Parartocarpus (Parartocarpus venenosus)',
+      'Ixora de turbera (Ixora grandiflora)',
+      'Pternandra (Pternandra galeata)',
+      'Palma lacre (Cyrtostachys renda)',
+      'Pandano de turbera (Benstonea atrocarpa)',
+    ],
+    aptitud: [
+      { uso: 'huerta', delta: -25, razon: 'Se confirma el −25 del bioma húmedo pero por dos mecanismos encadenados, y ninguno es la lixiviación. El primero es el de todas las turberas: una huerta convencional pide bajar la napa, airear turba la oxida, y eso está medido en 142 cm de hundimiento en los primeros cinco años y unos 5 cm por año después, con el 92 % del acumulado por oxidación a los dieciocho años. El segundo es propio de acá: debajo de la turba hay arcilla marina sulfídica, así que el mismo drenaje que oxida la turba expone los sulfuros y arranca la acidificación de un suelo sulfatado ácido. Cuánto baja el pH, en cuánto tiempo y con qué se corrige no está en las fuentes abiertas que se pudieron leer para este polígono, y no se rellena con el dato tiónico de otra cuenca: lo que se afirma es la dirección del proceso, no su magnitud. El número no se extrapola a un predio sin suelo orgánico.' },
+      { uso: 'forestal', delta: 0, razon: 'Se cancela el +20 del bioma húmedo, con la misma razón que en las otras tres turberas: el +20 dice que el sistema que sostiene el bioma es agroforestal de varios estratos, y sobre turba eso vale sólo si la napa no baja, así que lo que se cancela es la lectura de que el puntaje habilita el camino habitual para llegar ahí, que es drenar. La alternativa paludícola es la misma y acá está peor documentada que en Borneo: no hay ensayo de sagú ni de jelutong adentro de este polígono. Lo que sí hay son dos cosas. Que el área nativa del jelutong de pantano (Dyera polyphylla) cubre la península malaya, y que la plantación de 1.769 ha que se hizo con él sobre turba sin drenar, en Jambi, creció bien y hoy son unas 200 ha porque el fuego se llevó 7.000 ha de la concesión en 1997 y otras 5.000 en 2003: o sea que lo que decide no es la tolerancia de la especie sino el fuego y el drenaje del paisaje de alrededor. Y que el sagú está reportado creciendo sano sobre suelos minerales sulfídicos de pH extremadamente bajo, que es exactamente lo que hay debajo de esta turba. Ninguno de los dos tiene id en el catálogo de cultivos, y no por olvido: de ninguno se encontró temperatura base, GDD de ciclo, temperatura letal ni Kc, y un perenne que madura a los diez años no entra en el motor de cultivos sin esos campos.' },
+    ],
+    fuentes: [ONE_EARTH_264, JONG_SAGU, TATA_JELUTONG, HOOIJER, GBIF_NOMBRES, RESOLVE],
   },
 
   pantanos_sumatra: {

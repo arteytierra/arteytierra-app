@@ -72,9 +72,11 @@ describe('la ficha del Decán central', () => {
     // Si alguna vez entra otra ecorregión seca a Indomalaya, hay que pasar por
     // FUERA_DE_LA_REGLA en aptitudIndomalaya.test.ts antes de que esto pase. Ya
     // pasó: el 05/11/2026 entraron tres más que tampoco salen de la regla, y una
-    // de ellas —el Irrawaddy seco— es de este mismo bioma 2.
+    // de ellas —el Irrawaddy seco— es de este mismo bioma 2. Y volvió a pasar
+    // el 06 y el 12/11/2026 con las cuatro turberas, que son de bioma 1 pero
+    // tampoco salen de la regla.
     expect(ficha().id).toBe(DECAN);
-    expect(Object.keys(BIOMAS_REGIONALES_INDOMALAYA)).toHaveLength(40);
+    expect(Object.keys(BIOMAS_REGIONALES_INDOMALAYA)).toHaveLength(42);
     for (const id of [DECAN, NORTE, SUR]) {
       expect(BIOMAS_REGIONALES_INDOMALAYA[id], id).toBeDefined();
     }

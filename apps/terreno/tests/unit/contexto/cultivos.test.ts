@@ -154,6 +154,17 @@ describe('cobertura del catálogo de cultivos', () => {
     // curl ni con navegador. No se cita lo que no se pudo leer, y sin lista la
     // ficha cae al catálogo por clase Köppen, que sí tiene fuente.
     'decan_norte_sal', 'decan_sur_elefantes',
+    // Las dos turberas del 12/11/2026, y acá el motivo es otro que los
+    // anteriores: no es que no se cultive, ni que la fuente no abra. Es que las
+    // dos especies que la evidencia señala —el sagú (Metroxylon sagu) y el
+    // jelutong de pantano (Dyera polyphylla), que son las que producen sobre
+    // turba sin bajar la napa— **no tienen id en lib/especies.ts**, y no se
+    // pueden crear: de ninguna de las dos se encontró temperatura base, GDD de
+    // ciclo, temperatura letal ni Kc, y un perenne que madura a los diez años no
+    // entra en el motor de cultivos sin esos campos. Lo que sí hay está en la
+    // razón del modificador forestal de cada ficha, en prosa y con fuente. El
+    // día que alguien consiga esos campos, esto se saca de acá.
+    'pantanos_turba_borneo', 'pantanos_turba_malaca',
   ]);
 
   it('toda ficha regional declara cultivos salvo las excluidas a propósito', () => {

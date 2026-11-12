@@ -1,7 +1,7 @@
 /**
  * ECO_ID de RESOLVE de Indomalaya: el sur de Asia, Indochina y la Sonda.
  *
- * Son 41 ECO_ID y 40 fichas —`java_bali_montano` cubre 229 y 288—, y no salieron
+ * Son 43 ECO_ID y 42 fichas —`java_bali_montano` cubre 229 y 288—, y no salieron
  * de enumerar una envolvente como los lotes de la UE o el norte de África. Este
  * lote se recortó al revés: se buscaron las ecorregiones donde el bioma global
  * `resolve_bosque_tropical_humedo` estaba **diciendo un número equivocado**.
@@ -108,6 +108,54 @@
  * El veredicto, con las dos correcciones que se les hicieron al montar, está en
  * `_research/_encargos/RESPUESTAS_FICHAS_FASE_4_LOTES_07_08.md`.
  *
+ * ## Y el 12/11/2026 se cerró el conjunto: 221 y 264
+ *
+ * RESOLVE tiene exactamente cuatro ecorregiones que **son** turbera —las cuatro
+ * se llaman «peat swamp forests» y las cuatro están en Indomalaya— y con éstas
+ * dos entran las que faltaban: el `221` de Borneo, que son 67.620 km², y el
+ * `264` de la península malaya, que son 3.630 km². El módulo de turba estaba
+ * calibrado contra cuatro ecorregiones que tienen turba de refilón, en el 7 al
+ * 41 % del polígono, y contra dos que son turba; ahora son las cuatro.
+ *
+ * Lo que trajo cada una, y lo primero es una corrección al polígono:
+ *
+ * - **El 221 no es la suma de las turberas de Borneo, y hay que decirlo.** Son
+ *   veintinueve parches: la franja costera de toda la isla —Indonesia, Malasia
+ *   y Brunéi, los tres confirmados contra el polígono— más los dos complejos de
+ *   lagos interiores, el del Mahakam y el del Kapuas. Las cúpulas grandes de
+ *   Kalimantan central **no están adentro**: Sebangau y Mawas dan `273`
+ *   —pantano de agua dulce del suroeste de Borneo— y el borde norte de Sebangau
+ *   da `281`, brezales de la Sonda. Y el Parque Nacional Tanjung Puting está
+ *   repartido entre cuatro ecorregiones: su norte y su este dan 281, su noroeste
+ *   y su noreste dan `219` y sólo su sector sur da 221. Por eso el «más de 200
+ *   especies de aves» que One Earth cita de ese parque es una cifra del parque y
+ *   no de la ecorregión, y así está escrito en la ficha.
+ * - **El 221 trae el espesor medido adentro del polígono y en los dos extremos
+ *   del gradiente.** Tierra adentro, la cúpula al sur de Putussibau: 2-4 m en el
+ *   borde, 17-18 m en el centro, máximo barrenado de 18 m y media modelada de
+ *   5,16 ± 2,66 m sobre 3.833 km². En la costa, Rasau Jaya: 4-6 m donde quedó
+ *   intacta y menos de 1 m con 20-30 % de orgánico donde el programa de
+ *   transmigración de los setenta cultivó y quemó. Los dos sitios dan 221.
+ * - **El 264 se distingue por lo que tiene abajo: arcilla marina sulfídica.**
+ *   Siete parches, el mayor en la costa oriental de Pahang y el segundo en el
+ *   norte de Selangor, los dos confirmados contra el polígono. Agua negra a pH
+ *   2,9-4,5. Drenar acá no sólo oxida la turba: acerca el aire a los sulfuros de
+ *   la arcilla, que es la receta de un suelo sulfatado ácido.
+ *
+ * Y el hallazgo que cambia el diseño, que no es de ficha sino de cultivo. Las
+ * dos turberas del 06/11 cancelaron el +20 de forestal diciendo que la versión
+ * que funciona sin drenar es paludícola —sagú y jelutong—, sin poder decir si
+ * eso rinde. Ahora se puede, y está medido **adentro del 221**: en Mukah,
+ * Sarawak, en turba somera de 0,5 a 1,5 m, sin drenaje artificial y con la napa
+ * unos 10 cm abajo de la superficie, más del 80 % de las palmas de sagú formó
+ * tronco a los 5-6 años y maduró a los 10-11. En turba profunda no, y no por el
+ * agua: con la napa alta todo el año sólo un 20 % formó tronco a los 10-15 años
+ * y ninguna maduró. Lo que separa los dos resultados es el espesor, porque en
+ * turba somera la raíz llega al subsuelo mineral y come de ahí.
+ *
+ * El veredicto está en
+ * `_research/_encargos/RESPUESTAS_FICHAS_FASE_4_LOTES_09_10.md`.
+ *
  * Lo que este lote **no** cubre: el resto de Indomalaya (península malaya,
  * Borneo de tierra firme, Nueva Guinea, el Himalaya, Indochina seca) sigue
  * cayendo al bioma global. No es un olvido: son las que corregían un número,
@@ -162,6 +210,11 @@ export const ECO_ID_INDOMALAYA: Record<number, string> = {
   288: 'java_bali_montano',          // Western Java montane rain forests
   229: 'java_bali_montano',          // Eastern Java-Bali montane rain forests
   273: 'pantanos_borneo_suroeste',   // Southwest Borneo freshwater swamp forests
+  221: 'pantanos_turba_borneo',      // Borneo peat swamp forests — la turba de la costa
+                                     // y de los lagos, no las cúpulas de Kalimantan central
+
+  // La península malaya: entra sólo la turbera, que es la que corrige el número
+  264: 'pantanos_turba_malaca',      // Peninsular Malaysian peat swamp forests
 
   // Filipinas
   241: 'luzon_bajo',                 // Luzon rain forests

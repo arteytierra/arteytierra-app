@@ -89,9 +89,9 @@ describe('catálogos de fichas', () => {
   it('toda ficha regional trae especies, salvo una y con motivo', () => {
     // 22 escritas a mano + 53 americanas + 10 canadienses + 8 europeas
     // + 28 de la UE y sus asociados + 28 de Medio Oriente + 14 del norte de
-    // África mediterráneo + 38 de Indomalaya + 2 de Australasia
+    // África mediterráneo + 40 de Indomalaya + 2 de Australasia
     // + 47 sudamericanas + 2 del África tropical y austral.
-    expect(Object.keys(BIOMAS_REGIONALES)).toHaveLength(254);
+    expect(Object.keys(BIOMAS_REGIONALES)).toHaveLength(256);
 
     // La única excepción: la ficha de WWF de IM0108 no nombra ninguna planta
     // con nombre científico, y deducirla de las ecorregiones vecinas sería
@@ -144,9 +144,9 @@ describe('catálogos de fichas', () => {
 
 describe('lista blanca de ecorregiones', () => {
   it('toda ecorregión curada apunta a una ficha que existe', () => {
-    // 109 sudamericanas + 331 del resto del mundo, de las 846 de RESOLVE.
+    // 109 sudamericanas + 333 del resto del mundo, de las 846 de RESOLVE.
     expect(Object.keys(ECO_ID_SUDAMERICA)).toHaveLength(109);
-    expect(Object.keys(ECO_ID_RESTO_DEL_MUNDO)).toHaveLength(333);
+    expect(Object.keys(ECO_ID_RESTO_DEL_MUNDO)).toHaveLength(335);
     for (const [eco, id] of Object.entries(ECO_ID_A_FICHA)) {
       expect(fichaPorId(id), `ECO_ID ${eco} → ${id}`).not.toBeNull();
     }
@@ -307,12 +307,18 @@ describe('lista blanca de ecorregiones', () => {
     for (const [eco, ficha] of na) expect(fichaDeEcorregion(eco), String(eco)).toBe(ficha);
   });
 
-  it('Indomalaya quedó cubierta: los 36 ECO_ID tienen ficha', () => {
+  it('Indomalaya quedó cubierta: los 43 ECO_ID tienen ficha', () => {
     // Esta lista no salió de enumerar una envolvente como Canadá, la UE o el
     // norte de África: salió de buscar dónde el bioma global estaba diciendo
-    // un número equivocado. Son 36 ECO_ID en 35 fichas —229 y 288 comparten
+    // un número equivocado. Son 43 ECO_ID en 42 fichas —229 y 288 comparten
     // java_bali_montano— y el resto de Indomalaya sigue cayendo al bioma
     // global a propósito. Ver ecorregionesIndomalaya.ts.
+    //
+    // Al 12/11/2026 esta lista tenía 36 entradas y el mapa 43: las cinco que
+    // entraron el 05 y el 06/11 —294, 315, 323, 280 y 286— nunca se agregaron
+    // acá, así que el test afirmaba una cobertura vieja sin fallar, porque sólo
+    // comprueba las que nombra. Van las cinco más las dos turberas del
+    // 12/11/2026, y así el número del título vuelve a ser cierto.
     //
     // Las tres del Decán son las únicas de bioma seco y entraron después que
     // las otras 32, por otro motivo: no para corregir un número del bioma sino
@@ -354,8 +360,25 @@ describe('lista blanca de ecorregiones', () => {
       [231, 'negros_panay'],
       [246, 'mindanao_montano'],
       [247, 'mindanao_visayas_oriental'],
+      // Las del 05/11/2026: tres biomas distintos, y entraron para destrabar
+      // prácticas del territorio ya verificadas que no tenían dónde montarse.
+      [294, 'bosques_secos_irrawaddy'],
+      [315, 'matorral_espinoso_decan'],
+      [323, 'manglares_sundarbans'],
+      // Las cuatro turberas de RESOLVE, que son todas de Indomalaya: las dos
+      // del 06/11/2026 y las dos del 12/11/2026. Ojo con los nombres, porque
+      // cada una tiene al lado un pantano de agua dulce que se llama casi
+      // igual: 277 es «Sumatran freshwater swamp» y 280 «Sumatran peat swamp»;
+      // 285 es «Tonle Sap freshwater swamp» y 286 «Tonle Sap-Mekong peat
+      // swamp»; y el 273, «Southwest Borneo freshwater swamp», es el que se
+      // queda con las cúpulas de turba de Kalimantan central que el 221 no
+      // cubre.
+      [280, 'pantanos_turba_sumatra'],
+      [286, 'pantanos_tonle_sap_mekong_turba'],
+      [221, 'pantanos_turba_borneo'],
+      [264, 'pantanos_turba_malaca'],
     ];
-    expect(im).toHaveLength(36);
+    expect(im).toHaveLength(43);
     for (const [eco, ficha] of im) expect(fichaDeEcorregion(eco), String(eco)).toBe(ficha);
   });
 
