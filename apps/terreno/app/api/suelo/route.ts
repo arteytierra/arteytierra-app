@@ -58,7 +58,11 @@ async function openCache(): Promise<Cache | null> {
   try { return await caches.open('terreno-suelo-v2'); } catch { return null; }
 }
 
-const PROPS  = ['phh2o', 'soc', 'clay', 'sand', 'silt', 'bdod', 'nitrogen'];
+// `cec` entró el 12/11/2026 para reconocer suelo expansivo (ver
+// `lib/sueloExpansivo.ts`). Las respuestas cacheadas de antes no la traen, y
+// por eso el cliente la lee tolerando la ausencia en vez de asumir cero: una
+// CEC de cero leería una esmectita como caolinita.
+const PROPS  = ['phh2o', 'soc', 'clay', 'sand', 'silt', 'bdod', 'nitrogen', 'cec'];
 const DEPTHS = ['0-5cm', '5-15cm', '15-30cm', '30-60cm', '60-100cm', '100-200cm'];
 
 /**

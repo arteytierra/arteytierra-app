@@ -68,7 +68,7 @@ const BASE = `https://files.isric.org/soilgrids/latest/data_aggregated/${RESOLUC
 /** NoData declarado por los propios GeoTIFF (tag GDAL_NODATA). */
 const NO_DATA = -32768;
 
-export const PROPIEDADES = ['phh2o', 'soc', 'clay', 'sand', 'silt', 'bdod', 'nitrogen'] as const;
+export const PROPIEDADES = ['phh2o', 'soc', 'clay', 'sand', 'silt', 'bdod', 'nitrogen', 'cec'] as const;
 export type Propiedad = (typeof PROPIEDADES)[number];
 
 export const PROFUNDIDADES = ['0-5cm', '5-15cm', '15-30cm', '30-60cm', '60-100cm', '100-200cm'] as const;
@@ -91,12 +91,13 @@ const D_FACTOR: Record<Propiedad, number> = {
   silt:     10,   // g/kg            → %
   bdod:    100,   // cg/cm³          → kg/dm³
   nitrogen:100,   // cg/kg           → g/kg
+  cec:      10,   // mmol(c)/kg      → cmol(c)/kg
 };
 
 /** Unidad física de cada propiedad, tal como la nombra ISRIC. */
 const UNIDAD: Record<Propiedad, string> = {
   phh2o: '-', soc: 'g/kg', clay: '%', sand: '%', silt: '%',
-  bdod: 'kg/dm³', nitrogen: 'g/kg',
+  bdod: 'kg/dm³', nitrogen: 'g/kg', cec: 'cmol(c)/kg',
 };
 
 /**
@@ -224,7 +225,7 @@ async function conTope<T, R>(items: T[], tope: number, fn: (t: T) => Promise<R>)
 /**
  * Concurrencia contra files.isric.org.
  *
- * Son 42 archivos (7 propiedades × 6 profundidades) y cada uno cuesta dos o tres
+ * Son 48 archivos (8 propiedades × 6 profundidades) y cada uno cuesta dos o tres
  * viajes: la cabecera, el índice de tiles y la tile. El cuello no es el ancho de
  * banda —una tile son 35 KB— sino la latencia, así que serializar sale carísimo.
  * Medido el 26/09/2026 desde Argentina contra el servidor en Países Bajos, en
@@ -235,15 +236,20 @@ async function conTope<T, R>(items: T[], tope: number, fn: (t: T) => Promise<R>)
  *   concurrencia 42 → 15,7 s
  *
  * Con 8 se pasa del presupuesto del cliente (45 s) apenas el servidor tenga un
- * mal momento, así que van los 42 de una. Son 42 pedidos de rango en una sola
- * ráfaga, una vez por predio nuevo, y después el punto queda 30 días en la caché
- * compartida: menos tráfico del que genera abrir un mapa de teselas. Un visor
- * web pide más que esto por cada paneo.
+ * mal momento, así que van todos de una, en una sola ráfaga, una vez por predio
+ * nuevo, y después el punto queda 30 días en la caché compartida: menos tráfico
+ * del que genera abrir un mapa de teselas. Un visor web pide más que esto por
+ * cada paneo.
+ *
+ * La tabla se midió con 42 archivos. El 12/11/2026 entró la octava propiedad
+ * —`cec`, para reconocer suelo expansivo— y el tope sube a 48 en vez de dejar
+ * seis en una segunda tanda: lo que cuesta es la latencia, y una tanda más es
+ * un viaje más completo. No se volvió a medir en frío desde Argentina.
  *
  * (El segundo punto de la misma lambda sale en ~270 ms, porque las cabeceras y
  * las tiles vecinas ya están en memoria. Lo caro es siempre el arranque en frío.)
  */
-const CONCURRENCIA = 42;
+const CONCURRENCIA = 48;
 
 /**
  * Un reintento por archivo.

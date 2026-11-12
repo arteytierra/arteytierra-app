@@ -24,6 +24,7 @@ import {
 } from './hidrologiaPredio';
 import type { FuenteRelieve } from './grillaElevacion';
 import type { GrupoHidro } from './cuenca';
+import type { SueloExpansivo } from './sueloExpansivo';
 import { DUR_MIN_MIN } from './tormenta';
 
 // ─── Cuenca de aporte (B2) ────────────────────────────────────────────────────
@@ -55,6 +56,12 @@ export interface EntradaCuencaSalud {
   tc_factor?:       number | null;
   tc_kirpich_min?:  number | null;
   tc_min?:          number | null;
+  /**
+   * Suelo expansivo en el punto (A4), si se pudo reconocer. Acá el aviso no
+   * es para desconfiar del CN del evento sino para mandar la desconfianza
+   * al lugar que le toca, que es el coeficiente ANUAL de la represa.
+   */
+  expansivo?:       SueloExpansivo | null;
 }
 
 /** Hasta acá Kirpich fue calibrado (cuencas agrícolas chicas). */
@@ -166,6 +173,29 @@ export function confianzaCuenca(e: EntradaCuencaSalud): Confianza {
     });
   }
 
+  // El suelo que se agrieta no tiene una infiltración, tiene dos, y el CN es
+  // una sola. Lo importante acá es que el aviso no asuste en el lugar
+  // equivocado: para la tormenta de diseño el grupo D está bien.
+  if (e.expansivo) {
+    avisos.push({
+      id: 'suelo_expansivo', nivel: 'aviso',
+      titulo: e.expansivo.nivel === 'medido'
+        ? 'Suelo expansivo: este perfil tiene dos infiltraciones, no una'
+        : 'Puede ser suelo expansivo: serían dos infiltraciones, no una',
+      detalle:
+        'Las grietas de contracción controlan la infiltración mientras están '
+        + 'abiertas, incluso rellenas de material de la superficie (WRB 2022). '
+        + 'Medido en el vertisol del ICRISAT: 76 mm/h en la primera media hora, '
+        + '34 en la segunda, 4 en la segunda hora y 0,21 ± 0,1 después de 144 h. '
+        + 'Un factor 360 entre el suelo agrietado y el sellado, y el CN describe '
+        + 'uno de los dos estados. Para la tormenta de diseño el estado sellado '
+        + 'es el que corresponde —un T10 o un T50 cae con el perfil ya húmedo y '
+        + 'las grietas cerradas—, así que este caudal pico no cambia. Lo que sí '
+        + 'queda sobreestimado es el coeficiente ANUAL que usa la represa: '
+        + 'miralo en esa pestaña. ' + e.expansivo.cautela,
+    });
+  }
+
   avisos.push({
     id: 'amc_ii', nivel: 'ok',
     titulo: 'CN en humedad antecedente media (AMC II)',
@@ -189,6 +219,12 @@ export interface EntradaRepresaSalud {
   cuencaCalculada:     boolean;
   infiltracion_mm_dia: number;
   grupo:               GrupoHidro | null;
+  /**
+   * Suelo expansivo en el punto (A4), si se pudo reconocer. Es el aviso que
+   * más importa de los tres: el coeficiente anual alimenta el llenado, y en
+   * este suelo la tabla por grupo hidrológico se equivoca para arriba.
+   */
+  expansivo?:          SueloExpansivo | null;
   fuenteDem?:          FuenteRelieve | null;
   /** cómo llegó muestreado el relieve: una grilla escalonada vacía el D8 */
   relieve?:         RelieveMedido | null;
@@ -250,6 +286,28 @@ export function confianzaRepresa(e: EntradaRepresaSalud): Confianza {
     titulo: 'El balance corre sobre el año promedio',
     detalle: 'Son las normales mensuales, no una serie de años. Un año seco real cae bastante por debajo de esta curva: si la confiabilidad da justa en el año medio, en el año seco no alcanza. Miralo como el mejor caso razonable.',
   });
+
+  // El aviso que justifica todo el módulo: si el suelo es expansivo, el
+  // coeficiente anual que llena esta represa está sobreestimado, y el error
+  // va para arriba. No se toca el número —ver `lib/sueloExpansivo.ts`—: se
+  // dice cuánto puede valer y qué se mide para saberlo.
+  if (e.expansivo) {
+    avisos.push({
+      id: 'suelo_expansivo',
+      nivel: e.expansivo.nivel === 'medido' ? 'alerta' : 'aviso',
+      titulo: e.expansivo.nivel === 'medido'
+        ? 'Suelo expansivo: el aporte anual está sobreestimado'
+        : 'Puede ser suelo expansivo, y entonces el aporte anual está sobreestimado',
+      detalle:
+        e.expansivo.efecto_hidrologico
+        + ' No cambia el vaso —un suelo así retiene—: cambia el agua que '
+        + 'llega. Lo que hay que hacer es bajar el coeficiente a mano hacia el '
+        + 'extremo inferior y ver si la represa sigue aguantando; si no aguanta, '
+        + 'el dato que decide no es un pozo de infiltración sino el '
+        + 'escurrimiento medido de una temporada en el mismo predio. '
+        + e.expansivo.cautela,
+    });
+  }
 
   avisos.push({
     id: 'coef_anual', nivel: 'ok',

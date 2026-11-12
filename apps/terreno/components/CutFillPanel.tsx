@@ -12,6 +12,7 @@ import { caudalPico_l_h, factorContraPromedio, espaciosBebida, UMBRAL_DISTANCIA_
 import { RodeoEditor } from './mapa/RodeoEditor';
 import { cuencaAdaptativa, bboxDeMojones, puntoMasBajoEnArista } from '@/lib/cuencaHidro';
 import { COBERTURAS, coefEscorrentiaAnual } from '@/lib/cuenca';
+import type { SueloExpansivo } from '@/lib/sueloExpansivo';
 import { revanchaMinima, factorEvaporacionEspejo, TALUD_INTERNO_MIN_AH590, coronaMinima } from '@/lib/represaDiseno';
 import { RepresaCriteriosBloque, ComparacionCandidatos } from './RepresaCriteriosBloque';
 import { VasoRealBloque } from './VasoRealBloque';
@@ -74,6 +75,15 @@ interface Props {
   datosClima?:   DatosClima | null;
   cuencaHa?:     number | null;   // área de la cuenca de aporte (B2), si existe
   grupoHidro?:   GrupoHidro | null;   // grupo hidrológico del suelo (A4), si existe
+  /**
+   * Suelo expansivo del punto (A4), si se pudo reconocer.
+   *
+   * Acá vale más que en cualquier otro panel: el coeficiente anual que llena
+   * esta represa sale de una tabla por grupo hidrológico que en este suelo se
+   * equivoca para arriba por un factor de tres o cuatro (ver
+   * `lib/sueloExpansivo.ts`).
+   */
+  expansivo?:    SueloExpansivo | null;
   /** Cómo llegó muestreado el relieve. Se llama así y no `relieve` porque ese
    *  nombre ya lo usa adentro el TEXTO de la fuente, y pasar uno por el otro
    *  compila sin una queja. */
@@ -120,7 +130,7 @@ interface Props {
   composicionPredio?: Array<{ nombre: string; pct: number }>;
 }
 
-export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo, seccion = 'embalse', datosClima = null, cuencaHa = null, grupoHidro = null, muestreoRelieve = null, texturaSuelo = null, inicial = null, onInputs, guardadas = [], onGuardar, onAbrir, onEliminar, rodeo, onRodeo, onResumenRepresa, onCuencaCalculada, onMuroLinea, onPuntoDerrame, onSalidaVertedero, coefAnualPredio = null, composicionPredio = [] }: Props) {
+export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo, seccion = 'embalse', datosClima = null, cuencaHa = null, grupoHidro = null, expansivo = null, muestreoRelieve = null, texturaSuelo = null, inicial = null, onInputs, guardadas = [], onGuardar, onAbrir, onEliminar, rodeo, onRodeo, onResumenRepresa, onCuencaCalculada, onMuroLinea, onPuntoDerrame, onSalidaVertedero, coefAnualPredio = null, composicionPredio = [] }: Props) {
   const relieve = useTextoRelieve();
   const [selId,    setSelId]    = useState<string>(inicial?.poligonoId ?? '');
   const [cargando, setCargando] = useState(false);
@@ -1305,7 +1315,7 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
         <RepresaSimSection
           seccion={seccion}
           res={res} datosClima={datosClima} cuencaHa={cuencaMuro?.area_ha ?? cuencaHa}
-          grupoHidro={grupoHidro} texturaSuelo={texturaSuelo} fuenteDem={datosShader?.fuente ?? null}
+          grupoHidro={grupoHidro} expansivo={expansivo} texturaSuelo={texturaSuelo} fuenteDem={datosShader?.fuente ?? null}
           relieve={muestreoRelieve} onResumen={recibirResumen}
           rodeo={rodeo} onRodeo={onRodeo}
           cobertura={coberturaCuenca} onCobertura={setCoberturaCuenca}
@@ -1329,12 +1339,13 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
 
 function RepresaSimSection({
   seccion,
-  res, datosClima, cuencaHa, grupoHidro = null, texturaSuelo = null, fuenteDem = null, relieve = null, onResumen,
+  res, datosClima, cuencaHa, grupoHidro = null, expansivo = null, texturaSuelo = null, fuenteDem = null, relieve = null, onResumen,
   rodeo, onRodeo, cobertura, onCobertura, coef, onCoef, ha, onHa, seep, onSeep,
   coefAnualPredio, composicionPredio, coefGuardado,
 }: {
   seccion: SeccionRepresa;
   res: ResultadoEmbalse; datosClima: DatosClima | null; cuencaHa: number | null; grupoHidro?: GrupoHidro | null;
+  expansivo?: SueloExpansivo | null;
   texturaSuelo?: { arcilla_pct: number; arena_pct: number } | null;
   fuenteDem?: DatosShader['fuente'] | null;
   relieve?: RelieveMedido | null;
@@ -1457,9 +1468,10 @@ function RepresaSimSection({
     cuencaCalculada:     cuencaHa != null && Math.abs((parseFloat(ha) || 0) - cuencaHa) < 0.05,
     infiltracion_mm_dia: parseFloat(seep) || 0,
     grupo:               grupoHidro,
+    expansivo,
     fuenteDem,
     relieve,
-  }), [datosClima, res.area_inundada_m2, ha, cuencaHa, seep, grupoHidro, fuenteDem, relieve]);
+  }), [datosClima, res.area_inundada_m2, ha, cuencaHa, seep, grupoHidro, expansivo, fuenteDem, relieve]);
 
   return (
     <div className={seccion === 'embalse' ? 'hidden' : 'space-y-2'}>

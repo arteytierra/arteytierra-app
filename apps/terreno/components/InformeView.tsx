@@ -1346,6 +1346,19 @@ export function InformeView({ datos, compartido = false }: Props) {
                 <p className="text-[10px] text-ink-700/70 leading-relaxed mt-1">{datos.suelo.organico.detalle}</p>
               </div>
             )}
+            {/* Y el de suelo expansivo, por lo mismo: el informe se discute sin
+                nosotros al lado, y el número de la represa que está unas páginas
+                más adelante depende de esto. */}
+            {datos.suelo.expansivo && (
+              <div className="mb-4 border-l-4 border-clay-700 bg-clay-100 px-3 py-2">
+                <p className="text-[11px] font-semibold text-clay-700 uppercase tracking-wide">
+                  {datos.suelo.expansivo.nivel === 'medido' ? 'Suelo expansivo' : 'Puede ser suelo expansivo'}
+                </p>
+                <p className="text-xs text-ink-900 leading-relaxed mt-0.5">{datos.suelo.expansivo.cautela}</p>
+                <p className="text-[10px] text-ink-700/70 leading-relaxed mt-1">{datos.suelo.expansivo.detalle}</p>
+                <p className="text-[10px] text-ink-700/70 leading-relaxed mt-1">{datos.suelo.expansivo.efecto_hidrologico}</p>
+              </div>
+            )}
             <div className="grid grid-cols-4 gap-3 mb-4">
               <StatBlock label="pH (0–5 cm)" value={String(datos.suelo.ph)} sub={datos.suelo.interp.ph.clase} />
               <StatBlock label="C. orgánico" value={`${datos.suelo.carbono_org} g/kg`} sub={datos.suelo.interp.carbono.clase} />

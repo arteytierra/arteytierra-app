@@ -3401,6 +3401,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
                   onDibujarEspejo={handleDibujarEspejo}
                   datosClima={datosClima} cuencaHa={cuenca?.area_ha ?? null} muestreoRelieve={muestreoRelieve}
                   grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null}
+                  expansivo={datosSuelo?.expansivo ?? null}
                   texturaSuelo={datosSuelo ? { arcilla_pct: datosSuelo.arcilla, arena_pct: datosSuelo.arena } : null}
                   inicial={represaInputs} onInputs={setRepresaInputs}
                   guardadas={represasGuardadas}
@@ -3547,6 +3548,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
                 tieneShader={!!datosShader}
                 cuenca={cuenca}
                 grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null}
+                expansivo={datosSuelo?.expansivo ?? null}
                 precipT10={datosExtremos?.tormenta.recurrencias.find(r => r.periodo_retorno === 10)?.mm ?? null}
                 modoActivo={modoCuenca}
                 cargando={cuencaLoading}

@@ -19,6 +19,7 @@
  */
 import { fuentesNacionalesSuelo, pasoSueloTexto, PASO_SUELO_M } from './sueloFuentes';
 import { detectarSueloOrganico, type SueloOrganico } from './sueloOrganico';
+import { detectarSueloExpansivo, type SueloExpansivo } from './sueloExpansivo';
 import { obtenerRocaMadre, type RocaMadre } from './rocaMadre';
 import { claseTexturaUSDA, nombreTextura } from './textura';
 
@@ -43,6 +44,23 @@ export interface CapaSuelo {
   awc_frac:      number;   // agua útil = cc − pmp
   awc_mm:        number;   // agua útil de la capa (mm)
   ksat:          number;   // conductividad hidráulica saturada (mm/h)
+  /**
+   * Capacidad de intercambio catiónico, en cmol(c)/kg de suelo, tamponada a
+   * pH 7. Decide, junto con la arcilla, si el suelo es expansivo (ver
+   * `lib/sueloExpansivo.ts`).
+   *
+   * Es **opcional y puede ser `null`**, y eso no es prolijidad: entró el
+   * 12/11/2026 y las respuestas que quedaron en la caché de 30 días no la
+   * traen. Un cero en su lugar leería una esmectita como caolinita, que es
+   * justo el error que el módulo existe para no cometer.
+   */
+  cec?:          number | null;
+  /**
+   * Extensibilidad lineal, en % (≡ COLE × 100): cuánto cambia de largo un
+   * terrón al secarse. Es la medición directa del hinchamiento y sólo la trae
+   * un relevamiento de campo; hoy, SSURGO.
+   */
+  lep?:          number | null;
 }
 
 /** Resumen de agua útil (capacidad de almacenamiento de agua disponible). */
@@ -86,6 +104,16 @@ export interface DatosSuelo {
    * diluye las turberas chicas. Ver `lib/sueloOrganico.ts`.
    */
   organico:      SueloOrganico | null;
+  /**
+   * Suelo expansivo en el punto, o `null` si no se puede afirmar que lo haya.
+   * `null` no dice que no lo sea: la fuente puede no traer CEC, o el valor
+   * puede quedar diluido en la celda. Ver `lib/sueloExpansivo.ts`.
+   *
+   * Importa porque contradice al grupo hidrológico: un suelo que se agrieta
+   * infiltra mucho al principio de la temporada y nada después, y el
+   * coeficiente anual que alimenta la represa queda sobreestimado.
+   */
+  expansivo:     SueloExpansivo | null;
   /**
    * Roca de base del punto, o `null` si ningún mapa geológico lo cubre o el
    * servicio no respondió. Nunca hace fallar el análisis de suelo: es una capa
@@ -185,13 +213,25 @@ export async function obtenerSuelo(lat: number, lng: number): Promise<DatosSuelo
     sinOrganico(lat, lng),
     obtenerRocaMadre(lat, lng),
   ]);
-  // El orgánico se calcula acá y no en cada builder porque depende sólo del
-  // perfil, y el perfil lo arman igual SoilGrids y SSURGO. Un solo lugar, un
-  // solo criterio.
-  return { ...datos, organico: detectarSueloOrganico(datos.perfil), roca };
+  // El orgánico y el expansivo se calculan acá y no en cada builder porque
+  // dependen sólo del perfil, y el perfil lo arman igual SoilGrids y SSURGO.
+  // Un solo lugar, un solo criterio. El `taxorder` sí es propio de SSURGO y
+  // viaja aparte: donde existe, reemplaza a la inferencia.
+  const { taxorder, ...limpio } = datos;
+  return {
+    ...limpio,
+    organico:  detectarSueloOrganico(datos.perfil),
+    expansivo: detectarSueloExpansivo(datos.perfil, { taxorder }),
+    roca,
+  };
 }
 
-async function sinOrganico(lat: number, lng: number): Promise<Omit<DatosSuelo, 'organico' | 'roca'>> {
+/** Lo que trae el builder: el suelo sin diagnósticos, más el orden taxonómico
+ *  cuando la fuente lo conoce. */
+type SueloCrudo = Omit<DatosSuelo, 'organico' | 'expansivo' | 'roca'>
+  & { taxorder?: string | null };
+
+async function sinOrganico(lat: number, lng: number): Promise<SueloCrudo> {
   for (const f of fuentesNacionalesSuelo(lat, lng)) {
     if (f === 'ssurgo') {
       const d = await desdeSsurgo(lat, lng).catch(() => null);
@@ -201,7 +241,7 @@ async function sinOrganico(lat: number, lng: number): Promise<Omit<DatosSuelo, '
   return desdeSoilGrids(lat, lng);
 }
 
-async function desdeSoilGrids(lat: number, lng: number): Promise<Omit<DatosSuelo, 'organico' | 'roca'>> {
+async function desdeSoilGrids(lat: number, lng: number): Promise<SueloCrudo> {
   const url = `/api/suelo?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}`;
 
   // 45 s y no 35: el proxy reintenta hasta tres veces contra ISRIC, que limita
@@ -222,10 +262,23 @@ async function desdeSoilGrids(lat: number, lng: number): Promise<Omit<DatosSuelo
 
     // Lee la propiedad `name` en la profundidad índice `di`, aplicando d_factor.
     function val(name: string, di: number): number {
+      return valOpt(name, di) ?? 0;
+    }
+
+    /**
+     * Lo mismo, pero distinguiendo «no hay dato» de «cero».
+     *
+     * Para el pH o la arcilla el cero de `val` es una simplificación que no
+     * hace daño, porque todo lo que los consume ya trata el cero como hueco.
+     * Para la CEC sí hace daño: una CEC de cero es arcilla de baja actividad,
+     * o sea el diagnóstico contrario al que corresponde, y las respuestas
+     * cacheadas antes del 12/11/2026 no traen la capa.
+     */
+    function valOpt(name: string, di: number): number | null {
       const layer = layers.find(l => l.name === name);
-      if (!layer) return 0;
+      if (!layer) return null;
       const raw = layer.depths[di]?.values?.mean ?? null;
-      if (raw === null) return 0;
+      if (raw === null) return null;
       const df  = layer.unit_measure.d_factor || 1;
       return Math.round((raw / df) * 100) / 100;
     }
@@ -239,6 +292,7 @@ async function desdeSoilGrids(lat: number, lng: number): Promise<Omit<DatosSuelo
       const limo        = val('silt', di);
       const densidad_ap = val('bdod', di);
       const nitrogeno   = val('nitrogen', di);
+      const cec         = valOpt('cec', di);
       const espesor_mm  = (d.bot - d.top) * 10;
 
       // Materia orgánica % ≈ SOC% × 1.724 (factor Van Bemmelen). SOC g/kg → %: ÷10.
@@ -253,6 +307,10 @@ async function desdeSoilGrids(lat: number, lng: number): Promise<Omit<DatosSuelo
         awc_frac: sr.awc_frac,
         awc_mm: Math.round(sr.awc_frac * espesor_mm * 10) / 10,
         ksat: Math.round(sr.ksat * 100) / 100,
+        cec,
+        // SoilGrids no modela extensibilidad lineal: eso sólo lo mide un
+        // relevamiento de campo.
+        lep: null,
       };
     });
 
@@ -289,6 +347,10 @@ export interface HorizonteSsurgo {
   ksat: number;
   /** Fracciones volumétricas medidas, no estimadas por pedotransferencia. */
   cc: number; pmp: number; awc_frac: number;
+  /** CEC a pH 7 en cmol(c)/kg, si el horizonte la tiene descripta. */
+  cec?: number | null;
+  /** Extensibilidad lineal en %, la medición de campo del hinchamiento. */
+  lep?: number | null;
 }
 
 /**
@@ -300,7 +362,7 @@ export interface HorizonteSsurgo {
  * ya está escrito contra esas seis capas. El valor de cada capa es el promedio
  * de los horizontes que la cruzan, ponderado por cuánto la cruzan.
  */
-async function desdeSsurgo(lat: number, lng: number): Promise<Omit<DatosSuelo, 'organico' | 'roca'> | null> {
+async function desdeSsurgo(lat: number, lng: number): Promise<SueloCrudo | null> {
   const res = await fetch(`/api/suelo/ssurgo?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}`, {
     signal: AbortSignal.timeout(35_000),
   });
@@ -340,6 +402,10 @@ async function desdeSsurgo(lat: number, lng: number): Promise<Omit<DatosSuelo, '
       densidad_ap: num(col(f, 'dbthirdbar_r')) ?? 0,
       ph:          num(col(f, 'ph1to1h2o_r')) ?? 0,
       ksat:        (num(col(f, 'ksat_r')) ?? 0) * 3.6,        // µm/s → mm/h
+      // Estas dos van sin `?? 0`: SSURGO deja la CEC en blanco en muchos
+      // horizontes y un cero inventado diría «arcilla de baja actividad».
+      cec:         num(col(f, 'cec7_r')),
+      lep:         num(col(f, 'lep_r')),
       cc, pmp,
       awc_frac: awc ?? Math.max(0, cc - pmp),
     });
@@ -356,6 +422,7 @@ async function desdeSsurgo(lat: number, lng: number): Promise<Omit<DatosSuelo, '
   const compname = col(primera, 'compname') ?? 'componente dominante';
   const comppct  = num(col(primera, 'comppct_r'));
   const hydgrp   = col(primera, 'hydgrp');
+  const taxorder = col(primera, 'taxorder');
   const drenaje  = col(primera, 'drainagecl');
 
   const sup = perfil[0]!;
@@ -371,6 +438,7 @@ async function desdeSsurgo(lat: number, lng: number): Promise<Omit<DatosSuelo, '
     agua_util: resumirAguaUtil(perfil),
     grupo_hidro: grupoHidroSsurgo(hydgrp, perfil),
     perfil,
+    taxorder,
     fuente: `USDA-NRCS SSURGO · ${muname} — componente ${compname}`
       + (comppct !== null ? ` (${comppct}% de la unidad)` : '')
       + (drenaje ? ` · drenaje: ${drenaje}` : '')
@@ -386,6 +454,27 @@ async function desdeSsurgo(lat: number, lng: number): Promise<Omit<DatosSuelo, '
  * cuánto la cruzan. Las capas que el perfil no alcanza no se inventan: se
  * omiten, y el resto de la app trabaja con las que hay.
  */
+/** Promedio ponderado de los horizontes que traen el valor, o `null`. */
+function medOpt(
+  partes: Array<{ h: HorizonteSsurgo; ov: number }>,
+  get: (h: HorizonteSsurgo) => number | null,
+): number | null {
+  const con = partes.filter(p => get(p.h) !== null);
+  if (!con.length) return null;
+  const total = con.reduce((a, p) => a + p.ov, 0);
+  if (total <= 0) return null;
+  return Math.round((con.reduce((a, p) => a + get(p.h)! * p.ov, 0) / total) * 100) / 100;
+}
+
+/** Máximo de los horizontes que traen el valor, o `null`. */
+function maxOpt(
+  partes: Array<{ h: HorizonteSsurgo; ov: number }>,
+  get: (h: HorizonteSsurgo) => number | null,
+): number | null {
+  const vals = partes.map(p => get(p.h)).filter((v): v is number => v !== null);
+  return vals.length ? Math.max(...vals) : null;
+}
+
 export function perfilSsurgo(horizontes: HorizonteSsurgo[]): CapaSuelo[] {
   const perfil: CapaSuelo[] = [];
   for (const d of DEPTHS) {
@@ -419,6 +508,13 @@ export function perfilSsurgo(horizontes: HorizonteSsurgo[]): CapaSuelo[] {
       awc_frac,
       awc_mm: Math.round(awc_frac * espesor_mm * 10) / 10,
       ksat: med(h => h.ksat),
+      // Estas dos se promedian sólo sobre los horizontes que las traen, y si
+      // no las trae ninguno queda `null`. El criterio es distinto para cada
+      // una: la CEC se pondera como el resto del perfil, y de la
+      // extensibilidad se toma el **máximo**, porque WRB le pide el valor a
+      // un horizonte y no al promedio de la capa.
+      cec: medOpt(partes, h => h.cec ?? null),
+      lep: maxOpt(partes, h => h.lep ?? null),
     });
   }
   return perfil;

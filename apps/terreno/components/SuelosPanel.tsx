@@ -155,6 +155,25 @@ export function SuelosPanel({
               </div>
               )}
 
+              {/* Suelo expansivo. Va junto al de turba y antes del perfil por la
+                  misma razón: contradice a los números de agua que vienen
+                  después, y hay que leerlo antes de usarlos. */}
+              {datos.expansivo && (
+              <div className={`rounded-xl border p-3 space-y-1.5 ${
+                datos.expansivo.nivel === 'medido'
+                  ? 'bg-clay-100 border-clay-300'
+                  : 'bg-sun-300/20 border-sun-300'
+              }`}>
+                <p className="text-xs font-semibold text-clay-700 flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                  {datos.expansivo.nivel === 'medido' ? 'Suelo expansivo' : 'Puede ser suelo expansivo'}
+                </p>
+                <p className="text-[11px] text-ink-900 leading-relaxed">{datos.expansivo.cautela}</p>
+                <p className="text-[10px] text-ink-700/70 leading-relaxed">{datos.expansivo.detalle}</p>
+                <p className="text-[10px] text-ink-700/70 leading-relaxed">{datos.expansivo.efecto_hidrologico}</p>
+              </div>
+              )}
+
               {/* Perfil vertical 0–200 cm */}
               {datos.perfil?.length > 0 && <PerfilSueloChart perfil={datos.perfil} />}
 

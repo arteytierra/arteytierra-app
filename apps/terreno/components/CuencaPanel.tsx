@@ -19,6 +19,7 @@ import { confianzaCuenca } from '@/lib/saludCalculo';
 import { PERIODOS_RETORNO, type HidrologiaPredio, type RelieveMedido } from '@/lib/hidrologiaPredio';
 import { volumenM3, volumenEnLitros, caudalM3s, duracionMin } from '@/lib/unidades';
 import type { FuenteRelieve } from '@/lib/grillaElevacion';
+import type { SueloExpansivo } from '@/lib/sueloExpansivo';
 import { SaludCalculo } from './SaludCalculo';
 import { AlcantarillaBloque } from './AlcantarillaBloque';
 
@@ -36,6 +37,8 @@ interface Props {
   tieneShader: boolean;
   cuenca:      Cuenca | null;
   grupoHidro:  GrupoHidro | null;   // de A4 (SuelosPanel), si está
+  /** Suelo expansivo del punto (A4), para la salud del cálculo. */
+  expansivo?:  SueloExpansivo | null;
   precipT10:   number | null;       // tormenta de diseño T10 de A3 (extremos), si está
   modoActivo:  boolean;
   cargando?:   boolean;             // delineación adaptativa en curso
@@ -77,7 +80,7 @@ export interface CuencaInputs {
   auto?:       boolean;
 }
 
-export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoActivo, cargando, aviso, poligonos = [], expandida, fuenteDem = null, relieve = null, hidro, onPeriodoRetorno, onMarcar, onLimpiar, onIrATopo, onUsarPoligono, onEditarCuenca, onExtender, inicial, onInputs, guardadas = [], onGuardar, onAbrir, onEliminar }: Props & PropsArchivo) {
+export function CuencaPanel({ tieneShader, cuenca, grupoHidro, expansivo = null, precipT10, modoActivo, cargando, aviso, poligonos = [], expandida, fuenteDem = null, relieve = null, hidro, onPeriodoRetorno, onMarcar, onLimpiar, onIrATopo, onUsarPoligono, onEditarCuenca, onExtender, inicial, onInputs, guardadas = [], onGuardar, onAbrir, onEliminar }: Props & PropsArchivo) {
   const [coberturaId, setCoberturaId] = useState(inicial?.coberturaId ?? 'pastura_regular');
   const [selManual, setSelManual] = useState('');
   const [grupo, setGrupo]     = useState<GrupoHidro>(inicial?.grupo ?? grupoHidro ?? 'B');
@@ -140,9 +143,10 @@ export function CuencaPanel({ tieneShader, cuenca, grupoHidro, precipT10, modoAc
           pendiente_m_m: cuenca.pendiente_m_m,
           tc_factor: resultado.tc_factor, tc_kirpich_min: resultado.tc_kirpich_min,
           tc_min: resultado.tc_min,
+          expansivo,
         })
       : null,
-    [cuenca, resultado, precipDeClima, grupoDeSuelo, expandida, fuenteDem, relieve, hidro.cn],
+    [cuenca, resultado, precipDeClima, grupoDeSuelo, expandida, fuenteDem, relieve, hidro.cn, expansivo],
   );
 
   // ── Archivo de cuencas ──

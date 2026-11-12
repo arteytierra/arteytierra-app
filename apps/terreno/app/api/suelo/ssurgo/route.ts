@@ -22,6 +22,11 @@ const SDA_URL   = 'https://sdmdataaccess.sc.egov.usda.gov/Tabular/post.rest';
 /**
  * Perfil del componente dominante de la unidad cartográfica que cae en el punto.
  *
+ * `taxorder`, `cec7_r` y `lep_r` viajan para el reconocimiento de suelo
+ * expansivo: la extensibilidad lineal es la medición de campo del hinchamiento
+ * y `taxorder = 'Vertisols'` es la clasificación del edáfologo. Donde hay
+ * SSURGO eso reemplaza a la inferencia (ver `lib/sueloExpansivo.ts`).
+ *
  * Va el componente dominante y no todos: una unidad cartográfica es un mosaico
  * (85% Clarion, 10% Nicollet, 5% otro) y promediarlos daría un suelo que no
  * existe en ningún lado. El porcentaje viaja en la respuesta para que el panel
@@ -34,7 +39,7 @@ function consulta(lng: string, lat: string): string {
            h.hzname, h.hzdept_r, h.hzdepb_r,
            h.claytotal_r, h.sandtotal_r, h.silttotal_r,
            h.om_r, h.dbthirdbar_r, h.ph1to1h2o_r, h.ksat_r, h.awc_r,
-           h.wthirdbar_r, h.wfifteenbar_r
+           h.wthirdbar_r, h.wfifteenbar_r, h.cec7_r, h.lep_r
     FROM mapunit mu
     JOIN component c ON c.mukey = mu.mukey
     LEFT JOIN chorizon h ON h.cokey = c.cokey

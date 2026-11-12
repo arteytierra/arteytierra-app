@@ -251,6 +251,22 @@ export const COBERTURAS: Cobertura[] = [
 // Distinto del SCS-CN (que es por tormenta): acá una fracción media anual de la
 // lluvia que llega a la represa. Base por grupo hidrológico modulada por la
 // cobertura, unificando el criterio suelo+cobertura del análisis de cuenca.
+//
+// **Donde esta tabla se sabe equivocada: los suelos expansivos.** En las
+// microcuencas del ICRISAT en Patancheru, con escurrimiento medido de 8 a 12
+// años, un vertisol con cultivo escurrió 7 a 11 % de la lluvia anual y la tabla
+// da 32 % (0,28 × 1,15); en barbecho, 17 % medido contra 42 %. El alfisol
+// arenoso de al lado, en cambio, midió 16 a 17 % contra 15 % de la tabla: acá
+// acierta. El error va para arriba, así que la represa se dimensiona con un
+// agua que no llega.
+//
+// **No se corrige el número, se avisa**, y es deliberado: Garg et al. es un
+// sitio, un clima y un manejo, y reemplazar una tabla global por el valor de
+// Patancheru sería cambiar un número general por uno local. El reconocimiento
+// del suelo está en `lib/sueloExpansivo.ts` y el aviso sale por
+// `lib/saludCalculo.ts`. Si alguna vez se toca esta tabla, tiene que ser con
+// rango de validez declarado y un test contra el caso medido, como pide la
+// skill `motor-de-calculo`.
 const COEF_BASE_GRUPO: Record<GrupoHidro, number> = { A: 0.08, B: 0.13, C: 0.20, D: 0.28 };
 const COEF_FACTOR_COBERTURA: Record<string, number> = {
   monte_bueno: 0.6, monte_regular: 0.75, matorral: 0.8,
