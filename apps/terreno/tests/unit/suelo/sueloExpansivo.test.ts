@@ -4,7 +4,16 @@ import {
   ARCILLA_VERTICA_PCT, ACTIVIDAD_ALTA_CMOL, LEP_VERTICO_PCT,
   CONTROL_TOP_CM, CONTROL_BOT_CM,
 } from '@/lib/sueloExpansivo';
-import { confianzaCuenca, confianzaRepresa } from '@/lib/saludCalculo';
+import {
+  confianzaCuenca, confianzaRepresa,
+  avisoSwalesExpansivo, avisoKeylineExpansivo,
+  BBF_SURCO_MIN_PCT, BBF_SURCO_MAX_PCT,
+  INFIL_AGRIETADO_MM_H, INFIL_SELLADO_MM_H,
+} from '@/lib/saludCalculo';
+import {
+  bandaDeriva, DERIVA_MIN_DRENAJE_PCT, DERIVA_MAX_PCT,
+  DERIVA_MAX_FRACCION_PENDIENTE, GRUPOS_QUE_ENCHARCAN,
+} from '@/lib/keylineGeometria';
 import { coefEscorrentiaAnual } from '@/lib/cuenca';
 import type { CapaSuelo } from '@/lib/suelos';
 
@@ -394,5 +403,145 @@ describe('el número que el aviso está corrigiendo sigue donde estaba', () => {
     expect(coefEscorrentiaAnual('D', 'barbecho')).toBeCloseTo(0.42, 2);
     // El alfisol arenoso, donde la tabla acierta: 15 % contra 16 a 17 % medido.
     expect(coefEscorrentiaAnual('B', 'cultivo_bueno')).toBeCloseTo(0.15, 2);
+  });
+});
+
+describe('el aviso en las dos herramientas que empujan a retener', () => {
+  /**
+   * Swales y Líneas clave son las que deciden QUÉ OBRA se hace, y hasta el
+   * 12/11/2026 no sabían nada de esto: el aviso salía en Cuenca y en Represa,
+   * que son las que calculan cuánta agua llega. Acá el error de no avisar es
+   * peor que allá, porque termina en tierra movida.
+   *
+   * Lo que se verifica es que los dos avisos digan las tres cosas que tienen
+   * que decir —el número de este panel no describe a este suelo, qué obra
+   * publica la bibliografía, y qué dato lo decide— y que no se pasen de ahí:
+   * el piso del estándar sigue donde estaba.
+   */
+  const MEDIDO  = detectarSueloExpansivo(HEIDEN, { taxorder: 'Vertisols' })!;
+  const POSIBLE = detectarSueloExpansivo(PATANCHERU)!;
+
+  it('sin diagnóstico no hay aviso, en ninguna de las dos', () => {
+    expect(avisoSwalesExpansivo({})).toBeNull();
+    expect(avisoSwalesExpansivo({ expansivo: null, ksat_mm_h: 1.2 })).toBeNull();
+    expect(avisoKeylineExpansivo({})).toBeNull();
+    expect(avisoKeylineExpansivo({ expansivo: null, banda: { min_pct: 0.2, max_pct: 2 } })).toBeNull();
+  });
+
+  it('medido es alerta e inferido es aviso, igual que en Represa', () => {
+    expect(avisoSwalesExpansivo({ expansivo: MEDIDO })!.nivel).toBe('alerta');
+    expect(avisoSwalesExpansivo({ expansivo: POSIBLE })!.nivel).toBe('aviso');
+    expect(avisoKeylineExpansivo({ expansivo: MEDIDO })!.nivel).toBe('alerta');
+    expect(avisoKeylineExpansivo({ expansivo: POSIBLE })!.nivel).toBe('aviso');
+    // El inferido nunca afirma. Es el falso positivo de Pergamino.
+    expect(avisoSwalesExpansivo({ expansivo: POSIBLE })!.titulo).toMatch(/^Puede ser/);
+    expect(avisoKeylineExpansivo({ expansivo: POSIBLE })!.titulo).toMatch(/^Puede ser/);
+  });
+
+  it('el swale: pone el vaciado entre los dos valores medidos', () => {
+    // Con 2 mm/h de perfil, la misma zanja se vacía 76/2 = 38 veces más rápido
+    // recién agrietada y 2/0,21 = 9,5 veces más lento sellada. La cuenta vale
+    // porque el vaciado es inversamente proporcional al Ksat para una misma
+    // sección: el Ksat es el único factor fuera del corchete de la integral.
+    const a = avisoSwalesExpansivo({ expansivo: MEDIDO, ksat_mm_h: 2 })!;
+    expect(a.detalle).toMatch(/2 mm\/h/);
+    expect(a.detalle).toMatch(/38 veces más rápido/);
+    expect(a.detalle).toMatch(/9,5 veces más lento/);
+    expect(a.detalle).toMatch(/factor 360/);
+    expect(a.detalle).toMatch(/no es ninguno de los dos/);
+  });
+
+  it('el swale: sin Ksat no inventa la comparación, la pide', () => {
+    const a = avisoSwalesExpansivo({ expansivo: MEDIDO })!;
+    expect(a.detalle).toMatch(/factor 360/);
+    expect(a.detalle).not.toMatch(/veces más rápido/);
+    expect(a.detalle).toMatch(/Cargá el suelo/);
+  });
+
+  it('el swale: dice qué obra se publica y cuál es el dato que decide', () => {
+    const a = avisoSwalesExpansivo({ expansivo: MEDIDO, ksat_mm_h: 1 })!;
+    // El camellón del ICRISAT, con su pendiente publicada y su propósito.
+    expect(a.detalle).toMatch(/camellón/);
+    expect(a.detalle).toMatch(/0,4 y 0,8 %/);
+    expect(a.detalle).toMatch(/cauces\s+empastados|cauces empastados/);
+    // El límite honesto del altiplano etíope: sin exceso no hay ventaja.
+    expect(a.detalle).toMatch(/año seco del ensayo no hubo diferencia/);
+    // Y los años secos de Patancheru, que es cuando no hay nada que juntar.
+    expect(a.detalle).toMatch(/menos de 500 mm/);
+    expect(a.detalle).toMatch(/escurrimiento medido de una temporada/);
+    // La cautela del diagnóstico viaja siempre: el aviso no es una certeza.
+    expect(a.detalle).toContain(MEDIDO.cautela);
+  });
+
+  it('las líneas clave: la geometría no es el problema y lo dice', () => {
+    const a = avisoKeylineExpansivo({ expansivo: MEDIDO })!;
+    expect(a.detalle).toMatch(/mueve el agua con una deriva/);
+    expect(a.detalle).toMatch(/geometría no es el problema/);
+    // El piso del estándar, contra la pendiente publicada para este suelo.
+    expect(a.detalle).toMatch(/0,2 %/);
+    expect(a.detalle).toMatch(/0,4 y 0,8 %/);
+    expect(a.detalle).toMatch(/dos a cuatro veces/);
+  });
+
+  it('las líneas clave: compara el techo de la banda contra el diseño', () => {
+    // Terreno de 0,5 %: el techo es 0,25 % y no llega ni al piso de 0,4 %.
+    const chato = avisoKeylineExpansivo({
+      expansivo: MEDIDO, banda: { min_pct: 0.2, max_pct: 0.25 },
+    })!;
+    expect(chato.detalle).toMatch(/techo de la banda es 0,25 %/);
+    expect(chato.detalle).toMatch(/1,6 %/);
+    expect(chato.detalle).toMatch(/desagüe de parcela/);
+
+    // Terreno de 1,2 %: el techo es 0,60 % y entra en la mitad baja.
+    const justo = avisoKeylineExpansivo({
+      expansivo: MEDIDO, banda: { min_pct: 0.2, max_pct: 0.6 },
+    })!;
+    expect(justo.detalle).toMatch(/mitad\s+baja de la banda publicada|mitad baja/);
+    expect(justo.detalle).toMatch(/sin margen/);
+
+    // Terreno de 6 %: el techo es 3 % y la banda publicada entra entera.
+    const sobra = avisoKeylineExpansivo({
+      expansivo: MEDIDO, banda: { min_pct: 0.2, max_pct: 3 },
+    })!;
+    expect(sobra.detalle).toMatch(/entra entera/);
+    expect(sobra.detalle).toMatch(/no al piso de 0,2 %/);
+  });
+
+  it('las líneas clave: sin patrón todavía, dice qué pendiente hace falta', () => {
+    const a = avisoKeylineExpansivo({ expansivo: MEDIDO, banda: null })!;
+    expect(a.detalle).toMatch(/la mitad de la pendiente del terreno/);
+    expect(a.detalle).toMatch(/1,6 %/);
+    expect(a.detalle).toMatch(/Generá el patrón/);
+  });
+
+  it('las líneas clave: el arado va con su límite declarado', () => {
+    const a = avisoKeylineExpansivo({ expansivo: MEDIDO })!;
+    expect(a.detalle).toMatch(/arado de cincel/);
+    // Esto no es una medición y el aviso lo dice, que es la mitad del valor.
+    expect(a.detalle).toMatch(/no se\s+encontraron publicados|no se encontraron publicados/);
+    expect(a.detalle).toMatch(/ni descartar/);
+  });
+
+  it('los dos números publicados son los de la fuente, no estimados acá', () => {
+    // Swindale 1988: «laid out on a gradual slope (usually 0.4-0.8%)».
+    expect(BBF_SURCO_MIN_PCT).toBe(0.4);
+    expect(BBF_SURCO_MAX_PCT).toBe(0.8);
+    // Virmani y Swindale 1984, los dos extremos de la misma curva.
+    expect(INFIL_AGRIETADO_MM_H).toBe(76);
+    expect(INFIL_SELLADO_MM_H).toBe(0.21);
+    expect(INFIL_AGRIETADO_MM_H / INFIL_SELLADO_MM_H).toBeCloseTo(362, 0);
+  });
+
+  it('y el piso del estándar sigue donde estaba', () => {
+    // Deliberado, y por eso hay un test. La banda de Patancheru es de un
+    // sistema de cultivo de la India semiárida y sus propios autores piden
+    // investigar todavía la pendiente óptima: no reemplaza al criterio
+    // general del NRCS, lo matiza en el aviso.
+    expect(DERIVA_MIN_DRENAJE_PCT).toBe(0.2);
+    expect(DERIVA_MAX_PCT).toBe(4);
+    expect(DERIVA_MAX_FRACCION_PENDIENTE).toBe(0.5);
+    expect(GRUPOS_QUE_ENCHARCAN).toContain('D');
+    // Y la banda de un suelo D sigue saliendo con el piso del estándar.
+    expect(bandaDeriva({ pendienteTerreno_pct: 4, grupoHidro: 'D' }).min_pct).toBe(0.2);
   });
 });

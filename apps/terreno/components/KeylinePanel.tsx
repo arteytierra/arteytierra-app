@@ -13,6 +13,9 @@ import { elevacionEn } from '@/lib/cutfill';
 import { planillaDeDirectriz } from '@/lib/planilla';
 import { ValidacionPatronBloque } from './ValidacionPatronBloque';
 import { PlanillaBloque } from './PlanillaBloque';
+import { AvisoSueloObra } from './AvisoSueloObra';
+import { avisoKeylineExpansivo } from '@/lib/saludCalculo';
+import type { SueloExpansivo } from '@/lib/sueloExpansivo';
 
 /**
  * Detectar el keypoint descarga relieve y tarda: se guarda el resultado, no
@@ -69,6 +72,14 @@ interface Props {
    * publicado y acequia ya lo calcula en la pestaña de tormenta.
    */
   lluvia10a24h_mm?: number | null;
+  /**
+   * Suelo expansivo en el punto (A4), si se pudo reconocer. Acá no invalida
+   * la geometría —el patrón mueve el agua con una deriva, que es justamente
+   * la idea correcta para este suelo— pero sí el piso de esa deriva: el
+   * diseño publicado corre entre el 0,4 y el 0,8 %, no al 0,2 % del
+   * estándar. Ver `avisoKeylineExpansivo`.
+   */
+  expansivo?:   SueloExpansivo | null;
   onAplicarGuias: (res: ResultadoKeyline) => void;
   /** Salida opcional: colocar también las guías como caminos transitables. */
   onAplicarComoCaminos?: (res: ResultadoKeyline) => void;
@@ -77,7 +88,7 @@ interface Props {
   onInputs?: (i: KeylineInputs) => void;
 }
 
-export function KeylinePanel({ mojones, datosShader, parcelas, grupoHidro = null, lluvia10a24h_mm = null, onAplicarGuias, onAplicarComoCaminos, onAplicarPatron, inicial, onInputs }: Props) {
+export function KeylinePanel({ mojones, datosShader, parcelas, grupoHidro = null, lluvia10a24h_mm = null, expansivo = null, onAplicarGuias, onAplicarComoCaminos, onAplicarPatron, inicial, onInputs }: Props) {
   const [cargando, setCargando] = useState(false);
   const [error,    setError]    = useState<string | null>(null);
   const [res,      setRes]      = useState<ResultadoKeyline | null>(inicial?.res ?? null);
@@ -107,6 +118,20 @@ export function KeylinePanel({ mojones, datosShader, parcelas, grupoHidro = null
    * que nunca se midió: se avisa y se ofrece recalcular.
    */
   const patronAlDia = patron != null && (patron as Partial<ResultadoPatron>).version === 2;
+
+  /**
+   * El aviso de suelo expansivo. La banda de deriva sale del patrón si ya se
+   * generó uno, y si no el aviso dice qué pendiente de terreno hace falta
+   * para que la banda publicada entre: el techo es la mitad de la pendiente,
+   * así que abajo del 1,6 % no hay surco que drene como ese diseño pide.
+   */
+  const avisoExpansivo = useMemo(
+    () => avisoKeylineExpansivo({
+      expansivo,
+      banda: patron && patronAlDia ? patron.banda : null,
+    }),
+    [expansivo, patron, patronAlDia],
+  );
 
   useEffect(() => {
     onInputs?.({
@@ -196,6 +221,9 @@ export function KeylinePanel({ mojones, datosShader, parcelas, grupoHidro = null
 
   return (
     <div className="space-y-4">
+      {/* El suelo antes de la geometría: decide si esto retiene o drena. */}
+      {avisoExpansivo && <AvisoSueloObra aviso={avisoExpansivo} />}
+
       {/* ── Keyline real desde topografía ── */}
       <div>
         <p className="text-xs font-semibold text-ink-700 uppercase tracking-wide mb-2">Keyline desde topografía</p>

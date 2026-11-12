@@ -8,6 +8,11 @@
  * avisos; lo único compartido es el contrato (`Confianza`) y el criterio de
  * nivel (`armarConfianza`).
  *
+ * Y desde el 12/11/2026 también para las dos que deciden qué obra se hace con
+ * esa agua: `avisoSwalesExpansivo` y `avisoKeylineExpansivo`, al final del
+ * archivo, que devuelven un aviso suelto en vez de una `Confianza` porque
+ * Swales ya muestra la de H0 y Líneas clave no tiene ninguna.
+ *
  * Criterio de redacción, el mismo en las tres:
  *
  *  · `alerta` → el número puede estar mal y hay algo concreto que hacer.
@@ -25,6 +30,9 @@ import {
 import type { FuenteRelieve } from './grillaElevacion';
 import type { GrupoHidro } from './cuenca';
 import type { SueloExpansivo } from './sueloExpansivo';
+import {
+  DERIVA_MAX_FRACCION_PENDIENTE, DERIVA_MIN_DRENAJE_PCT,
+} from './keylineGeometria';
 import { DUR_MIN_MIN } from './tormenta';
 
 // ─── Cuenca de aporte (B2) ────────────────────────────────────────────────────
@@ -394,4 +402,251 @@ export function confianzaErosion(e: EntradaErosionSalud): Confianza {
     relieve:   e.fuenteDem != null,
     cobertura: e.usle_c !== null,
   });
+}
+
+// ─── Obras de retención sobre suelo expansivo (Swales y Líneas clave) ────────
+
+/**
+ * El aviso que les faltaba a las dos herramientas que empujan a retener agua.
+ *
+ * El 12/11/2026 la app aprendió a reconocer un suelo expansivo
+ * (`lib/sueloExpansivo.ts`) y el aviso salió en Cuenca y en Represa, que son
+ * las que calculan cuánta agua llega. Faltaban las dos que deciden **qué obra
+ * se hace con esa agua**, y acá son las que más importan: una zanja a nivel y
+ * un patrón de líneas clave son obras de retención, y para este suelo la
+ * bibliografía publica lo contrario.
+ *
+ * ## Qué publica la bibliografía para este suelo
+ *
+ * La tecnología que el ICRISAT desarrolló para los vertisoles del Decán no es
+ * una zanja de infiltración a nivel: es un **camellón ancho con surco a
+ * pendiente**, «laid out on a gradual slope (usually 0.4-0.8%)», donde el lomo
+ * del camellón hace de minibordo y el surco «provides good surface drainage to
+ * prevent waterlogging», con desagües de parcela y cauces empastados aguas
+ * abajo. Y el elemento se enuncia como «shaping land to promote disposal of
+ * excess water»: el propósito declarado es **sacar** el agua que sobra, no
+ * juntarla (Swindale 1988, texto completo abierto; es el mismo trabajo del que
+ * sale la curva de infiltración de Virmani y Swindale 1984).
+ *
+ * Y no es un solo sitio ni un solo equipo:
+ *
+ * - En el altiplano etíope el camellón sube el rendimiento **si la zona es de
+ *   lluvia alta**; en el año de poca lluvia del ensayo no hubo diferencia
+ *   significativa contra el laboreo tradicional, «due to limited waterlogging»
+ *   (Astatke, Jutzi y Grunder 1988). O sea: la ventaja aparece cuando hay
+ *   exceso que drenar. Los propios autores piden investigar todavía cuál es la
+ *   pendiente y el largo de surco óptimos, así que la banda publicada es un
+ *   dato de un sistema de cultivo y no un umbral de validez general.
+ * - Y las obras físicas de conservación sobre vertisoles de Etiopía central
+ *   dieron resultados «not very significant» para mucha mano de obra, con la
+ *   recomendación de correr el énfasis al manejo agronómico —materia orgánica,
+ *   fajas de pasto, cultivo en callejones— antes que a mover tierra
+ *   (Escobedo 1988, FAO/PNUD).
+ *
+ * ## Por qué es un aviso y no un cambio de número
+ *
+ * Por lo mismo que en Cuenca y en Represa, y además por una razón propia de
+ * acá: el piso de drenaje del surco que la app aplica es el del estándar
+ * —0,2 %, «not less than 0.2 percent», NRCS 330, en `lib/keylineGeometria.ts`—
+ * y ese piso vale para cualquier suelo de infiltración lenta. Reemplazarlo por
+ * la banda de Patancheru sería cambiar un criterio general por el número de un
+ * sistema de cultivo de la India semiárida. Lo que el aviso agrega es que para
+ * **este** suelo el diseño publicado corre entre dos y cuatro veces más
+ * empinado que ese piso, y por qué.
+ *
+ * Fuentes:
+ * - Swindale, L.D. (1988). «Developing, testing and transferring improved
+ *   Vertisol technology: the Indian experience», en Jutzi, Haque, McIntire y
+ *   Stares (eds.), *Management of Vertisols in sub-Saharan Africa*, ILCA,
+ *   Addis Abeba. Texto completo: https://www.fao.org/4/x5493e/x5493e03.htm
+ * - Astatke, A., Jutzi, S.C. y Grunder, M. (1988). «Effects of surface
+ *   drainage on soil erosion and wheat growth on a gently sloping Vertisol at
+ *   Debre Zeit, Ethiopia», mismo volumen. Resumen:
+ *   https://www.fao.org/4/x5493e/x5493e0s.htm
+ * - Escobedo, J. (1988). «Soil conservation works on Vertisols of central
+ *   Ethiopia», mismo volumen. Resumen:
+ *   https://www.fao.org/4/x5493e/x5493e0t.htm
+ * - WRB 2022 §3.2.12, para las grietas. Pathak et al. 2013 y Garg et al. 2021
+ *   para el escurrimiento medido; de esos dos se leyó el resumen.
+ */
+
+const r1 = (n: number) => Math.round(n * 10) / 10;
+
+/** Un número escrito como se lee en el panel: con coma decimal. */
+const coma = (n: number | string) => String(n).replace('.', ',');
+
+/** Pendiente del surco del camellón del ICRISAT, en %. Es un dato publicado. */
+export const BBF_SURCO_MIN_PCT = 0.4;
+export const BBF_SURCO_MAX_PCT = 0.8;
+
+/**
+ * Infiltración medida en el vertisol del ICRISAT, en mm/h: el suelo recién
+ * agrietado y el suelo sellado después de 144 h (Virmani y Swindale 1984). El
+ * factor entre los dos es 360, y cualquier Ksat único describe uno solo.
+ */
+export const INFIL_AGRIETADO_MM_H = 76;
+export const INFIL_SELLADO_MM_H = 0.21;
+
+/** Para que el techo de la banda llegue a 0,8 %, por la mitad de la pendiente. */
+const PENDIENTE_PARA_BANDA_PCT = r1(BBF_SURCO_MAX_PCT / DERIVA_MAX_FRACCION_PENDIENTE);
+
+const BANDA_PUBLICADA =
+  `El diseño publicado para este suelo no es una zanja a nivel: es un camellón `
+  + `ancho con el surco a pendiente, entre ${coma(BBF_SURCO_MIN_PCT)} y `
+  + `${coma(BBF_SURCO_MAX_PCT)} %, que termina en desagües de parcela y cauces `
+  + 'empastados. El surco está ahí para sacar el exceso y evitar el '
+  + 'encharcamiento, y el lomo del camellón es el que conserva humedad. En el '
+  + 'altiplano etíope el mismo camellón sólo rindió más donde la lluvia era '
+  + 'alta: en el año seco del ensayo no hubo diferencia, justamente porque no '
+  + 'hubo exceso que drenar.';
+
+/**
+ * El tiempo de vaciado de la zanja, puesto entre los dos valores medidos.
+ *
+ * Vale compararlo así porque en `swales.ts` el vaciado sale de la integral
+ * cerrada `t = (1/K)·[2d − (b/z)·ln(1 + z·d/b)]`, donde el Ksat es el único
+ * factor fuera del corchete: para una misma sección, `t` es inversamente
+ * proporcional a `K`. Así que los dos extremos se calculan sin volver a tocar
+ * la geometría, con el Ksat del perfil tal como lo declara el panel de suelo.
+ */
+function vaciadoEntreLosDos(ksat_mm_h: number | null | undefined): string {
+  const base =
+    'El tiempo de vaciado de la zanja sale de un solo Ksat y este suelo tiene '
+    + `dos: medido en el mismo vertisol, ${INFIL_AGRIETADO_MM_H} mm/h en la `
+    + `primera media hora contra ${coma(INFIL_SELLADO_MM_H)} mm/h después de `
+    + '144 horas, un factor 360 entre el suelo agrietado y el sellado.';
+  if (!(typeof ksat_mm_h === 'number' && Number.isFinite(ksat_mm_h) && ksat_mm_h > 0)) {
+    return base + ' Cargá el suelo y el panel puede poner el vaciado entre los dos extremos.';
+  }
+  const rapido = INFIL_AGRIETADO_MM_H / ksat_mm_h;
+  const lento  = ksat_mm_h / INFIL_SELLADO_MM_H;
+  const partes: string[] = [];
+  if (rapido >= 1.5) partes.push(`unas ${coma(r1(rapido))} veces más rápido con el suelo recién agrietado`);
+  if (lento  >= 1.5) partes.push(`unas ${coma(r1(lento))} veces más lento con el perfil húmedo y las grietas cerradas`);
+  if (partes.length === 0) return base;
+  return base
+    + ` El perfil de acá declara ${coma(r1(ksat_mm_h))} mm/h, así que la misma `
+    + `zanja se vaciaría ${partes.join(' y ')}. El número que muestra el panel `
+    + 'no es ninguno de los dos.';
+}
+
+export interface EntradaSwalesSalud {
+  /** El diagnóstico de suelo expansivo del punto (A4), si se pudo reconocer. */
+  expansivo?: SueloExpansivo | null;
+  /** Ksat del perfil (mm/h): el mismo con el que `swales.ts` calcula el vaciado. */
+  ksat_mm_h?: number | null;
+}
+
+/**
+ * El aviso de suelo expansivo para una zanja de infiltración a nivel.
+ *
+ * Devuelve `null` cuando no hay diagnóstico, que es la mayoría de los casos:
+ * este aviso tiene que aparecer donde corresponde o no sirve de nada. Lo que
+ * hace es tres cosas y en este orden: decir que el tiempo de vaciado que el
+ * panel muestra no describe a este suelo, decir qué obra publica la
+ * bibliografía para él, y decir qué dato lo decide.
+ */
+export function avisoSwalesExpansivo(e: EntradaSwalesSalud): AvisoCalculo | null {
+  const x = e.expansivo;
+  if (!x) return null;
+  const medido = x.nivel === 'medido';
+  return {
+    id: 'suelo_expansivo',
+    nivel: medido ? 'alerta' : 'aviso',
+    titulo: medido
+      ? 'Suelo expansivo: la zanja a nivel no es la obra que se publica para este suelo'
+      : 'Puede ser suelo expansivo, y entonces la zanja a nivel no es la obra',
+    detalle:
+      vaciadoEntreLosDos(e.ksat_mm_h) + ' ' + BANDA_PUBLICADA
+      + ' Lo que corresponde no es borrar la zanja sino decidirla por el clima '
+      + 'y por el destino del agua. Si el limitante es la seca hay poco que '
+      + 'juntar: en los años de menos de 500 mm el escurrimiento medido no '
+      + 'llegó al 2 %. Si la lluvia se concentra, el riesgo es el contrario '
+      + '—agua parada sobre un perfil que ya está lleno—, y ahí el surco va '
+      + 'con pendiente y termina en un cauce empastado, no cerrado a nivel. El '
+      + 'dato que decide no es un ensayo de infiltración puntual, que daría '
+      + 'cualquiera de los dos valores según el día, sino el escurrimiento '
+      + 'medido de una temporada en el mismo predio. ' + x.cautela,
+  };
+}
+
+export interface EntradaKeylineSalud {
+  /** El diagnóstico de suelo expansivo del punto (A4), si se pudo reconocer. */
+  expansivo?: SueloExpansivo | null;
+  /**
+   * La banda de deriva admisible que calculó `keylineGeometria.bandaDeriva`.
+   * Si todavía no se generó un patrón no hay banda, y el aviso sale igual: el
+   * suelo no depende de que el usuario haya dibujado algo.
+   */
+  banda?: { min_pct: number; max_pct: number } | null;
+}
+
+/**
+ * El aviso de suelo expansivo para el patrón de líneas clave.
+ *
+ * Es distinto del de los swales y la diferencia importa: el patrón de líneas
+ * clave **mueve** el agua con una deriva, así que su geometría no es el
+ * problema acá —es, de hecho, la misma idea que el surco del camellón—. El
+ * problema es leerlo como obra de retención y apoyarlo en el piso del estándar.
+ * Por eso el aviso compara el techo de la banda contra la pendiente publicada,
+ * que es una cuenta que puede salir de las tres maneras.
+ */
+export function avisoKeylineExpansivo(e: EntradaKeylineSalud): AvisoCalculo | null {
+  const x = e.expansivo;
+  if (!x) return null;
+  const medido = x.nivel === 'medido';
+
+  const max = e.banda && Number.isFinite(e.banda.max_pct) ? e.banda.max_pct : null;
+  let cuenta: string;
+  if (max === null) {
+    cuenta =
+      'El techo de la deriva es la mitad de la pendiente del terreno, así que '
+      + `para que la banda llegue al ${coma(BBF_SURCO_MAX_PCT)} % del diseño `
+      + `publicado hace falta un ${coma(PENDIENTE_PARA_BANDA_PCT)} % de `
+      + 'pendiente. Generá el patrón y el panel compara la banda de acá contra esa.';
+  } else if (max < BBF_SURCO_MIN_PCT) {
+    cuenta =
+      `Acá el techo de la banda es ${coma(max.toFixed(2))} % y no llega ni al piso de `
+      + `${coma(BBF_SURCO_MIN_PCT)} % de ese diseño: con esta pendiente de `
+      + 'terreno el surco no puede drenar como el diseño pide, porque el techo '
+      + `es la mitad de la pendiente y harían falta ${coma(PENDIENTE_PARA_BANDA_PCT)} % `
+      + 'para llegar al extremo superior. En un terreno así de plano la '
+      + 'herramienta no es el patrón de cultivo sino el desagüe de parcela.';
+  } else if (max < BBF_SURCO_MAX_PCT) {
+    cuenta =
+      `Acá el techo de la banda es ${coma(max.toFixed(2))} %, así que entra en la mitad `
+      + 'baja de la banda publicada: el surco puede drenar, pero sin margen. '
+      + 'Llevalo al techo y no al piso.';
+  } else {
+    cuenta =
+      `Acá el techo de la banda es ${coma(max.toFixed(2))} %, así que la banda publicada `
+      + `entra entera: apuntá al ${coma(BBF_SURCO_MIN_PCT)} a `
+      + `${coma(BBF_SURCO_MAX_PCT)} % y no al piso de `
+      + `${coma(DERIVA_MIN_DRENAJE_PCT)} % del estándar.`;
+  }
+
+  return {
+    id: 'suelo_expansivo',
+    nivel: medido ? 'alerta' : 'aviso',
+    titulo: medido
+      ? 'Suelo expansivo: el surco necesita más pendiente que el piso del estándar'
+      : 'Puede ser suelo expansivo, y entonces el surco necesita más pendiente',
+    detalle:
+      'El patrón de líneas clave mueve el agua con una deriva, así que la '
+      + 'geometría no es el problema acá: es la misma idea que el surco del '
+      + 'camellón. El problema sería leerlo como obra de retención. '
+      + BANDA_PUBLICADA
+      + ` Esa banda de ${coma(BBF_SURCO_MIN_PCT)} a ${coma(BBF_SURCO_MAX_PCT)} % `
+      + `es de dos a cuatro veces el piso de ${coma(DERIVA_MIN_DRENAJE_PCT)} % `
+      + 'que la app ya le aplica a cualquier suelo de infiltración lenta. '
+      + cuenta
+      + ' Y lo que el arado de cincel busca —abrir el perfil en profundidad— '
+      + 'acá lo hace la contracción sola en cada estación seca: son grietas de '
+      + '0,5 cm o más que abren y cierran con el agua y que, dice WRB, '
+      + 'controlan la infiltración y la percolación incluso rellenas de '
+      + 'material de la superficie. Eso es una consecuencia de la definición y '
+      + 'no una medición: ensayos de arado Yeomans sobre vertisol no se '
+      + 'encontraron publicados, así que el beneficio de pasarlo no se puede '
+      + 'dar por hecho ni descartar. ' + x.cautela,
+  };
 }

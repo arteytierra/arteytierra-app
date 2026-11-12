@@ -8,10 +8,13 @@ import type {
 } from '@/lib/swales';
 import type { Recomendacion } from '@/lib/criterios';
 import type { HidrologiaPredio } from '@/lib/hidrologiaPredio';
+import type { SueloExpansivo } from '@/lib/sueloExpansivo';
+import { avisoSwalesExpansivo } from '@/lib/saludCalculo';
 import { PERIODOS_RETORNO } from '@/lib/hidrologiaPredio';
 import { planillaDeSwale } from '@/lib/planilla';
 import type { FuenteRelieve } from '@/lib/grillaElevacion';
 import { SaludCalculo } from './SaludCalculo';
+import { AvisoSueloObra } from './AvisoSueloObra';
 import { PlanillaBloque } from './PlanillaBloque';
 
 type OpcionesGlobales = Omit<OpcionesSwales, 'intervaloV' | 'pendiente_pct'>;
@@ -33,6 +36,13 @@ interface Props {
    * cuánto puede estar corrida la traza de la zanja.
    */
   fuenteRelieve?: FuenteRelieve | null;
+  /**
+   * Suelo expansivo en el punto (A4), si se pudo reconocer. Es el dato que
+   * más cambia la lectura de este panel: una zanja a nivel es una obra de
+   * retención, y para este suelo lo que la bibliografía publica es un surco
+   * a pendiente que saca el agua. Ver `avisoSwalesExpansivo`.
+   */
+  expansivo?:  SueloExpansivo | null;
   onPeriodoRetorno: (T: number) => void;
   onGenerar:   (areas: AreaSwales[], intervalos: Record<string, number>, opts: OpcionesGlobales) => void;
   onColocar:   () => void;
@@ -55,6 +65,7 @@ export interface SwalesInputs {
 
 export function SwalesPanel({
   grillaLista, multi, hidro, analisis, fuenteRelieve = null,
+  expansivo = null,
   onPeriodoRetorno, onGenerar, onColocar, onIrATopo, onIrAClima, onIrASuelo,
   inicial, onInputs,
 }: Props) {
@@ -93,6 +104,15 @@ export function SwalesPanel({
   useEffect(() => {
     onInputs?.({ profMax, elegidas, intervalos, manual, precipMm, coef });
   }, [profMax, elegidas, intervalos, manual, precipMm, coef, onInputs]);
+
+  // El aviso de suelo expansivo. Se calcula acá arriba y no junto al
+  // resultado porque tiene que leerse ANTES del primer trazado: el tiempo de
+  // vaciado que el panel muestra más abajo sale de un solo Ksat, y este suelo
+  // tiene dos separados por un factor 360.
+  const avisoExpansivo = useMemo(
+    () => avisoSwalesExpansivo({ expansivo, ksat_mm_h: hidro.ksat_mm_h }),
+    [expansivo, hidro.ksat_mm_h],
+  );
 
   const precipEfectiva = manual ? precipMm : Math.round(hidro.precip_mm);
   const coefEfectivo   = manual ? coef     : hidro.coef;
@@ -160,6 +180,8 @@ export function SwalesPanel({
           )}
         </div>
       )}
+
+      {avisoExpansivo && <AvisoSueloObra aviso={avisoExpansivo} />}
 
       {/* ── Tormenta de diseño ─────────────────────────────────────────────── */}
       <label className="block">

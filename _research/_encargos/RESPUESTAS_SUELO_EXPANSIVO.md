@@ -256,7 +256,7 @@ Cerradas, y una variedad nueva para la lista:
   separación, pero es consecuencia del clima y del material parental y no de la
   mineralogía, así que sumarlo al criterio sería confundir correlación con
   mecanismo. Queda como dato, no como umbral.
-- **La obra que corresponde.** La ficha del Decán ya dice que acá el diseño
+- **La obra que corresponde. Cerrado el 12/11/2026, ver la sección 8.** La ficha del Decán ya dice que acá el diseño
   publicado no es una zanja de infiltración a nivel sino un camellón ancho con
   surco a pendiente del 0,4 al 0,8 %. Eso todavía no lo sabe el panel de Swales
   ni el de líneas clave: el aviso de suelo expansivo está en Cuenca y en Represa,
@@ -264,3 +264,109 @@ Cerradas, y una variedad nueva para la lista:
   otro lote.
 - **La extensibilidad en el resto del mundo.** Nadie la publica a escala global.
   Si alguna vez aparece, reemplaza toda la inferencia de una.
+
+---
+
+## 8. El aviso en Swales y en líneas clave (12/11/2026)
+
+Cerrado el mismo día, un lote después. El punto de arriba —«la obra que
+corresponde»— era el único de la lista que no pedía datos nuevos sino leer la
+fuente que ya estaba citada en la ficha, y resultó que esa fuente abre completa.
+
+### 8.1 La fuente abrió, y es la misma que dio la curva
+
+La ficha del Decán citaba el camellón del 0,4 al 0,8 % de segunda mano. El
+primario es **Swindale 1988**, un capítulo del volumen de la ILCA *Management of
+Vertisols in sub-Saharan Africa*, y está entero y abierto en el repositorio de
+la FAO: `https://www.fao.org/4/x5493e/x5493e03.htm`. Es **el mismo documento**
+del que salió la curva de infiltración de Virmani y Swindale 1984 que ya usaba
+`sueloExpansivo.ts` — se había leído la tabla 2 y no el resto.
+
+Lo que dice, textual y en una sola frase, es el aviso completo: la tecnología
+del ICRISAT es un sistema de camellones anchos con surco «laid out on a gradual
+slope (usually 0.4-0.8%)», donde el surco «provides good surface drainage to
+prevent waterlogging», con desagües de parcela y cauces empastados; y el
+elemento se enuncia como «shaping land to **promote disposal of excess water**».
+El propósito declarado es sacar el agua que sobra. Una zanja a nivel hace lo
+contrario.
+
+### 8.2 Y no es un sitio ni un equipo, que era la objeción obvia
+
+El veredicto anterior no cambió `COEF_BASE_GRUPO` porque Garg et al. es un
+sitio, un clima y un manejo. La misma objeción valía acá, y el mismo volumen la
+contesta con dos trabajos de otro país y otros equipos:
+
+- **Astatke, Jutzi y Grunder 1988** (ILCA + Soil Conservation Research Project,
+  Debre Zeit, altiplano etíope): el camellón sube el rendimiento *si la zona es
+  de lluvia alta*, y en el año de poca lluvia del ensayo no hubo diferencia
+  significativa contra el laboreo tradicional, «due to limited waterlogging». La
+  ventaja aparece cuando hay exceso que drenar. **Y los propios autores piden
+  investigar todavía cuál es la pendiente y el largo de surco óptimos**, que es
+  exactamente por qué el 0,4–0,8 % no reemplaza al criterio del NRCS.
+- **Escobedo 1988** (FAO/PNUD, Etiopía central): las obras físicas de
+  conservación sobre vertisoles dieron resultados «not very significant» para
+  mucha mano de obra, con la recomendación de correr el énfasis al manejo
+  agronómico —materia orgánica, fajas de pasto, cultivo en callejones— antes que
+  a mover tierra. Sobre este suelo, lo que flojea es justamente la parte de
+  excavar.
+
+Resumen de las dos, y texto completo del primero. Las URL exactas están en el
+docblock de la sección nueva de `lib/saludCalculo.ts`.
+
+### 8.3 Lo que se montó, y la cuenta que es nueva
+
+Dos funciones en `apps/terreno/lib/saludCalculo.ts`, que devuelven un
+`AvisoCalculo` suelto en vez de una `Confianza` —Swales ya muestra la de H0 y
+líneas clave no tiene ninguna— y un componente chico,
+`components/AvisoSueloObra.tsx`, que los pinta arriba y **sin plegar**: un suelo
+expansivo no baja la confianza del cálculo, los números salen bien de los datos
+que entraron; lo que cambia es qué obra corresponde, y eso no se puede esconder
+detrás de un plegado que el usuario cerró.
+
+**`avisoSwalesExpansivo`** pone el tiempo de vaciado de la zanja entre los dos
+valores medidos, y eso es una cuenta exacta, no una analogía. En `swales.ts` el
+vaciado sale de la integral cerrada
+
+    t = (1/K) · [ 2·d − (b/z)·ln(1 + z·d/b) ]
+
+donde `K` es el único factor fuera del corchete: para una misma sección, `t` es
+inversamente proporcional al Ksat. Así que con el Ksat del perfil alcanza para
+dar los dos extremos sin volver a tocar la geometría. Con un perfil de
+1,4 mm/h: la misma zanja se vacía unas **54 veces más rápido** con el suelo
+recién agrietado (76 mm/h) y unas **6,7 veces más lento** con el perfil húmedo y
+las grietas cerradas (0,21 mm/h). El número que muestra el panel no es ninguno
+de los dos, y hoy el panel lo mostraba solo.
+
+**`avisoKeylineExpansivo`** es distinto a propósito, y la diferencia es la mitad
+del valor: el patrón de líneas clave **mueve** el agua con una deriva, así que su
+geometría no está mal acá —es la misma idea que el surco del camellón—. Lo que
+estaría mal es leerlo como obra de retención y apoyarlo en el piso del estándar.
+El aviso compara entonces el techo de la banda de deriva contra la pendiente
+publicada, y la cuenta sale de las tres maneras:
+
+| techo de la banda | qué dice el aviso |
+|---|---|
+| < 0,4 % | no llega ni al piso del diseño; hacen falta 1,6 % de pendiente de terreno para que el techo toque el 0,8 %, porque el techo es la mitad de la pendiente. Acá la herramienta es el desagüe de parcela, no el patrón de cultivo |
+| 0,4 a 0,8 % | entra en la mitad baja de la banda publicada: drena, pero sin margen. Al techo y no al piso |
+| ≥ 0,8 % | la banda publicada entra entera: apuntar al 0,4–0,8 % y no al 0,2 % del estándar |
+
+Y un último párrafo con su límite declarado: lo que el arado de cincel busca
+—abrir el perfil en profundidad— acá lo hace la contracción sola en cada
+estación seca, porque son grietas que WRB define como de 0,5 cm o más que
+«controlan la infiltración y la percolación incluso rellenas de material de la
+superficie». **Eso es una consecuencia de la definición y no una medición**:
+ensayos de arado Yeomans sobre vertisol no se encontraron publicados, así que el
+aviso dice que el beneficio de pasarlo no se puede dar por hecho **ni
+descartar**.
+
+### 8.4 Lo que no se tocó, otra vez
+
+`DERIVA_MIN_DRENAJE_PCT` sigue en 0,2 %, que es el «not less than 0.2 percent»
+del NRCS 330, y `GRUPOS_QUE_ENCHARCAN` sigue siendo C y D. Hay un test que lo
+sostiene, por lo mismo que el de `COEF_BASE_GRUPO`: el 0,4–0,8 % es la pendiente
+*usual* de un sistema de cultivo de la India semiárida, no un umbral de validez
+general, y sus propios autores la dan como pendiente a investigar. Reemplazar el
+criterio del estándar por ese número sería cambiar un criterio general por uno
+local, que es el error que este lote existe para no cometer.
+
+Once tests nuevos en `tests/unit/suelo/sueloExpansivo.test.ts`, que ahora son 36.
