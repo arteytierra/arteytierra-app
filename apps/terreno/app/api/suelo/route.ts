@@ -54,8 +54,20 @@ function valeReintentar(status: number): boolean {
   return status === 429 || status >= 500;
 }
 
+/**
+ * La versión de la caché es parte del contrato, no un detalle.
+ *
+ * Las dos cachés guardan el cuerpo crudo de ISRIC, así que una entrada vieja
+ * no tiene las propiedades que se agregaron después. Cuando entra una
+ * propiedad nueva a `PROPS` hay que subir la versión de las dos, o cada punto
+ * ya visitado sigue contestando sin ella hasta que venza el TTL —hasta 30
+ * días— y la función que la consume no anda, sin que nada avise. Las entradas
+ * viejas no se borran: vencen solas.
+ *
+ * v3 el 12/11/2026, al entrar `cec` para reconocer suelo expansivo.
+ */
 async function openCache(): Promise<Cache | null> {
-  try { return await caches.open('terreno-suelo-v2'); } catch { return null; }
+  try { return await caches.open('terreno-suelo-v3'); } catch { return null; }
 }
 
 // `cec` entró el 12/11/2026 para reconocer suelo expansivo (ver
@@ -124,7 +136,7 @@ export async function GET(req: Request) {
   const lngR = lngN.toFixed(3);
 
   const cacheKey = `https://terreno-cache/suelo?lat=${latR}&lng=${lngR}`;
-  const dbKey    = `suelo:${latR},${lngR}`;
+  const dbKey    = `suelo-v3:${latR},${lngR}`;   // ver `openCache`
   const cache    = await openCache();
 
   if (cache) {

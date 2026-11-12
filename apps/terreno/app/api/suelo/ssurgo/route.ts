@@ -79,7 +79,9 @@ export async function GET(req: Request) {
   const lngR = parseFloat(lng).toFixed(4);
   if (!isFinite(+latR) || !isFinite(+lngR)) return new Response('Bad lat/lng', { status: 400 });
 
-  const dbKey = `suelo-ssurgo:${latR},${lngR}`;
+  // La versión va en la clave: una entrada vieja no trae `cec7_r` ni `lep_r`,
+  // que entraron el 12/11/2026, y el TTL es de 90 días. v2 desde entonces.
+  const dbKey = `suelo-ssurgo-v2:${latR},${lngR}`;
   const hit   = await cacheGet<{ raw: string }>(dbKey);
   if (hit?.raw) return new Response(hit.raw, { status: 200, headers: HDRS });
 
