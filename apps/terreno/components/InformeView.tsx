@@ -7,6 +7,7 @@ import { calcularMetricas, formatearDistancia, formatearMetros, formatearHa, num
 import { contrastarPrecip, DIF_PRECIP_SIGNIFICATIVA_PCT } from '@/lib/balanceHidrico';
 import { MESES, centroide } from '@/lib/clima';
 import { textoKoppen } from '@/lib/koppenTexto';
+import { aspectosAConsiderar } from '@/lib/aspectosInforme';
 import { CATEGORIAS_ZONA } from '@/lib/zonificacion';
 import { resolverBioma, analogosDeKoppen } from '@/lib/contexto';
 import { ATRIBUCION_RESOLVE } from '@/lib/ecorregiones';
@@ -1949,27 +1950,11 @@ function ResumenEjecutivo({ datos, metricas }: { datos: InformeData; metricas: M
   }
   if (datos.cobertura) ind.push({ label: 'Cobertura', value: datos.cobertura.dominante, sub: `veg. ${Math.round(datos.cobertura.veg_pct)} %` });
 
-  // Aspectos a considerar, derivados de umbrales sobre los datos presentes.
-  const notas: string[] = [];
-  const ar = datos.clima?.aridez?.clase?.toLowerCase() ?? '';
-  if (datos.clima?.aridez && (ar.includes('árid') || ar.includes('arid') || ar.includes('semi')))
-    notas.push(`Clima ${datos.clima.aridez.clase.toLowerCase()}: priorizar captación, almacenamiento y retención de agua (represas, keyline, cobertura).`);
-  const mh = datos.clima?.heladas?.meses_riesgo;
-  if (mh && mh.length) notas.push(`Riesgo de heladas (${mh.join(', ')}): elegir especies y fechas de siembra acordes.`);
-  if (datos.topo) {
-    const p = datos.topo.pendiente_pct;
-    if (p > 15) notas.push(`Pendiente general pronunciada (${p.toFixed(0)} %): riesgo de erosión; considerar terrazas, keyline o cobertura permanente.`);
-    else if (p > 8) notas.push(`Pendiente general moderada (${p.toFixed(0)} %): manejar el escurrimiento con trazados a nivel.`);
-  }
-  if (datos.suelo) {
-    if (datos.suelo.agua_util.total_mm_100 < 100) notas.push(`Baja capacidad de agua útil (${Math.round(datos.suelo.agua_util.total_mm_100)} mm): suelos de poca retención; aportar materia orgánica.`);
-    const g = datos.suelo.grupo_hidro.grupo;
-    if (g === 'C' || g === 'D') notas.push(`Grupo hidrológico ${g}: baja infiltración y mayor escurrimiento; dimensionar drenajes y reservorios en consecuencia.`);
-  }
-  if (datos.extremos && datos.extremos.sequia.racha_max_dias > 30)
-    notas.push(`Racha seca histórica de ${datos.extremos.sequia.racha_max_dias} días: prever reserva de agua para el período crítico.`);
-  if (datos.cobertura && datos.cobertura.suelo_pct > 30)
-    notas.push(`Suelo descubierto en ${Math.round(datos.cobertura.suelo_pct)} % del predio: oportunidad de aumentar la cobertura vegetal.`);
+  // Aspectos a considerar. Las frases salen de `lib/aspectosInforme.ts` y no
+  // de acá porque recomiendan una obra, y sobre un suelo expansivo dos de
+  // ellas decían lo contrario de lo que publica la bibliografía: eso necesita
+  // una fuente citada y un test, que en un componente no vivían.
+  const notas = aspectosAConsiderar(datos);
 
   if (!ind.length) return null;
 

@@ -370,3 +370,89 @@ criterio del estándar por ese número sería cambiar un criterio general por un
 local, que es el error que este lote existe para no cometer.
 
 Once tests nuevos en `tests/unit/suelo/sueloExpansivo.test.ts`, que ahora son 36.
+
+## 9. El papel, donde el consejo equivocado estaba arriba (13/11/2026)
+
+El lote del 12/11 dejó el aviso en las cuatro herramientas de agua, y al cerrarlo
+quedó anotado que **no llegaba al informe**. Al ir a ponerlo apareció algo peor
+que una ausencia.
+
+### 9.1 El informe no omitía el suelo: recomendaba lo contrario
+
+El diagnóstico de suelo expansivo ya se imprimía completo —`cautela`, `detalle` y
+`efecto_hidrologico`— en la sección 5, «Análisis de suelo». Lo que no sabía nada
+del suelo era el **resumen ejecutivo**, la página 2, que es la que se lee. Ahí
+`InformeView.tsx` armaba los «aspectos a considerar» con umbrales sobre los datos
+presentes, y un vertisol del Decán cumple dos de esos umbrales a la vez:
+semiárido y grupo hidrológico D. Con eso escribía:
+
+> Clima semiárido: priorizar captación, almacenamiento y **retención** de agua
+> (represas, keyline, cobertura).
+
+y, pasando el 8 % de pendiente:
+
+> Pendiente general moderada (10 %): manejar el escurrimiento **con trazados a
+> nivel**.
+
+Las dos frases que más fuerte disparan sobre este suelo son las dos que empujan a
+retener a nivel, y el diseño publicado hace lo opuesto: el camellón del ICRISAT
+corre con el surco a pendiente para sacar el exceso (§8.1). El orden de lectura
+agravaba el problema: la recomendación equivocada en la página 2, el suelo que la
+desmiente treinta páginas después.
+
+### 9.2 Lo que se montó
+
+Las frases salieron del JSX a `lib/aspectosInforme.ts`, con fuente citada y
+tests, y `InformeView.tsx` pasó a una línea: `aspectosAConsiderar(datos)`. La
+entrada es un `Pick` de los tipos reales, así que declara exactamente qué campos
+del informe lee cada frase y `InformeData` entra sin adaptador.
+
+Con suelo expansivo cambian cuatro frases, y una es nueva:
+
+| Frase | Sin suelo expansivo | Con suelo expansivo |
+|---|---|---|
+| la obra | *(no existía)* | va **primera**: la obra de agua acá no va a nivel, el camellón ancho con el surco a pendiente entre 0,4 y 0,8 %, y «una zanja a nivel hace lo contrario» |
+| clima seco | «retención de agua (represas, keyline, cobertura)» | la reserva sigue siendo lo primero, pero se guarda en represa o tanque; el patrón de líneas clave sirve con la deriva en pendiente, «no para retenerla» |
+| pendiente > 8 % | «con trazados a nivel» | «con trazados a pendiente suave, del orden de 0,4 a 0,8 %, y no a nivel» |
+| pendiente > 15 % | «considerar terrazas, keyline o cobertura permanente» | el trazado va con pendiente y la cobertura permanente es lo que más rinde |
+| grupo C o D | «baja infiltración y mayor escurrimiento» | la tabla le pone baja infiltración todo el año, y este suelo infiltra mucho más recién agrietado y mucho menos sellado: el escurrimiento anual queda «del lado optimista» |
+
+La frase del grupo hidrológico es la que menos se esperaba y la que más se
+necesitaba: era la única del resumen que afirmaba, sin matiz, justo lo que el
+vertisol contradice media temporada. Dice la consecuencia de ingeniería —el
+reservorio dimensionado con ese coeficiente queda optimista— y no repite el
+`efecto_hidrologico`, que el informe ya imprime completo más adelante.
+
+El `0,4 a 0,8 %` no se reescribió: sale de `BBF_SURCO_MIN_PCT` y
+`BBF_SURCO_MAX_PCT` de `saludCalculo.ts`, y hay un test que lo comprueba
+construyendo la banda desde esas constantes. Y el aviso no repite `cautela` ni
+`detalle`: en esa página la frase decide una obra, no explica un suelo.
+
+### 9.3 El límite que había que declarar al mudar el código
+
+Mover esto a `lib/` lo hace **parecer** un motor de cálculo, y no lo es. El 8 % y
+el 15 % de pendiente, los 100 mm de agua útil, los 30 días de racha seca y el
+30 % de suelo descubierto no tienen fuente publicada: son cortes editoriales
+heredados del componente, elegidos para decidir si una frase aparece, no para
+calcular una magnitud. Están exportados con nombre, con el límite escrito arriba
+del archivo, y quedaron en el mismo número. Lo único con fuente acá es la rama de
+suelo expansivo.
+
+Por eso el primer test es un candado de regresión: compara la lista completa
+contra las frases heredadas **palabra por palabra**, en dos predios distintos.
+Pasó en la primera corrida, que es la prueba de que la mudanza no cambió nada de
+lo que ya se imprimía. Doce tests nuevos en
+`tests/unit/diseno/aspectosInforme.test.ts`.
+
+### 9.4 Lo que sigue abierto
+
+- **El surco del camellón no es una geometría que la app pueda trazar.** El aviso
+  lo nombra y el informe ahora también, pero no hay herramienta que lo dibuje:
+  los swales se trazan a nivel por definición y el patrón de líneas clave sale de
+  una directriz, no de una red de desagües de parcela con cauces empastados. Es
+  la obra que falta, y es un lote con geometría propia.
+- **Las otras entregas de papel.** `PlanillaDeReplanteo`, `ListaDeMaterialesSeccion`
+  y `PlanDeEtapas` no leen el suelo. Si el plan de etapas ordena excavar una
+  zanja a nivel, lo va a seguir ordenando.
+- Y los tres de §7 siguen igual: el `taxsubgrp` vértico de SSURGO sin medir, HWSD
+  v2 sobre polígono, y el pH como dato y no como umbral.
