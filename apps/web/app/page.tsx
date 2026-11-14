@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { VideoLightbox } from '@/components/home/VideoLightbox';
+import { FranjaObra } from '@/components/home/FranjaObra';
 import { TESTIMONIOS } from '@/lib/testimonios';
 
 export const metadata: Metadata = {
@@ -24,7 +25,9 @@ const SERVICIOS = [
     num: '02',
     title: 'Hidrología regenerativa',
     body: 'El agua no es un recurso que se administra — es un sistema vivo que se puede sanar. Diseñamos para que vuelva a fluir.',
-    href: '/diseno',
+    // Al ancla de la disciplina, no al principio de /diseno: quien hace clic acá
+    // ya eligió el tema y no tiene por qué buscarlo de nuevo.
+    href: '/diseno#hidrologia',
     img: '/img/home/lo-que-hacemos/2.jpg',
     alt: 'Hidrología regenerativa — diseño del agua',
   },
@@ -267,6 +270,14 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* ── LA OBRA DESDE ARRIBA ──
+            Va pegada a Tay Pichín y no a «Obra realizada» porque la cisterna
+            que se ve es de ahí: la sección de arriba dice «un lugar donde todo
+            esto vive» y ésta lo muestra, en la única escala donde se entiende
+            un sistema de agua. Además corta el tramo más largo de la página sin
+            una imagen grande. */}
+        <FranjaObra />
 
         {/* ── TESTIMONIOS ── */}
         <section className="bg-clay-900 py-20 md:py-28 px-6">

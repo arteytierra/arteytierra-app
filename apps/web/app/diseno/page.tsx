@@ -229,8 +229,12 @@ export default function DisenoPage() {
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            {/* El `id` de cada disciplina existía en los datos y no llegaba al
+                HTML: `/diseno#hidrologia` no apuntaba a ninguna parte. Ahora sí,
+                y la tarjeta de hidrología de la portada enlaza acá. El
+                `scroll-mt` deja el título debajo del header y no tapado por él. */}
             {DISCIPLINAS.map(d => (
-              <div key={d.id} className="border-t-2 border-clay-700 pt-6">
+              <div key={d.id} id={d.id} className="scroll-mt-28 border-t-2 border-clay-700 pt-6">
                 <h3 className="font-display text-2xl text-ink-950 mb-4">{d.title}</h3>
                 <p className="font-sans text-base text-ink-700 leading-relaxed">{d.body}</p>
               </div>
@@ -251,25 +255,34 @@ export default function DisenoPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { num: '01', title: 'Manejo del Agua', img: '/img/servicios/1.jpg',
+              // La foto de esta tarjeta es un cuadro de la toma aérea de la
+              // cisterna de Tay Pichín —la misma pieza que corre en la portada—
+              // ya con el color corregido. Reemplaza a `/img/servicios/1.jpg`,
+              // que era el mismo espejo de agua sin graduar y pesaba 5,9 MB.
+              { num: '01', title: 'Manejo del Agua', img: '/img/hidrologia/cisterna-tay-pichin.webp',
+                alt: 'Vista cenital del espejo de agua de la cisterna de Tay Pichín, cubierto de plantas flotantes en flor, con el deck de madera en el borde',
                 desc: 'Zanjas, represas, biopiscinas, biofiltros y cosecha de lluvias. El agua define el territorio — la diseñamos para que se quede.',
                 tecnicas: ['Zanjas de infiltración', 'Biopiscinas', 'Fitotratamientos', 'Swales', 'Represas'] },
               { num: '02', title: 'Vivienda y Hábitat', img: '/img/proyectos/alihuen/12.jpg',
+                alt: 'Casa Alihuen terminada, de muros de tierra y techo de madera, entre el monte',
                 desc: 'Adobe, quincha, piedra y madera. Geometría sagrada y sistemas pasivos. Cada hogar nace del lugar y de quienes lo van a habitar.',
                 tecnicas: ['Adobe y tapial', 'Quincha y cob', 'Piedra y pirca', 'Techos vivos', 'Bioclimática'] },
               { num: '03', title: 'Producción Agroecológica', img: '/img/servicios/3.jpg',
+                alt: 'Huerta en bancales con cultivos asociados dentro de un sistema agroecológico',
                 desc: 'Bosques comestibles, huertas, jardines medicinales y producción diversificada que alimenta y regenera al mismo tiempo.',
                 tecnicas: ['Bosques comestibles', 'Huerta', 'Compostaje', 'Apicultura', 'Fungicultivo'] },
               { num: '04', title: 'Paisajismo Funcional', img: '/img/servicios/4.jpg',
+                alt: 'Paisaje diseñado con plantas nativas y senderos integrados al terreno',
                 desc: 'El paisaje no es decoración — es función. Plantas nativas, sombra, alimento, abrigo y biodiversidad en diseño integrado.',
                 tecnicas: ['Plantas nativas', 'Cortinas vivas', 'Setos multifunción', 'Corredores', 'Borde'] },
               { num: '05', title: 'Estrategia Regenerativa', img: '/img/servicios/5.jpg',
+                alt: 'Vista del predio completo, con la vivienda, el agua y la producción en un mismo plan',
                 desc: 'Un plan maestro completo: agua, energía, alimento, residuos y comunidad. El predio como ecosistema con inteligencia propia.',
                 tecnicas: ['Diagnóstico territorial', 'Plan maestro', 'Energía renovable', 'Ciclos de materia'] },
             ].map(s => (
               <div key={s.num} className="group flex flex-col bg-bone-100 border border-bone-200 overflow-hidden">
                 <div className="relative aspect-[4/3] overflow-hidden">
-                  <Image src={s.img} alt={s.title} fill
+                  <Image src={s.img} alt={s.alt} fill
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" />
                   <div className="absolute inset-0 bg-gradient-to-t from-ink-950/70 to-transparent" />
