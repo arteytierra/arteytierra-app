@@ -62,11 +62,24 @@ describe('las fotos de las áreas de trabajo de /diseno', () => {
     }
   });
 
-  it('`#hidrologia` es un ancla de verdad y la portada apunta ahí', () => {
+  it('las tres anclas históricas siguen existiendo, y la portada apunta a una', () => {
     // El `id` vivía en los datos y no llegaba al HTML: el enlace de la portada
-    // caía al principio de la página y parecía que no hacía nada.
-    expect(diseno).toMatch(/id=\{d\.id\}/);
+    // caía al principio de la página y parecía que no hacía nada. Al fusionar
+    // las dos secciones las anclas se mudaron de las disciplinas a las áreas,
+    // y tienen que sobrevivir a esa mudanza: están enlazadas desde la portada
+    // y pueden estar en links viejos.
+    for (const ancla of ['hidrologia', 'bioarquitectura', 'agroecologia']) {
+      expect(diseno, `/diseno#${ancla} se quedó sin ancla`).toContain(`id: '${ancla}'`);
+    }
+    expect(diseno).toMatch(/id=\{a\.id\}/);
     const portada = readFileSync(join(RAIZ, 'app', 'page.tsx'), 'utf8');
     expect(portada).toContain("'/diseno#hidrologia'");
+  });
+
+  it('no quedó una segunda lista de áreas diciendo lo mismo', () => {
+    // Había tres copias: las disciplinas, un `SERVICIOS` que no usaba nadie y
+    // un arreglo escrito a mano adentro del JSX con versiones recortadas.
+    expect(diseno).not.toContain('const DISCIPLINAS');
+    expect(diseno).not.toContain('const SERVICIOS');
   });
 });

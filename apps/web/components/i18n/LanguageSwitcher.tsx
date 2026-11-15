@@ -6,14 +6,14 @@ import { Globe } from 'lucide-react';
 import {
   ALL_LOCALES,
   LOCALE_LABELS,
-  pathWithLocale,
-  stripLocaleFromPath,
+  rutaParaCambiarDeIdioma,
   type Locale,
 } from '@/lib/i18n/config';
 
 /**
- * Selector minimal. Setea cookie via `/api/i18n` y navega al equivalente
- * en otro locale (mismo path con prefijo).
+ * Selector minimal. Setea cookie via `/api/i18n` y navega al equivalente en
+ * otro locale — o a la portada de ese idioma si la página donde estás no está
+ * traducida, que es la mitad del sitio. Ver `rutaParaCambiarDeIdioma`.
  *
  * `enabled` viene del server porque `enabledLocales()` lee env.
  */
@@ -40,7 +40,7 @@ export function LanguageSwitcher({
       } catch {
         /* sigue igual */
       }
-      const target = pathWithLocale(stripLocaleFromPath(pathname), locale);
+      const target = rutaParaCambiarDeIdioma(pathname, locale);
       router.push(target);
       router.refresh();
     });

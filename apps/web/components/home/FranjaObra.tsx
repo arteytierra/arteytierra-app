@@ -50,6 +50,43 @@ const POSTER = '/video/cisterna-tay-pichin-poster.jpg';
 const DESCRIPCION =
   'Vista cenital de la Ecoescuela Tay Pichín: cinco techos entre el monte, el espejo de agua de la cisterna y el deck de madera, con el perímetro de cada superficie dibujado encima.';
 
+/**
+ * El proceso, fechado por los metadatos de cada toma.
+ *
+ * Una foto sola de la cisterna terminada no prueba nada: podría ser de
+ * cualquiera. Estas tres muestran lo que una foto sola no puede —que se cavó a
+ * mano entre todos, que al día siguiente ya tenía membrana y agua, y que trece
+ * meses después seguía viva— y las fechas no las escribió nadie: salen del EXIF
+ * de cada archivo.
+ *
+ * **Y son fechas, no mediciones.** Por eso acá no hay ningún número que pueda
+ * salir plausible y equivocado, que es justo lo que no se puede decir de un
+ * cálculo de litros hecho desde el aire.
+ */
+const PROCESO = [
+  {
+    src: '/img/hidrologia/cisterna-proceso-2024-02-02.webp',
+    fecha: '2024-02-02',
+    cuando: '2 de febrero de 2024',
+    que: 'El vaso se cava a mano, entre todos.',
+    alt: 'Vista cenital de una excavación circular en la tierra con alrededor de veinte personas trabajando adentro del pozo',
+  },
+  {
+    src: '/img/hidrologia/cisterna-proceso-2024-02-03.webp',
+    fecha: '2024-02-03',
+    cuando: '3 de febrero de 2024',
+    que: 'Al día siguiente, la membrana puesta y el vaso con agua.',
+    alt: 'La misma excavación al día siguiente, forrada con una membrana negra y con agua adentro, rodeada de gente',
+  },
+  {
+    src: '/img/hidrologia/cisterna-proceso-2025-03-12.webp',
+    fecha: '2025-03-12',
+    cuando: '12 de marzo de 2025',
+    que: 'Trece meses después: el espejo cubierto de plantas acuáticas y el deck de madera.',
+    alt: 'El mismo espejo de agua cubierto de plantas flotantes, con un deck de madera a un costado',
+  },
+] as const;
+
 export function FranjaObra() {
   const caja = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
@@ -140,15 +177,43 @@ export function FranjaObra() {
           )}
         </div>
 
-        <div className="max-w-editorial mx-auto mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
-          <p className="font-sans text-base text-bone-200/80 leading-relaxed">
+        <div className="max-w-editorial mx-auto mt-8">
+          <p className="font-sans text-base text-bone-200/80 leading-relaxed max-w-2xl">
             Lo que no decimos es cuántos litros junta. Para eso hay que medir los techos en el lugar
             y saber de dónde se llena ese espejo, y ninguna de las dos cosas se lee desde el aire.
             La cuenta está hecha; el dato que falta se busca con una cinta métrica.
           </p>
-          <p className="font-sans text-sm text-bone-200/60 leading-relaxed md:text-right">
-            Ecoescuela Tay Pichín · San Marcos Sierras, Córdoba<br />
-            El vaso se cavó a mano en febrero de 2024. Imágenes de Arte y Tierra.
+
+          <ol className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-5">
+            {PROCESO.map(({ src, fecha, cuando, que, alt }) => (
+              <li key={fecha}>
+                <figure className="flex flex-col gap-3">
+                  <div className="relative aspect-video overflow-hidden bg-ink-800">
+                    <Image
+                      src={src}
+                      alt={alt}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 100vw, 33vw"
+                    />
+                  </div>
+                  <figcaption className="flex flex-col gap-1">
+                    <time
+                      dateTime={fecha}
+                      className="font-sans text-xs font-bold uppercase tracking-widest text-clay-300"
+                    >
+                      {cuando}
+                    </time>
+                    <span className="font-sans text-sm text-bone-200/80 leading-relaxed">{que}</span>
+                  </figcaption>
+                </figure>
+              </li>
+            ))}
+          </ol>
+
+          <p className="mt-8 font-sans text-sm text-bone-200/60 leading-relaxed">
+            Ecoescuela Tay Pichín · San Marcos Sierras, Córdoba · Imágenes de Arte y Tierra ·
+            Las fechas salen de los metadatos de cada toma
           </p>
         </div>
       </div>

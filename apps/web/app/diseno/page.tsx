@@ -12,52 +12,80 @@ export const metadata: Metadata = {
   description: 'Diseño ecosistémico del territorio: bioarquitectura, hidrología regenerativa, producción agroecológica, paisajismo funcional y estrategia regenerativa. +40 proyectos en 7 países.',
 };
 
-const DISCIPLINAS = [
-  {
-    id: 'bioarquitectura',
-    title: 'Bioarquitectura',
-    body: 'Diseñamos viviendas y espacios habitables con materiales naturales, geometrías sagradas y sistemas pasivos de climatización. Cada construcción nace del lugar: su orientación, su clima, su historia y los sueños de quienes la van a habitar.',
-  },
-  {
-    id: 'hidrologia',
-    title: 'Hidrología',
-    body: 'Gestionamos el ciclo completo del agua en el territorio. Zanjas de infiltración, biopiscinas, swales y fitotratamientos transforman un predio seco en un ecosistema fértil. Donde el agua camina bien, todo florece.',
-  },
-  {
-    id: 'agroecologia',
-    title: 'Sistemas Agroecológicos',
-    body: 'Diseñamos sistemas productivos que alimentan y regeneran al mismo tiempo. Bosques comestibles, huertas, apicultura, piscicultura, silvicultura y fungicultivo integrados como un agroecosistema vivo.',
-  },
-];
-
-const SERVICIOS = [
+/**
+ * Las cinco áreas de trabajo, en un solo lugar.
+ *
+ * Hasta el 14/11/2026 esto vivía en tres listas y la página decía lo mismo dos
+ * veces seguidas: una sección «Tres disciplinas, un enfoque» con tres párrafos
+ * de texto plano —bioarquitectura, hidrología, agroecología— y justo abajo
+ * «Cinco sistemas, un territorio» con las mismas tres más dos, ahora con fotos
+ * y con la lista de técnicas. Un visitante leía hidrología dos veces, con otras
+ * palabras, sin enterarse de nada nuevo en la segunda.
+ *
+ * Peor todavía: había una tercera copia. El `SERVICIOS` de este archivo —el de
+ * los textos largos y las listas completas de técnicas— **no lo usaba nadie**:
+ * las tarjetas se armaban con un arreglo escrito a mano adentro del JSX que
+ * traía versiones recortadas de lo mismo (cinco técnicas en vez de ocho en
+ * agua, cinco en vez de diez en producción).
+ *
+ * Ahora hay una sola lista y se quedó con lo mejor de cada copia: la entrada
+ * corta de la tarjeta, el párrafo largo del catálogo y la lista entera de
+ * técnicas. No se perdió nada de lo que decían las disciplinas; lo que tenían
+ * de propio —«donde el agua camina bien, todo florece», los sueños de quienes
+ * van a habitar la casa, el agroecosistema vivo— quedó adentro del párrafo de
+ * su área.
+ *
+ * **Los `id` son los de las disciplinas y no se tocan**: `/diseno#hidrologia`
+ * ya está enlazado desde la portada y puede estar en links viejos.
+ */
+const AREAS = [
   {
     num: '01',
+    id: 'hidrologia',
     title: 'Manejo del agua',
-    body: 'El agua define el territorio — tanto por su ausencia como por su exceso. Diseñamos para retener donde el suelo está seco, distribuir donde hay vertientes y caudales permanentes, encauzar donde la lluvia golpea fuerte, y tratar donde el agua sobra. Cada intervención parte de leer el comportamiento hídrico específico del lugar.',
+    img: '/img/hidrologia/cisterna-tay-pichin.webp',
+    alt: 'Vista cenital del espejo de agua de la cisterna de Tay Pichín, cubierto de plantas flotantes en flor, con el deck de madera en el borde',
+    entrada: 'Zanjas, represas, biopiscinas, biofiltros y cosecha de lluvias. El agua define el territorio — la diseñamos para que se quede.',
+    body: 'El agua define el territorio tanto por su ausencia como por su exceso. Diseñamos para retener donde el suelo está seco, distribuir donde hay vertientes y caudales permanentes, encauzar donde la lluvia golpea fuerte, y tratar donde el agua sobra. Cada intervención parte de leer el comportamiento hídrico específico del lugar. Donde el agua camina bien, todo florece.',
     tecnicas: ['Zanjas de infiltración', 'Represas y aguadas', 'Biofiltros y humedales', 'Cosecha de aguas pluviales', 'Manejo de cañadones', 'Biopiscinas', 'Fitotratamientos', 'Swales'],
   },
   {
     num: '02',
+    id: 'bioarquitectura',
     title: 'Vivienda y hábitat',
-    body: 'Espacios que responden al territorio, al clima y a quienes los habitan. Diseñamos con geometrías áureas, materiales naturales y sistemas pasivos. Cada hogar es una obra única, irrepetible.',
+    img: '/img/proyectos/alihuen/12.jpg',
+    alt: 'Casa Alihuen terminada, de muros de tierra y techo de madera, entre el monte',
+    entrada: 'Adobe, quincha, piedra y madera. Geometría sagrada y sistemas pasivos. Cada hogar nace del lugar y de quienes lo van a habitar.',
+    body: 'Espacios que responden al territorio, al clima y a quienes los habitan. Diseñamos con geometrías áureas, materiales naturales y sistemas pasivos de climatización. Cada hogar es una obra única, irrepetible: nace de la orientación del lugar, de su clima, de su historia y de los sueños de quienes lo van a habitar.',
     tecnicas: ['Adobe y tapial', 'Quincha y cob', 'Piedra y pirca', 'Paja encofrada', 'Techos vivos', 'Arquitectura bioclimática', 'Geometrías áureas', 'Radiestesia'],
   },
   {
     num: '03',
+    id: 'agroecologia',
     title: 'Producción agroecológica',
-    body: 'La comida surge del diseño del suelo. Integramos sistemas de producción que alimentan a quienes habitan y regeneran la tierra al mismo tiempo: bosques comestibles, huerta, jardines medicinales y producción diversificada.',
+    img: '/img/servicios/3.jpg',
+    alt: 'Huerta en bancales con cultivos asociados dentro de un sistema agroecológico',
+    entrada: 'Bosques comestibles, huertas, jardines medicinales y producción diversificada que alimenta y regenera al mismo tiempo.',
+    body: 'La comida surge del diseño del suelo. Integramos sistemas de producción que alimentan a quienes habitan y regeneran la tierra al mismo tiempo: bosques comestibles, huerta, jardines medicinales y producción diversificada, integrados como un agroecosistema vivo y no como una suma de canteros.',
     tecnicas: ['Bosques comestibles', 'Huerta', 'Jardines medicinales', 'Compostaje y lombricultura', 'Integración animal', 'Diseño de zonas', 'Apicultura', 'Piscicultura', 'Silvicultura', 'Fungicultivo'],
   },
   {
     num: '04',
+    id: 'paisajismo',
     title: 'Paisajismo funcional',
-    body: 'El paisaje no es decoración — es función. Diseñamos con plantas nativas e introducidas, buscando belleza, sombra, alimento, abrigo y biodiversidad. El diseño visible del territorio invisible.',
+    img: '/img/servicios/4.jpg',
+    alt: 'Paisaje diseñado con plantas nativas y senderos integrados al terreno',
+    entrada: 'El paisaje no es decoración — es función. Plantas nativas, sombra, alimento, abrigo y biodiversidad en diseño integrado.',
+    body: 'Diseñamos con plantas nativas e introducidas, buscando belleza, sombra, alimento, abrigo y biodiversidad. El diseño visible del territorio invisible.',
     tecnicas: ['Plantas nativas', 'Cortinas vivas', 'Setos multifunción', 'Corredores de biodiversidad', 'Revegetación de cuencas', 'Diseño de borde'],
   },
   {
     num: '05',
-    title: 'Estrategia regenerativa integral',
+    id: 'estrategia',
+    title: 'Estrategia regenerativa',
+    img: '/img/servicios/5.jpg',
+    alt: 'Vista del predio completo, con la vivienda, el agua y la producción dentro de un mismo plan',
+    entrada: 'Un plan maestro completo: agua, energía, alimento, residuos y comunidad. El predio como ecosistema con inteligencia propia.',
     body: 'Cuando el proyecto supera lo edilicio. Diseñamos sistemas completos de habitar: energía, agua, alimento, residuos, comunidad. Una visión del predio como ecosistema con inteligencia propia.',
     tecnicas: ['Diagnóstico territorial', 'Plan maestro', 'Ciclos de materia', 'Energía renovable', 'Residuos como recurso', 'Estrategia comunitaria'],
   },
@@ -218,83 +246,38 @@ export default function DisenoPage() {
         </div>
       </section>
 
-      {/* DISCIPLINAS */}
+      {/* QUÉ DISEÑAMOS — una sola sección. Antes eran dos, seguidas, diciendo
+          lo mismo con otras palabras; el porqué del cambio está en el
+          comentario de `AREAS`, arriba. */}
       <section className="bg-bone-50 py-20 md:py-28 px-6">
         <div className="max-w-editorial mx-auto">
           <div className="mb-14">
             <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">Qué diseñamos</p>
-            <h2 className="font-display text-4xl md:text-5xl text-ink-950">
-              Tres disciplinas,<br />
-              <em>un enfoque.</em>
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {/* El `id` de cada disciplina existía en los datos y no llegaba al
-                HTML: `/diseno#hidrologia` no apuntaba a ninguna parte. Ahora sí,
-                y la tarjeta de hidrología de la portada enlaza acá. El
-                `scroll-mt` deja el título debajo del header y no tapado por él. */}
-            {DISCIPLINAS.map(d => (
-              <div key={d.id} id={d.id} className="scroll-mt-28 border-t-2 border-clay-700 pt-6">
-                <h3 className="font-display text-2xl text-ink-950 mb-4">{d.title}</h3>
-                <p className="font-sans text-base text-ink-700 leading-relaxed">{d.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* SERVICIOS — visual cards */}
-      <section className="bg-bone-50 py-20 md:py-28 px-6">
-        <div className="max-w-editorial mx-auto">
-          <div className="mb-14">
-            <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-700 mb-3">Áreas de trabajo</p>
             <h2 className="font-display text-4xl md:text-5xl text-ink-950">
               Cinco sistemas,<br />
               <em>un territorio.</em>
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              // La foto de esta tarjeta es un cuadro de la toma aérea de la
-              // cisterna de Tay Pichín —la misma pieza que corre en la portada—
-              // ya con el color corregido. Reemplaza a `/img/servicios/1.jpg`,
-              // que era el mismo espejo de agua sin graduar y pesaba 5,9 MB.
-              { num: '01', title: 'Manejo del Agua', img: '/img/hidrologia/cisterna-tay-pichin.webp',
-                alt: 'Vista cenital del espejo de agua de la cisterna de Tay Pichín, cubierto de plantas flotantes en flor, con el deck de madera en el borde',
-                desc: 'Zanjas, represas, biopiscinas, biofiltros y cosecha de lluvias. El agua define el territorio — la diseñamos para que se quede.',
-                tecnicas: ['Zanjas de infiltración', 'Biopiscinas', 'Fitotratamientos', 'Swales', 'Represas'] },
-              { num: '02', title: 'Vivienda y Hábitat', img: '/img/proyectos/alihuen/12.jpg',
-                alt: 'Casa Alihuen terminada, de muros de tierra y techo de madera, entre el monte',
-                desc: 'Adobe, quincha, piedra y madera. Geometría sagrada y sistemas pasivos. Cada hogar nace del lugar y de quienes lo van a habitar.',
-                tecnicas: ['Adobe y tapial', 'Quincha y cob', 'Piedra y pirca', 'Techos vivos', 'Bioclimática'] },
-              { num: '03', title: 'Producción Agroecológica', img: '/img/servicios/3.jpg',
-                alt: 'Huerta en bancales con cultivos asociados dentro de un sistema agroecológico',
-                desc: 'Bosques comestibles, huertas, jardines medicinales y producción diversificada que alimenta y regenera al mismo tiempo.',
-                tecnicas: ['Bosques comestibles', 'Huerta', 'Compostaje', 'Apicultura', 'Fungicultivo'] },
-              { num: '04', title: 'Paisajismo Funcional', img: '/img/servicios/4.jpg',
-                alt: 'Paisaje diseñado con plantas nativas y senderos integrados al terreno',
-                desc: 'El paisaje no es decoración — es función. Plantas nativas, sombra, alimento, abrigo y biodiversidad en diseño integrado.',
-                tecnicas: ['Plantas nativas', 'Cortinas vivas', 'Setos multifunción', 'Corredores', 'Borde'] },
-              { num: '05', title: 'Estrategia Regenerativa', img: '/img/servicios/5.jpg',
-                alt: 'Vista del predio completo, con la vivienda, el agua y la producción en un mismo plan',
-                desc: 'Un plan maestro completo: agua, energía, alimento, residuos y comunidad. El predio como ecosistema con inteligencia propia.',
-                tecnicas: ['Diagnóstico territorial', 'Plan maestro', 'Energía renovable', 'Ciclos de materia'] },
-            ].map(s => (
-              <div key={s.num} className="group flex flex-col bg-bone-100 border border-bone-200 overflow-hidden">
+            {/* El `scroll-mt` deja el título de la tarjeta debajo del header y
+                no tapado por él cuando se llega por el ancla. */}
+            {AREAS.map(a => (
+              <div key={a.id} id={a.id} className="group scroll-mt-28 flex flex-col bg-bone-100 border border-bone-200 overflow-hidden">
                 <div className="relative aspect-[4/3] overflow-hidden">
-                  <Image src={s.img} alt={s.alt} fill
+                  <Image src={a.img} alt={a.alt} fill
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" />
                   <div className="absolute inset-0 bg-gradient-to-t from-ink-950/70 to-transparent" />
                   <div className="absolute bottom-4 left-4">
-                    <span className="font-sans text-xs font-bold text-clay-300 uppercase tracking-widest">{s.num}</span>
-                    <h3 className="font-display text-xl text-bone-50 mt-0.5">{s.title}</h3>
+                    <span className="font-sans text-xs font-bold text-clay-300 uppercase tracking-widest">{a.num}</span>
+                    <h3 className="font-display text-xl text-bone-50 mt-0.5">{a.title}</h3>
                   </div>
                 </div>
                 <div className="p-6 flex flex-col gap-3 flex-1">
-                  <p className="font-sans text-sm text-ink-700 leading-relaxed">{s.desc}</p>
-                  <p className="font-sans text-xs text-clay-700 mt-auto leading-loose">
-                    {s.tecnicas.join(' · ')}
+                  <p className="font-sans text-base text-ink-950 leading-relaxed">{a.entrada}</p>
+                  <p className="font-sans text-sm text-ink-700 leading-relaxed">{a.body}</p>
+                  <p className="font-sans text-xs text-clay-700 mt-auto pt-2 leading-loose">
+                    {a.tecnicas.join(' · ')}
                   </p>
                 </div>
               </div>

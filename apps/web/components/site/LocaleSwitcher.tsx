@@ -6,7 +6,7 @@ import {
   ALL_LOCALES,
   LOCALE_LABELS,
   type Locale,
-  pathWithLocale,
+  rutaParaCambiarDeIdioma,
   detectLocaleFromPath,
 } from '@/lib/i18n/config';
 
@@ -21,7 +21,7 @@ export function LocaleSwitcher({ enabledLocales }: { enabledLocales: Locale[] })
 
   function switchTo(loc: Locale) {
     document.cookie = `NEXT_LOCALE=${loc}; path=/; max-age=${60 * 60 * 24 * 365}`;
-    router.push(pathWithLocale(pathname, loc));
+    router.push(rutaParaCambiarDeIdioma(pathname, loc));
   }
 
   if (enabledLocales.length <= 1) return null;
