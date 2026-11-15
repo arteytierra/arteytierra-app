@@ -48,10 +48,10 @@ const DESTACADOS = [
     meta: 'Dates à confirmer · 3 rencontres indépendantes',
     desc: 'Trois rencontres pour parcourir tout le processus de culture des pleurotes : depuis la biologie du champignon jusqu\'à la récolte. Format modulaire — suivez un module seul ou le cycle complet.',
     prix: '$60.000 ARS / module — cycle complet $150.000 ARS',
-    img: '/img/cursos/girgolas/1.jpg',
+    img: '/img/cursos/cultivo-girgolas/1.jpg',
   },
   // Alchimie Naturelle — en pause pour le moment. Gardé ici pour réactiver rapidement, hors du tableau pour ne pas être lié :
-  // { href: '/fr/cursos/alquimia-natural', tag: 'Présentiel · 3e samedi du mois', badge: 'RÉGULIER', title: 'Alchimie Naturelle et Nettoyage Conscient', meta: '3e samedi du mois · journée', desc: "Atelier pratique pour créer ses propres produits ménagers et de soin à partir d'ingrédients naturels. Savons, détergents, cosmétiques simples et efficaces — en connexion avec les cycles de la nature.", prix: 'Consulter', img: '/img/cursos/alquimia/1.jpg' },
+  // { href: '/fr/cursos/alquimia-natural', tag: 'Présentiel · 3e samedi du mois', badge: 'RÉGULIER', title: 'Alchimie Naturelle et Nettoyage Conscient', meta: '3e samedi du mois · journée', desc: "Atelier pratique pour créer ses propres produits ménagers et de soin à partir d'ingrédients naturels. Savons, détergents, cosmétiques simples et efficaces — en connexion avec les cycles de la nature.", prix: 'Consulter', img: '/img/biocosmetica/productos-todos.jpg' },
 ];
 
 export default function CursosFrPage() {
