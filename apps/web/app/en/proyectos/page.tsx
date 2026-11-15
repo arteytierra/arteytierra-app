@@ -3,63 +3,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
+import { PROYECTOS, lugarCortoYAnio } from '@/lib/proyectos/datos';
 
 export const metadata: Metadata = {
   title: 'Projects',
   description: 'Portfolio of bioarchitecture, regenerative hydrology and natural building projects by Arte y Tierra. From Argentina to Europe.',
   alternates: { canonical: '/en/proyectos' },
 };
-
-const PROYECTOS = [
-  {
-    slug: 'armonia',
-    name: 'Proyecto Armonía',
-    type: 'Bioarchitecture + Hydrology',
-    img: '/img/proyectos/armonia/1.jpg',
-    meta: 'Capilla del Monte · 2025',
-    desc: 'Integral design of a regenerative habitat: earthen architecture, water harvesting system and productive agroecological design.',
-  },
-  {
-    slug: 'alihuen',
-    name: 'Casa Alihuen',
-    type: 'Bioarchitecture',
-    img: '/img/proyectos/alihuen/12.jpg',
-    meta: 'Santa Isabel · 2024',
-    desc: 'House in earth and stone with bioclimatic design adapted to the semi-arid climate of Córdoba. Owner-builder accompaniment.',
-  },
-  {
-    slug: 'sol',
-    name: 'Casa del Sol',
-    type: 'Bioarchitecture',
-    img: '/img/proyectos/sol/1.jpg',
-    meta: 'Santa Isabel · 2023',
-    desc: 'Solar-passive house with natural earth plasters, rainwater harvesting and dry toilets integrated into the landscape.',
-  },
-  {
-    slug: 'chelo',
-    name: 'La Casa del Chelo',
-    type: 'Bioarchitecture',
-    img: '/img/proyectos/chelo/1.jpg',
-    meta: 'María Juana, Santa Fé · 2019',
-    desc: 'Rural house built with adobe and quincha. Community workshop with 40 participants from 5 provinces.',
-  },
-  {
-    slug: 'aurea',
-    name: 'Casa Aurea',
-    type: 'Bioarchitecture',
-    img: '/img/proyectos/aurea/1.jpg',
-    meta: 'San Marcos Sierras · 2022–2026',
-    desc: "Long-term owner-builder project: cob, stone and earth plaster. Design integrated into Tay Pichín's productive landscape.",
-  },
-  {
-    slug: 'sum-arbol-piedra',
-    name: 'SUM Árbol de Piedra',
-    type: 'Bioarchitecture',
-    img: '/img/proyectos/sum-arbol-piedra/1.jpg',
-    meta: 'Córdoba',
-    desc: 'Community multipurpose space built with stone and earth. Collective construction with active community participation.',
-  },
-];
 
 const PAISES = ['AR', 'FR', 'CO', 'PE', 'BO', 'IT', 'EC'];
 const PAISES_FULL = ['Argentina', 'France', 'Colombia', 'Peru', 'Bolivia', 'Italy', 'Ecuador'];
@@ -90,15 +40,15 @@ export default function ProyectosEnPage() {
                 <Link key={p.slug} href={`/proyectos/${p.slug}`} className="group block">
                   <div className="relative aspect-[16/10] overflow-hidden mb-5">
                     <Image
-                      src={p.img} alt={p.name} fill
+                      src={p.portada} alt={p.nombre} fill
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                       sizes="(max-width:768px) 100vw,50vw"
                     />
                   </div>
-                  <p className="font-sans text-xs font-bold uppercase tracking-widest text-clay-700 mb-2">{p.type}</p>
-                  <h2 className="font-display text-2xl text-ink-950 mb-1">{p.name}</h2>
-                  <p className="font-sans text-xs text-ink-700/60 mb-3">{p.meta}</p>
-                  <p className="font-sans text-sm text-ink-700 leading-relaxed">{p.desc}</p>
+                  <p className="font-sans text-xs font-bold uppercase tracking-widest text-clay-700 mb-2">{p.tipo.en}</p>
+                  <h2 className="font-display text-2xl text-ink-950 mb-1">{p.nombre}</h2>
+                  <p className="font-sans text-xs text-ink-700/60 mb-3">{lugarCortoYAnio(p)}</p>
+                  <p className="font-sans text-sm text-ink-700 leading-relaxed">{p.resumen.en}</p>
                 </Link>
               ))}
             </div>

@@ -44,7 +44,11 @@ const RUTA = /["'`](\/img\/[A-Za-z0-9_./()-]+\.(?:jpg|jpeg|JPG|png|webp|svg|avif
 describe('las imágenes que nombra el código están en public/', () => {
   it('ninguna ruta de /img apunta a un archivo que no existe', () => {
     const faltan: string[] = [];
-    for (const archivo of [...fuentes(join(RAIZ, 'app')), ...fuentes(join(RAIZ, 'components'))]) {
+    // `lib/` entró el 15/11/2026, cuando los datos de los proyectos salieron
+    // de las páginas y pasaron a `lib/proyectos/datos.ts`: las rutas se
+    // mudaron y el test se quedó mirando donde ya no estaban.
+    const carpetas = ['app', 'components', 'lib'].flatMap((c) => fuentes(join(RAIZ, c)));
+    for (const archivo of carpetas) {
       const texto = readFileSync(archivo, 'utf8');
       for (const [, ruta] of texto.matchAll(RUTA)) {
         if (!existsSync(join(PUBLICO, ruta!.slice(1)))) {
