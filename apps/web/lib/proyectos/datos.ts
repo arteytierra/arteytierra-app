@@ -112,7 +112,10 @@ export const PROYECTOS: readonly Proyecto[] = [
       'Bosque comestible',
     ],
     portada: '/img/proyectos/armonia/1.jpg',
-    fotos: fotos('armonia', 30),
+    // Eran treinta hasta el 15/11/2026, y la 29 era la 6 otra vez: el mismo
+    // archivo, byte por byte, con otro nombre, así que la galería mostraba la
+    // misma foto dos veces. Se borró y la 30 pasó a ser la 29.
+    fotos: fotos('armonia', 29),
   },
   {
     slug: 'alihuen',
@@ -152,12 +155,7 @@ export const PROYECTOS: readonly Proyecto[] = [
       'Paneles solares',
     ],
     portada: '/img/proyectos/alihuen/12.jpg',
-    fotos: [
-      ...fotos('alihuen', 11),
-      '/img/proyectos/alihuen/12.jpg',
-      '/img/proyectos/alihuen/13.png',
-      '/img/proyectos/alihuen/14.png',
-    ],
+    fotos: fotos('alihuen', 14),
   },
   {
     slug: 'sol',

@@ -170,7 +170,7 @@ export default function DisenoPage() {
       {/* HERO */}
       <section className="relative h-[65vh] min-h-[440px] bg-ink-950 flex items-end overflow-hidden">
         <Image
-          src="/img/servicios/1.png"
+          src="/img/servicios/1.jpg"
           alt="Arte y Tierra — diseño del territorio"
           fill
           priority
@@ -220,7 +220,7 @@ export default function DisenoPage() {
           </div>
           <div className="relative aspect-[4/3] overflow-hidden">
             <Image
-              src="/img/servicios/2.png"
+              src="/img/servicios/2.jpg"
               alt="Diagnóstico territorial — Arte y Tierra"
               fill
               className="object-cover"
