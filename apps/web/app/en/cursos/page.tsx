@@ -37,10 +37,10 @@ const DESTACADOS = [
     subtitle: '3-module cycle · Dates TBC',
     desc: 'Grow edible mushrooms on agricultural and forest by-products. Practical, replicable methodology.',
     href: '/en/cursos/cultivo-girgolas',
-    img: '/img/cursos/girgolas/1.jpg',
+    img: '/img/cursos/cultivo-girgolas/1.jpg',
   },
   // Natural Alchemy — paused for now. Kept here for a quick reactivation, out of the array so it isn't linked:
-  // { title: 'Natural Alchemy', subtitle: '3rd Saturday of the month', desc: 'Transform daily toxicity into sustainable solutions: natural soaps, deodorants and household products.', href: '/en/cursos/alquimia-natural', img: '/img/cursos/alquimia/1.jpg' },
+  // { title: 'Natural Alchemy', subtitle: '3rd Saturday of the month', desc: 'Transform daily toxicity into sustainable solutions: natural soaps, deodorants and household products.', href: '/en/cursos/alquimia-natural', img: '/img/biocosmetica/productos-todos.jpg' },
 ];
 
 export default function CursosEnPage() {

@@ -78,7 +78,7 @@ export default function DisenoDEsFrPage() {
         {/* HERO */}
         <section className="relative h-[70vh] min-h-[500px] bg-ink-950 flex items-end overflow-hidden">
           <Image
-            src="/img/servicios/principal/1.jpg"
+            src="/img/servicios/1.jpg"
             alt="Services Arte y Tierra — Design Écosystémique"
             fill priority className="object-cover" sizes="100vw"
           />

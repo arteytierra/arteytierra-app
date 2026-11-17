@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
+import { PROYECTOS, lugarCortoYAnio } from '@/lib/proyectos/datos';
 
 export const metadata: Metadata = {
   title: { absolute: 'Arte y Tierra — Design Écosystémique du Territoire' },
@@ -35,15 +36,6 @@ const SERVICIOS = [
     img: '/img/home/lo-que-hacemos/3.jpg',
     alt: 'Ateliers expérientiels de bioconstruction',
   },
-];
-
-const PROYECTOS = [
-  { slug: 'armonia',          name: 'Proyecto Armonía',    type: 'Bioarchitecture + Hydrologie', img: '/img/proyectos/armonia/1.jpg',          meta: 'Capilla del Monte · 2025' },
-  { slug: 'alihuen',          name: 'Casa Alihuen',         type: 'Bioarchitecture',              img: '/img/proyectos/alihuen/12.jpg',         meta: 'Santa Isabel · 2024' },
-  { slug: 'sol',              name: 'Casa del Sol',          type: 'Bioarchitecture',              img: '/img/proyectos/sol/1.jpg',              meta: 'Santa Isabel · 2023' },
-  { slug: 'chelo',            name: 'La Casa del Chelo',     type: 'Bioarchitecture',              img: '/img/proyectos/chelo/1.jpg',            meta: 'María Juana, Santa Fé · 2019' },
-  { slug: 'aurea',            name: 'Casa Aurea',            type: 'Bioarchitecture',              img: '/img/proyectos/aurea/1.jpg',            meta: 'San Marcos Sierras · 2022–2026' },
-  { slug: 'sum-arbol-piedra', name: 'SUM Árbol de Piedra',   type: 'Bioarchitecture',              img: '/img/proyectos/sum-arbol-piedra/1.jpg', meta: 'Córdoba' },
 ];
 
 const STATS = [
@@ -185,13 +177,13 @@ export default function FrHomePage() {
               {PROYECTOS.map(p => (
                 <Link key={p.slug} href="/fr/proyectos" className="group block overflow-hidden bg-ink-800">
                   <div className="relative aspect-[4/3] overflow-hidden">
-                    <Image src={p.img} alt={p.name} fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+                    <Image src={p.portada} alt={p.nombre} fill className="object-cover transition-transform duration-700 group-hover:scale-105" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
                     <div className="absolute inset-0 bg-ink-950/0 group-hover:bg-ink-950/20 transition-colors" />
                   </div>
                   <div className="p-5">
-                    <p className="text-xs font-sans font-bold uppercase tracking-wider text-clay-500 mb-1">{p.type}</p>
-                    <h3 className="font-display text-xl text-bone-50 group-hover:text-clay-200 transition-colors">{p.name}</h3>
-                    <p className="mt-1 text-sm font-sans text-bone-200/60">{p.meta}</p>
+                    <p className="text-xs font-sans font-bold uppercase tracking-wider text-clay-500 mb-1">{p.tipo.fr}</p>
+                    <h3 className="font-display text-xl text-bone-50 group-hover:text-clay-200 transition-colors">{p.nombre}</h3>
+                    <p className="mt-1 text-sm font-sans text-bone-200/60">{lugarCortoYAnio(p)}</p>
                   </div>
                 </Link>
               ))}

@@ -41,7 +41,7 @@ export default function AsesoriasFrPage() {
         {/* HERO */}
         <section className="relative h-[70vh] min-h-[500px] bg-ink-950 flex items-end overflow-hidden">
           <Image
-            src="/img/asesorias/1.jpg"
+            src="/img/cursos/asesorias/dron.jpg"
             alt="Consultation en ligne Arte y Tierra"
             fill priority className="object-cover" sizes="100vw"
           />

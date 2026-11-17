@@ -39,7 +39,7 @@ export default function CultivoGirgolasFrPage() {
         {/* HERO */}
         <section className="relative h-[70vh] min-h-[500px] bg-ink-950 flex items-end overflow-hidden">
           <Image
-            src="/img/cursos/girgolas/1.jpg"
+            src="/img/cursos/cultivo-girgolas/1.jpg"
             alt="Culture de Pleurotes — Atelier FUNGO × Tay Pichín"
             fill priority className="object-cover" sizes="100vw"
           />

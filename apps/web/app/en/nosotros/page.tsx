@@ -43,7 +43,7 @@ export default function NosotrosEnPage() {
         {/* HERO */}
         <section className="relative h-[70vh] min-h-[500px] bg-ink-950 flex items-end overflow-hidden">
           <Image
-            src="/img/nosotros/1.jpg"
+            src="/img/taypichin/carousel/5.jpg"
             alt="Arte y Tierra team"
             fill priority className="object-cover opacity-70" sizes="100vw"
           />
@@ -79,7 +79,7 @@ export default function NosotrosEnPage() {
         <section className="bg-ink-950 py-20 px-6">
           <div className="max-w-editorial mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div className="relative aspect-[3/4] overflow-hidden">
-              <Image src="/img/nosotros/jonatan.jpg" alt="Jonatan Palma — Arte y Tierra" fill className="object-cover" sizes="(max-width:768px) 100vw,50vw" />
+              <Image src="/img/cursos/vueltatierra/10.jpg" alt="Jonatan Palma — Arte y Tierra" fill className="object-cover" sizes="(max-width:768px) 100vw,50vw" />
             </div>
             <div>
               <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-500 mb-4">Founder</p>

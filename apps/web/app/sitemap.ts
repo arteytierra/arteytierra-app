@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next';
 import { createSupabaseAdminClient } from '@/lib/db/admin';
 import { enabledLocales, DEFAULT_LOCALE, type Locale } from '@/lib/i18n/config';
 import { RUTA_POR_TIPO } from '@/lib/cache/rutas-publicas';
+import { PROYECTOS } from '@/lib/proyectos/datos';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://arteytierra.org';
 
@@ -46,6 +47,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       alternates: { languages: altsFor(path === '/' ? '/' : path, locales) },
     };
   });
+
+  // Las fichas de obra. Sin `alternates`: la ficha existe sólo en castellano,
+  // y declarar `/en/proyectos/armonia` sería prometerle a Google una
+  // alternativa que devuelve 404.
+  for (const p of PROYECTOS) {
+    entries.push({
+      url: `${SITE}/proyectos/${p.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.6,
+    });
+  }
 
   try {
     const admin = createSupabaseAdminClient();
