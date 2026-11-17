@@ -34,6 +34,10 @@ import { balanceCiclico, MESES_CORTOS } from '../lib/balanceHidrico';
 import type { DatosTopografia } from '../lib/topografia';
 import type { DatosClima } from '../lib/clima';
 import type { DatosSuelo } from '../lib/suelos';
+import type { AvisoCalculo } from '../lib/hidrologiaPredio';
+import {
+  avisoPlanillaExpansivo, avisoMaterialesExpansivo, avisoEtapasExpansivo,
+} from '../lib/sueloEnElPapel';
 import type { MetricasPoligono } from '../lib/geometria';
 import type { RedAguaResumen } from '../lib/hidraulica';
 import type { Mojon } from '../lib/types';
@@ -82,11 +86,33 @@ function Aviso({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * El aviso de suelo de una hoja de papel.
+ *
+ * Usa el mismo recuadro de advertencia que el resto de la sección y no un
+ * color por nivel: impreso en blanco y negro, un naranja y un rojo son el
+ * mismo gris. O es una advertencia o no está. Las frases salen de
+ * `lib/sueloEnElPapel.ts`, con su fuente y sus tests.
+ */
+function AvisoSuelo({ aviso }: { aviso: AvisoCalculo | null }) {
+  if (!aviso) return null;
+  return (
+    <Aviso>
+      <strong>{aviso.titulo}.</strong> {aviso.detalle}
+    </Aviso>
+  );
+}
+
 // ─── 1 · La planilla de replanteo ─────────────────────────────────────────────
 
 export function PlanillaDeReplanteo({
-  mojones, topo, numero = 'P',
-}: { mojones: readonly Mojon[]; topo?: DatosTopografia | null; numero?: string }) {
+  mojones, topo, suelo, numero = 'P',
+}: {
+  mojones: readonly Mojon[];
+  topo?:   DatosTopografia | null;
+  suelo?:  DatosSuelo | null;
+  numero?: string;
+}) {
   if (mojones.length < 3) return null;
 
   const sep = separacionDePostes(CIERRE_SUPUESTO.especie, CIERRE_SUPUESTO.tipo);
@@ -120,6 +146,10 @@ export function PlanillaDeReplanteo({
         predio y además es el primero que se hace en el campo. Los del muro de la represa, de cada swale
         y de la directriz keyline salen de las pestañas que tienen esa geometría, con la misma tabla.
       </p>
+
+      {/* Va antes de la tabla porque cambia cómo se replantea, no cómo se lee:
+          en un suelo que se mueve, la cota del mojón depende del día. */}
+      <AvisoSuelo aviso={avisoPlanillaExpansivo({ expansivo: suelo?.expansivo ?? null })} />
 
       {/* El mismo renderizador que usan los paneles: una planilla se lee igual
           siempre, así que la tabla, el orden de las columnas y el lugar de las
@@ -160,11 +190,12 @@ export function PlanillaDeReplanteo({
 // ─── 2 · La lista de materiales ───────────────────────────────────────────────
 
 export function ListaDeMaterialesSeccion({
-  metricas, mojones, red, capacidadRepresa_m3, numero = 'M',
+  metricas, mojones, red, suelo, capacidadRepresa_m3, numero = 'M',
 }: {
   metricas?: MetricasPoligono | null;
   mojones:   readonly Mojon[];
   red?:      RedAguaResumen | null;
+  suelo?:    DatosSuelo | null;
   capacidadRepresa_m3?: number | null;
   numero?:   string;
 }) {
@@ -187,6 +218,10 @@ export function ListaDeMaterialesSeccion({
         que se compra. Un renglón que dice «cañería 480 m» es una longitud; lo que lo vuelve una lista
         de materiales es la clase de presión que ese caño tiene que aguantar.
       </p>
+
+      {/* Arriba de todo: lo que cambia no es un renglón sino cuál es la obra
+          que hay que comprar. */}
+      <AvisoSuelo aviso={avisoMaterialesExpansivo({ expansivo: suelo?.expansivo ?? null })} />
 
       <div className="flex flex-wrap gap-2 text-[10px]">
         {(['necesario', 'repuesto', 'pedido'] as const).map(e => (
@@ -305,6 +340,8 @@ export function PlanDeEtapas({
   const plan: PlanPorEtapas | null = ordenarEtapas(obras, balance);
   if (!plan) return null;
 
+  const avisoSuelo = avisoEtapasExpansivo({ expansivo: suelo?.expansivo ?? null });
+
   return (
     <section className="space-y-3 page-break-before">
       <Encabezado numero={numero} titulo="Master plan por etapas" icono={<CalendarRange className="w-4 h-4" />} />
@@ -316,19 +353,25 @@ export function PlanDeEtapas({
         de agua del suelo del predio.
       </p>
 
-      {/* La asimetría, que es lo que hay que entender antes de leer el calendario */}
-      <div className="border border-sun-500/30 bg-sun-500/10 rounded-xl p-3">
-        <p className="text-[10px] uppercase tracking-wide text-ink-900/60 font-semibold mb-1">
-          Los dos modos de equivocarse con el mes no cuestan lo mismo
-        </p>
-        <p className="text-[11px] text-ink-800 leading-relaxed">
-          Si el suelo está <strong>demasiado seco</strong>, la norma dice mojarlo por aspersión: es una
-          partida de la lista de materiales y un camión. Si está <strong>demasiado mojado</strong>, la
-          norma dice esperar: es un mes perdido, y si el que sigue también está mojado, son dos. Por eso
-          el calendario no es una banda de meses buenos con los costados peor: es un conjunto de meses
-          bloqueados, que no se discuten, y un resto en el que algunos piden agua.
-        </p>
-      </div>
+      {/* La asimetría, que es lo que hay que entender antes de leer el calendario.
+          Sobre un suelo expansivo la mitad seca de esta asimetría es falsa: el
+          agua de aspersión se va por las grietas y la superficie queda seca. Por
+          eso el aviso de `lib/sueloEnElPapel.ts` va EN LUGAR de este recuadro y
+          no debajo. Imprimir los dos sería dejar el consejo viejo arriba. */}
+      {avisoSuelo ? <AvisoSuelo aviso={avisoSuelo} /> : (
+        <div className="border border-sun-500/30 bg-sun-500/10 rounded-xl p-3">
+          <p className="text-[10px] uppercase tracking-wide text-ink-900/60 font-semibold mb-1">
+            Los dos modos de equivocarse con el mes no cuestan lo mismo
+          </p>
+          <p className="text-[11px] text-ink-800 leading-relaxed">
+            Si el suelo está <strong>demasiado seco</strong>, la norma dice mojarlo por aspersión: es una
+            partida de la lista de materiales y un camión. Si está <strong>demasiado mojado</strong>, la
+            norma dice esperar: es un mes perdido, y si el que sigue también está mojado, son dos. Por eso
+            el calendario no es una banda de meses buenos con los costados peor: es un conjunto de meses
+            bloqueados, que no se discuten, y un resto en el que algunos piden agua.
+          </p>
+        </div>
+      )}
 
       {plan.etapas.map(e => (
         <div key={e.numero} className="border border-bone-200 rounded-xl overflow-hidden">

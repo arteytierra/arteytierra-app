@@ -1785,14 +1785,21 @@ export function InformeView({ datos, compartido = false }: Props) {
             llena con un nivel, la lista se lleva a la ferreteria con el estado
             de cada renglon marcado a lapiz, y el plan por etapas contesta la
             pregunta del lunes. Cada una arranca en pagina nueva al imprimir.
-            La cuenta esta en lib/planilla.ts, lib/materiales.ts y lib/etapas.ts. */}
+            La cuenta esta en lib/planilla.ts, lib/materiales.ts y lib/etapas.ts,
+            y el aviso de suelo de las tres en lib/sueloEnElPapel.ts. */}
         {datos.mojones.length >= 3 && (
-          <PlanillaDeReplanteo mojones={datos.mojones} topo={datos.topo ?? null} numero="P" />
+          <PlanillaDeReplanteo
+            mojones={datos.mojones}
+            topo={datos.topo ?? null}
+            suelo={datos.suelo ?? null}
+            numero="P"
+          />
         )}
         <ListaDeMaterialesSeccion
           metricas={datos.metricas ?? null}
           mojones={datos.mojones}
           red={datos.redAgua ?? null}
+          suelo={datos.suelo ?? null}
           capacidadRepresa_m3={datos.represa?.capacidad_m3 ?? null}
           numero="M"
         />

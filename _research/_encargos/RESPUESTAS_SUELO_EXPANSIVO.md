@@ -456,3 +456,103 @@ lo que ya se imprimía. Doce tests nuevos en
   zanja a nivel, lo va a seguir ordenando.
 - Y los tres de §7 siguen igual: el `taxsubgrp` vértico de SSURGO sin medir, HWSD
   v2 sobre polígono, y el pH como dato y no como umbral.
+
+## 10. Las tres hojas que se llevan al campo (17/11/2026)
+
+El punto anterior pedía llevar el aviso a `PlanillaDeReplanteo`,
+`ListaDeMaterialesSeccion` y `PlanDeEtapas`. Pasó lo mismo que con el resumen
+ejecutivo: **no era una ausencia.** Dos de las tres hojas afirmaban cosas que en
+un vertisol son falsas, y una de las dos lo hacía en un recuadro destacado.
+
+### 10.1 El recuadro del plan por etapas decía lo contrario
+
+`PlanDeEtapas` imprime, arriba del calendario y antes de cualquier mes, el
+recuadro que explica la asimetría del error:
+
+> Si el suelo está **demasiado seco**, la norma dice mojarlo por aspersión: es
+> una partida de la lista de materiales y un camión. Si está **demasiado
+> mojado**, la norma dice esperar: es un mes perdido.
+
+La mitad seca de esa frase no se cumple en un suelo agrietado. El agua de
+aspersión no moja la superficie: se va por las grietas. Y el recuadro es,
+además, lo primero que se lee de la hoja que contesta «¿cuándo empiezo?».
+
+La planilla tenía un problema más callado: imprime la exactitud del relieve
+—«± X m punto a punto»— al lado de una columna que dice cuánto subir o bajar
+desde el mojón de referencia, como si la superficie estuviera quieta. En este
+suelo la cota del mojón depende del día.
+
+### 10.2 La fuente estaba en el mismo volumen que ya citábamos
+
+**Asnakew Woldeab 1988**, «Physical properties of Ethiopian Vertisols», en el
+mismo volumen de la ILCA del que ya salieron Swindale y Escobedo:
+`https://www.fao.org/4/x5493e/x5493e0a.htm`. Dice las cuatro cosas que hacían
+falta, y la tercera es la que desarma el recuadro:
+
+1. Secos, estos suelos son duros e «impossible to plough with oxen-drawn
+   implements», y pueden ser difíciles incluso con maquinaria pesada.
+2. Mojados son plásticos y pegajosos, y la estructura de la superficie se
+   destruye: en la estación húmeda los agregados desaparecen y el horizonte
+   superficial queda como un bloque masivo.
+3. **«A substantial amount of rainfall is needed to wet a dry Vertisol. The rain
+   tends to move into cracks rapidly… leaving the surface relatively dry.»** Por
+   eso el camión de agua no arregla el mes seco.
+4. «Tillage and seedbed preparation are only possible within a narrow
+   soil-moisture range». La ventana es angosta **de los dos lados**, no ancha
+   con los costados peores.
+
+Y da la práctica que corresponde: en el altiplano etíope la preparación arranca
+con las lluvias cortas de marzo y abril, cuando la trabajabilidad «is relatively
+good». El mes bueno es el hombro de la temporada. De la misma fuente sale la
+descripción de la superficie en seco, partida en prismas por grietas verticales
+cada 20 a 30 cm.
+
+### 10.3 Lo que se montó
+
+Un archivo nuevo, `apps/terreno/lib/sueloEnElPapel.ts`, con las tres frases, sus
+fuentes y su límite; un recuadro `AvisoSuelo` en el componente; y el `suelo`
+pasando a las dos secciones que no lo recibían. `PlanDeEtapas` ya lo tenía: lo
+usaba para el balance hídrico y no para el consejo.
+
+| Hoja | Qué decía | Qué dice ahora, con suelo expansivo |
+|---|---|---|
+| planilla | la cota del mojón, sin más | la cota se mueve con el agua; anotar el estado del suelo el día que se llenó y **renivelar el mojón de referencia en cada tramo** en vez de arrastrar la cota del primero; y la estaca junto a una grieta no marca nada |
+| materiales | cotiza la obra dibujada | declara que **no tiene ningún renglón** del camellón con surco, desagües de parcela y cauces empastados; y trae la recomendación de Escobedo 1988 de correr el énfasis al manejo agronómico antes que a excavar |
+| etapas | «demasiado seco se arregla mojando por aspersión» | **el recuadro se reemplaza**: el agua se va por las grietas, seco es inarable, mojado es plástico, la ventana es angosta de los dos lados y el mes bueno es el hombro |
+
+Lo del plan por etapas es un reemplazo y no un agregado, y está escrito en el
+código y en el comentario del JSX: imprimir el aviso **debajo** del recuadro
+viejo sería repetir exactamente el error que encontramos en el resumen
+ejecutivo, con el consejo equivocado arriba.
+
+### 10.4 El único número, y su cota superior
+
+`movimientoVerticalMaxCm` convierte el LEP medido del perfil a centímetros sobre
+el primer metro: con el 9,3 % del vertisol de la ficha, del orden de 9 cm. **No
+es un pronóstico de cuánto se va a mover la superficie**, y el texto impreso lo
+dice: el LEP se mide sobre un terrón *sin confinar* y llevado a seco de estufa,
+y `sueloExpansivo.ts` además se queda con el **máximo** de los horizontes del
+primer metro. Las tres condiciones empujan para el mismo lado, así que el número
+es una cota superior que da el orden de magnitud y nada más. Donde no hay LEP
+medido —todo el mundo fuera de Estados Unidos— la frase dice que no está medido
+en vez de estimarlo.
+
+Ninguna de las tres hojas cambia un solo valor calculado por este archivo: la
+planilla devuelve las mismas progresivas, la lista las mismas cantidades y el
+plan las mismas etapas y los mismos meses. Lo que cambia es lo que se lee al
+lado. 17 tests nuevos en `tests/unit/diseno/sueloEnElPapel.test.ts`.
+
+### 10.5 Lo que sigue abierto
+
+- **La geometría sigue sin existir.** El surco del camellón no se puede trazar
+  con ninguna herramienta: los swales van a nivel por definición y el patrón de
+  líneas clave sale de una directriz, no de una red de desagües de parcela con
+  cauces empastados. Ahora lo nombran los cuatro paneles, el resumen ejecutivo y
+  las tres hojas de papel, y **no lo dibuja nadie**. Es el lote que falta.
+- **El calendario del plan sigue siendo el mismo.** El aviso dice que la ventana
+  es más angosta de lo que el calendario muestra, pero los meses verdes los
+  sigue pintando `etapas.ts` con el balance hídrico y sin mirar el suelo.
+  Estrecharlos de verdad pide un criterio de humedad de laboreo —límite plástico
+  contra humedad del perfil— que hoy no tenemos medido.
+- Y los tres de §7 siguen igual: el `taxsubgrp` vértico de SSURGO sin medir,
+  HWSD v2 sobre polígono, y el pH como dato y no como umbral.
