@@ -556,3 +556,136 @@ lado. 17 tests nuevos en `tests/unit/diseno/sueloEnElPapel.test.ts`.
   contra humedad del perfil— que hoy no tenemos medido.
 - Y los tres de §7 siguen igual: el `taxsubgrp` vértico de SSURGO sin medir,
   HWSD v2 sobre polígono, y el pH como dato y no como umbral.
+
+## 11. La geometría del camellón (18/11/2026)
+
+El punto que quedó abierto en §10.5 era que el surco del camellón lo nombran los
+cuatro paneles, el resumen ejecutivo y las tres hojas de papel, y **no lo dibuja
+nadie**. Ahora existe: `apps/terreno/lib/camellon.ts`, con 30 tests.
+
+Y al ir a dibujarlo apareció un número que nadie había calculado.
+
+### 11.1 El método publicado no se puede trazar donde más vive el suelo
+
+Se cruzan dos reglas que ya estaban las dos en el repo, de dos fuentes
+distintas, y nunca se habían multiplicado:
+
+- el surco del camellón corre entre **0,4 y 0,8 %** (Swindale 1988, en
+  `saludCalculo.ts` desde el lote de los paneles);
+- el techo de la pendiente de cualquier surco es **la mitad de la pendiente del
+  terreno** (NRCS 330, en `keylineGeometria.ts` desde el lote de Keyline).
+
+De donde sale, sin medir nada nuevo:
+
+| Pendiente del terreno | Qué pasa con el camellón publicado |
+|---|---|
+| menos de **0,8 %** | no hay grado válido: **no se puede trazar** |
+| 0,8 a 1,6 % | el grado sale recortado; el 0,6 % construido no entra |
+| **1,6 a 8 %** | la banda publicada entra entera |
+| más de 8 % | fuera del terreno donde se desarrolló |
+
+El piso de 0,8 % y el 1,6 % para la banda completa están derivados en el código
+(`PENDIENTE_MIN_PARA_GRADO_PCT` y `PENDIENTE_MIN_PARA_BANDA_COMPLETA_PCT`), no
+escritos a mano, así que si alguna de las dos constantes de origen cambia se
+mueven solos.
+
+Lo que lo vuelve importante es dónde está el suelo. La misma fuente dice que los
+vertisoles se forman «mainly on the gentle slopes-usually less than 3%-of
+terraces, plains and valley floors», y el capítulo del maresha agrega que están
+«found mainly on land with a slope not exceeding 8%». **La ventana de este
+método —0,8 a 8 %— deja afuera una parte grande del terreno que motiva el
+método.** No es una contradicción de las fuentes: es el motivo por el que el
+camellón es una obra de drenaje y no de retención, y por el que en el piso de
+valle el problema no se resuelve con geometría.
+
+Y no es una deducción solitaria de dos constantes: la práctica etíope lo dice
+medido y con otras palabras, para los surcos de drenaje tradicionales. «The major
+problem with this traditional system has been that no outside drainage is
+constructed to take the field water. On very low slopes, this practice does not
+drain out the water from the field. The water thus forms ponds in the furrows. On
+moderate and higher slopes, the flow of water from the fields accelerates
+erosion.» Un estándar del USDA y una ladera de Inewari dan la misma respuesta:
+por debajo de una pendiente, el surco no drena, encharca.
+
+### 11.2 La primitiva que faltaba
+
+acequia trazaba curvas de nivel (grado cero, `swales.ts`) y trazaba paralelas a
+una directriz **midiendo** la pendiente que les aparecía sola (`keyline.ts`).
+Ninguna de las dos trazaba una línea a una pendiente **pedida**, que es lo que
+pide el camellón. Eso es `trazarLineaGuia`, y la cuenta es de una línea: si **u**
+es el versor cuesta arriba y `S` la pendiente del terreno, moverse un metro en la
+dirección **d** cambia la cota en `S·(d·u)`, así que para bajar `g` por metro hay
+que resolver `d·u = −g/S`. De ahí sale que la línea forma con la curva de nivel
+un ángulo de `asin(g/S)`, que a grado cero es la curva de nivel y con `g = S` es
+la línea de máxima pendiente —los dos casos límite conocidos—, y sobre todo que
+**hace falta `S ≥ g`**: no existe una línea más empinada que la máxima pendiente.
+Donde el terreno es más suave que el grado pedido la función no extrapola: baja
+por la máxima pendiente, lo cuenta en `pasosSinPendiente` y el grado medido sale
+más chico que el pedido.
+
+El caso resuelto del test es el plano inclinado, comparado contra la
+trigonometría y no contra otra corrida del código: al 0,6 % sobre un plano del
+3 %, el corrimiento perpendicular a la curva tiene que ser `0,6/3 = 0,2` del
+largo recorrido y el grado medido tiene que ser 0,6 %.
+
+### 11.3 Lo que el test encontró, que no era el test
+
+La primera corrida dio 0,57 % en vez de 0,60 %, y 2,74 % en vez de 3,00 %. No era
+tolerancia: **`elevEnGrilla` muestrea por vecino más cercano**, devuelve la cota
+del nodo redondeado. Sobre un plano exacto del 3 %, el gradiente leído por
+diferencias centradas con ese muestreo no vale 3 %: salta entre 2,82 y 3,53 %
+según cuántas filas de grilla entren en el paso de diferenciación, un ±12 %. Y
+como la dirección del trazado sale de `asin(g/S)`, ese error en `S` desviaba la
+línea, que además terminaba corriendo 540 m al sur con 0,001 m de desvío al este
+donde tenía que ir derecho.
+
+Se resolvió con un interpolador bilineal local en `camellon.ts` —no se tocó
+`elevEnGrilla`, que la usa media app y está bien para lo demás— y el caso
+resuelto cerró exacto: 0,60 % medido, corrimiento 0,2000, y al grado de la
+pendiente baja derecho al sur. **Queda anotado como trampa para la próxima
+geometría que necesite precisión vertical sub-celda.**
+
+### 11.4 Qué más hay, y el límite declarado
+
+- `bandaCamellon`: la banda publicada cruzada con el techo del estándar. Si
+  queda vacía lo dice, con el porqué y con el número que falta.
+- `anchoUnidadDeDrenaje`: hasta dónde se puede seguir corriendo paralelo antes
+  de que la deriva saque el surco de la banda. Es donde el NRCS 330 pide una
+  directriz nueva, y **es donde va el desagüe de parcela**. Se mide con el paso
+  del modelo de elevación y no con el del surco, porque una paralela a 1,5 m de
+  la guía tiene, en un modelo de 30 m, el mismo grado que la guía: medir cada
+  1,5 m daría una serie de ceros y un ancho de unidad infinito.
+- `trazarDesague` y `trazarCauce`: la salida del agua, por el mismo D8 de la
+  cuenca. Si el desagüe no llega a un cauce, el resultado lo dice con la frase
+  que corresponde: el camellón sin salida no es una obra de drenaje, es una
+  pileta alargada.
+- `cantidadesCamellon`: 6.667 m de surco por hectárea al paso del ICRISAT, que
+  es el mismo número que los «6.7 km of travel per hectare» publicados leído
+  como recorrido de la máquina; y las jornadas de yunta como **rango**, porque
+  la fuente lo da como rango y da el porqué.
+
+El paso del patrón entra como parámetro y no como constante única, porque las
+tres fuentes no coinciden y no tienen por qué: 1,5 m es el ancho de trabajo del
+carro de ruedas del ICRISAT, 1,2 m la separación entre puntas de maresha del
+broadbed maker de la ILCA y 0,8 a 1 m el camellón manual de Inewari. **No hay un
+paso del camellón: hay el paso de la herramienta que lo hace.**
+
+Y el límite, que es el mismo de la planilla de replanteo: **esta geometría da la
+dirección y el trazado, no la cota.** Un surco al 0,6 % baja 0,9 cm cada 1,5 m y
+ningún modelo de elevación de los que lee la app tiene esa exactitud vertical. El
+grado de cada estaca se replantea con nivel en el campo, y el resultado trae el
+aviso.
+
+### 11.5 Lo que sigue abierto
+
+- **Nadie lo consume todavía.** El motor existe y está probado, pero el panel y
+  el renglón de la lista de materiales piden tocar `MapaTerrenoApp.tsx`,
+  `EntregasDePapel.tsx` y `lib/informe.ts`, que ahora mismo están modificados por
+  otra sesión. Cuando ese árbol se asiente: `metrosDeSurcoPorHa` es el renglón de
+  la lista y `cantidadesCamellon().jornadasYunta` es la mano de obra, y con eso
+  la lista deja de declarar una ausencia y declara una cantidad.
+- **La sección del cauce empastado y del desagüe no está dimensionada**, a
+  propósito. Pide el pico de la tormenta de diseño y la velocidad admisible del
+  NRCS 412 contra la NEH 650 cap. 7: es otro motor y otra fuente. Hoy se decide
+  por dónde van, no cuánto miden.
+- El calendario del plan sigue igual (§10.5), y los tres de §7 también.
