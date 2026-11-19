@@ -1,6 +1,8 @@
+import IdentificacionProveedor from '@/components/IdentificacionProveedor';
+
 export const metadata = { title: 'Política de Privacidad' };
 
-const ACTUALIZADO = '26 de agosto de 2026';
+const ACTUALIZADO = '18 de noviembre de 2026';
 
 export default function PrivacidadPage() {
   return (
@@ -16,11 +18,17 @@ export default function PrivacidadPage() {
 
         <div className="space-y-8 rounded-2xl border border-bone-200 bg-white p-6 shadow-paper sm:p-8">
           <section className="space-y-3">
-            <h2 className="font-display text-xl text-ink-950">1. Alcance</h2>
+            <h2 className="font-display text-xl text-ink-950">
+              1. Quién es responsable, y alcance
+            </h2>
+            <p className="text-sm leading-relaxed text-ink-700">
+              El <strong>responsable del tratamiento</strong> de tus datos, en los
+              términos de la Ley 25.326 de Protección de los Datos Personales, es:
+            </p>
+            <IdentificacionProveedor />
             <p className="text-sm leading-relaxed text-ink-700">
               Esta política explica qué datos trata <strong>acequia</strong> (el «Servicio»),
-              la herramienta de diseño ecosistémico del territorio operada por Arte y Tierra.
-              Complementa la{' '}
+              la herramienta de diseño ecosistémico del territorio. Complementa la{' '}
               <a href="https://arteytierra.org/privacidad" className="text-moss-700 underline">
                 política general de Arte y Tierra
               </a>
@@ -124,8 +132,11 @@ export default function PrivacidadPage() {
               <a href="mailto:info@arteytierra.org" className="text-moss-700 underline">
                 info@arteytierra.org
               </a>{' '}
-              y respondemos dentro de los plazos legales. En Argentina, la Agencia de Acceso
-              a la Información Pública es la autoridad de control (Ley 25.326).
+              y respondemos dentro de los plazos legales: diez (10) días corridos para
+              el acceso y cinco (5) días hábiles para la rectificación o supresión. Si
+              considerás que no cumplimos, podés reclamar ante la{' '}
+              <strong>Agencia de Acceso a la Información Pública</strong>, que es el
+              órgano de control de la Ley 25.326.
             </p>
           </section>
 

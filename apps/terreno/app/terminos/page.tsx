@@ -1,6 +1,9 @@
+import IdentificacionProveedor from '@/components/IdentificacionProveedor';
+import { PROVEEDOR, TITULAR_PI } from '@/lib/titular';
+
 export const metadata = { title: 'Términos de Servicio' };
 
-const ACTUALIZADO = '27 de julio de 2026';
+const ACTUALIZADO = '18 de noviembre de 2026';
 
 export default function TerminosPage() {
   return (
@@ -16,10 +19,22 @@ export default function TerminosPage() {
 
         <div className="space-y-8 rounded-2xl border border-bone-200 bg-white p-6 shadow-paper sm:p-8">
           <section className="space-y-3">
-            <h2 className="font-display text-xl text-ink-950">1. Aceptación</h2>
+            <h2 className="font-display text-xl text-ink-950">
+              1. Quién presta el Servicio, y aceptación
+            </h2>
             <p className="text-sm leading-relaxed text-ink-700">
-              Al crear una cuenta o usar acequia (el
-              «Servicio»), operada por Arte y Tierra, aceptás estos Términos de
+              <strong>acequia</strong> (el «Servicio») es prestado por:
+            </p>
+            <IdentificacionProveedor />
+            <p className="text-sm leading-relaxed text-ink-700">
+              «{PROVEEDOR.nombreComercial}» es el nombre comercial con el que se
+              conoce al estudio; quien contrata con vos y responde por el Servicio es
+              {PROVEEDOR.forma === 'sociedad' ? ' la sociedad' : ' la persona'}{' '}
+              identificada arriba. Cuando estos Términos dicen «nosotros», se
+              refieren a ella.
+            </p>
+            <p className="text-sm leading-relaxed text-ink-700">
+              Al crear una cuenta o usar el Servicio aceptás estos Términos de
               Servicio. Si no estás de acuerdo, no uses el Servicio.
             </p>
           </section>
@@ -40,11 +55,22 @@ export default function TerminosPage() {
               3. Propiedad intelectual
             </h2>
             <p className="text-sm leading-relaxed text-ink-700">
-              El Servicio, su código, diseño, interfaz, algoritmos, cálculos, bases
-              de datos, marca, logotipos y todo su contenido son propiedad exclusiva
-              de Arte y Tierra y están protegidos por las leyes de derecho de autor y
-              propiedad industrial. No se te transfiere ningún derecho de propiedad:
-              sólo recibís una licencia limitada de uso según estos Términos.
+              El Servicio, su código, diseño, interfaz, algoritmos, cálculos y bases
+              de conocimiento propias son obra de{' '}
+              <strong>{TITULAR_PI.nombre}</strong>, su único titular, y están
+              protegidos por la Ley 11.723 de Propiedad Intelectual.{' '}
+              <strong>«acequia»</strong> es una marca registrada ante el Instituto
+              Nacional de la Propiedad Industrial (INPI), de la que es titular la
+              misma persona.
+              {TITULAR_PI.explotaBajoLicencia
+                ? ' El Servicio se explota comercialmente bajo licencia exclusiva de su titular.'
+                : ''}
+            </p>
+            <p className="text-sm leading-relaxed text-ink-700">
+              No se te transfiere ningún derecho de propiedad: sólo recibís una
+              licencia limitada de uso según estos Términos. Los datos y contenidos
+              que cargás vos no están comprendidos acá: son tuyos, y de eso se ocupa
+              el punto 6.
             </p>
           </section>
 
@@ -120,6 +146,22 @@ export default function TerminosPage() {
               fin del período ya abonado. Los precios pueden actualizarse con aviso
               previo.
             </p>
+            <p className="text-sm leading-relaxed text-ink-700">
+              <strong>Derecho de revocación.</strong> Si contratás como consumidor,
+              tenés derecho a revocar la contratación dentro de los{' '}
+              <strong>diez (10) días corridos</strong> contados desde la
+              contratación, sin expresar motivo y sin costo alguno (arts. 34 y
+              siguientes de la Ley 24.240). Para ejercerlo alcanza con escribir a{' '}
+              <a
+                href={`mailto:${PROVEEDOR.email}`}
+                className="text-moss-700 underline"
+              >
+                {PROVEEDOR.email}
+              </a>{' '}
+              desde el correo de tu cuenta: devolvemos el importe por el mismo medio
+              de pago. La baja de la suscripción se puede pedir por la misma vía, sin
+              trámite adicional ni necesidad de justificar.
+            </p>
           </section>
 
           <section className="space-y-3">
@@ -130,9 +172,15 @@ export default function TerminosPage() {
               El Servicio se provee «tal cual», sin garantías de exactitud. Los
               análisis, mediciones y cálculos son orientativos y no reemplazan un
               relevamiento profesional, una mensura oficial ni asesoramiento técnico o
-              legal. Arte y Tierra no será responsable por decisiones tomadas en base
-              a la información del Servicio ni por daños indirectos derivados de su
-              uso.
+              legal. En la máxima medida que permita la ley aplicable, no
+              responderemos por decisiones tomadas en base a la información del
+              Servicio ni por daños indirectos derivados de su uso.
+            </p>
+            <p className="text-sm leading-relaxed text-ink-700">
+              Nada de este punto limita los derechos que te reconoce la Ley 24.240 de
+              Defensa del Consumidor si contratás como consumidor: las cláusulas que
+              desnaturalicen las obligaciones o limiten la responsabilidad por daños
+              son inválidas, y acá se tienen por no escritas en lo que a vos respecta.
             </p>
           </section>
 
@@ -150,9 +198,13 @@ export default function TerminosPage() {
               10. Ley aplicable y jurisdicción
             </h2>
             <p className="text-sm leading-relaxed text-ink-700">
-              Estos Términos se rigen por las leyes de la República Argentina. Ante
-              cualquier controversia, las partes se someten a los tribunales
-              ordinarios competentes.
+              Estos Términos se rigen por las leyes de la República Argentina. Si
+              contratás como consumidor, es competente el tribunal que corresponda a
+              tu domicilio, y podés recurrir además al Servicio de Conciliación
+              Previa en las Relaciones de Consumo (COPREC) y a la autoridad de
+              defensa del consumidor de tu jurisdicción. En los demás casos, las
+              partes se someten a los tribunales ordinarios de la Provincia de
+              Córdoba.
             </p>
           </section>
 
