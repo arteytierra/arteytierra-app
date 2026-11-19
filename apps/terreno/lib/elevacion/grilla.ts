@@ -8,7 +8,7 @@
  * puntuales. Fila 0 = sur (latMin), igual que `GrillaElevacion` del cliente.
  */
 import { fromUrl } from 'geotiff';
-import type { BBox, FuenteDEM } from './tipos';
+import type { BBox, FuenteDEM, GrillaProveedor } from './tipos';
 import type { MuestreoDEM } from './muestreo';
 import { tileUrl, validaCota, puntosGlo30 } from './glo30';
 import { fuentesNacionalesGrilla, type FuenteNacional } from './router';
@@ -32,6 +32,12 @@ export interface GrillaDEM {
    * 25/10/2026 las dos cosas salían de acá indistinguibles. Ver `muestreo.ts`.
    */
   muestreo: MuestreoDEM;
+  /**
+   * Paso del ráster que se leyó, en metros, cuando la fuente tiene más de uno.
+   * Ausente = el del catálogo por fuente (`PASO_RELIEVE`). Hoy sólo lo manda
+   * swisstopo, que publica 0,5 m y 2 m del mismo km². Ver `tipos.ts`.
+   */
+  pasoFuenteM?: number;
 }
 
 interface Ventana {
@@ -163,7 +169,10 @@ export async function grillaGlo30(bbox: BBox, cols: number, rows: number): Promi
  * se usa esa fuente de mayor resolución; si falla o no hay, cae a GLO-30 global.
  */
 export async function obtenerGrillaDEM(bbox: BBox, cols: number, rows: number): Promise<GrillaDEM | null> {
-  const ADAPTER: Record<FuenteNacional, (b: BBox, c: number, r: number) => Promise<Float32Array | null>> = {
+  const ADAPTER: Record<
+    FuenteNacional,
+    (b: BBox, c: number, r: number) => Promise<Float32Array | GrillaProveedor | null>
+  > = {
     usgs3dep: grillaUsgs3dep,
     ignfr:    grillaIgnFr,
     ignes:    grillaIgnEs,
@@ -174,7 +183,11 @@ export async function obtenerGrillaDEM(bbox: BBox, cols: number, rows: number): 
   // Prueba cada fuente nacional que cubre el predio (maneja solapes de frontera);
   // la primera con dato gana. Si ninguna responde, GLO-30 global.
   for (const fuente of fuentesNacionalesGrilla(bbox)) {
-    const elev = await ADAPTER[fuente](bbox, cols, rows);
+    const r = await ADAPTER[fuente](bbox, cols, rows);
+    // Un proveedor con paso fijo devuelve la grilla pelada; swisstopo devuelve
+    // también con qué paso la leyó, porque lo elige según el predio.
+    const elev = r instanceof Float32Array ? r : r?.elev ?? null;
+    const pasoFuenteM = r instanceof Float32Array ? undefined : r?.pasoFuenteM;
     // `'servicio'` y no `'bilineal'`: el remuestreo lo hace el proveedor y el
     // método no siempre se declara. 3DEP lo pide explícito
     // (`RSP_BilinearInterpolation`), los WCS de España, Canadá y Países Bajos
@@ -182,7 +195,7 @@ export async function obtenerGrillaDEM(bbox: BBox, cols: number, rows: number): 
     // igual que el respaldo de GLO-30. Ponerles a todos la etiqueta buena
     // sería afirmar algo que este repo no verificó; la medición de
     // `diagnosticarMuestreo` sí los cubre, porque mira el dato.
-    if (elev) return { rows, cols, bbox, elev, fuente, muestreo: 'servicio' };
+    if (elev) return { rows, cols, bbox, elev, fuente, muestreo: 'servicio', pasoFuenteM };
   }
   return grillaGlo30(bbox, cols, rows);
 }

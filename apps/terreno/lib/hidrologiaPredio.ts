@@ -88,7 +88,17 @@ const RESOLUCION_DEM: Record<FuenteRelieve, number | null> = {
   usgs3dep: 10, ignfr: 5, ignes: 5, hrdemca: 2, ahnnl: 0.5, swisstopo: 2,
 };
 
-export function resolucionDem(fuente: FuenteRelieve | undefined): number | null {
+/**
+ * `pasoLeidoM` le gana a la tabla cuando viene: hay fuentes que publican varias
+ * resoluciones del mismo lugar —swissALTI3D tiene el mismo km² en 0,5 m y en
+ * 2 m— y cuál se leyó lo sabe la grilla, no el nombre de la fuente. Con la tabla
+ * sola, un predio suízo leído a 0,5 m contaba sus celdas como si fueran de 2 m y
+ * el aviso de «DEM grueso» saltaba cuatro veces antes de lo que corresponde.
+ */
+export function resolucionDem(
+  fuente: FuenteRelieve | undefined, pasoLeidoM?: number | null,
+): number | null {
+  if (pasoLeidoM != null && Number.isFinite(pasoLeidoM) && pasoLeidoM > 0) return pasoLeidoM;
   return fuente ? RESOLUCION_DEM[fuente] ?? null : null;
 }
 
@@ -143,6 +153,8 @@ export function armarConfianza(
 export interface ContextoHidro {
   /** fuente del relieve, para juzgar si el DEM alcanza para el área */
   fuenteDem?:      FuenteRelieve | null;
+  /** Paso del ráster realmente leído (m), si la fuente tiene más de uno. */
+  pasoFuenteDemM?: number | null;
   area_ha?:        number | null;
   pendiente_pct?:  number | null;
   /** el área analizada se sale de la grilla cargada (subestima la cuenca) */
@@ -439,7 +451,7 @@ export function avisosDeContexto(ctx: ContextoHidro | undefined, avisos: AvisoCa
         'si el servicio responde, llega interpolado.',
     });
   }
-  const res  = resolucionDem(ctx.fuenteDem ?? undefined);
+  const res  = resolucionDem(ctx.fuenteDem ?? undefined, ctx.pasoFuenteDemM);
   const area = ctx.area_ha ?? null;
   if (res !== null && area !== null && area > 0) {
     // Lado del área analizada si fuera cuadrada, en celdas de DEM.

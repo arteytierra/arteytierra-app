@@ -657,10 +657,20 @@ export interface IncertidumbreCota {
 export function incertidumbreDeCota(
   fuente: FuenteRelieve | null | undefined,
   pendiente_pct?: number | null,
+  /**
+   * Paso del ráster realmente leído (m). Le gana a `PASO_RELIEVE`, que es una
+   * constante por fuente y no puede representar a swissALTI3D, que publica el
+   * mismo km² en 0,5 m y en 2 m. El paso no entra en la incertidumbre vertical
+   * —eso lo da la exactitud publicada— pero sí en el intervalo de curva que
+   * esta función cita cuando no hay exactitud con qué declarar nada.
+   */
+  pasoLeidoM?: number | null,
 ): IncertidumbreCota {
   const f = fuente ?? 'terrarium';
   const etiqueta = ETIQUETA_RELIEVE[f];
-  const paso_m   = PASO_RELIEVE[f];
+  const paso_m   = (pasoLeidoM != null && Number.isFinite(pasoLeidoM) && pasoLeidoM > 0)
+    ? pasoLeidoM
+    : PASO_RELIEVE[f];
   const exactitud = EXACTITUD_DEM[f] ?? null;
 
   if (!exactitud) {

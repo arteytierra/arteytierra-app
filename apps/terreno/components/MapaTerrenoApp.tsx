@@ -808,7 +808,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
    */
   const corrimientoCurvas = useMemo(() => {
     if (pendienteMedia == null) return null;
-    const u = incertidumbreDeCota(grillaActiva?.fuente ?? null, pendienteMedia).u_relativa;
+    const u = incertidumbreDeCota(grillaActiva?.fuente ?? null, pendienteMedia, grillaActiva?.paso_fuente_m).u_relativa;
     return corrimientoDeTraza(u, pendienteMedia);
   }, [grillaActiva, pendienteMedia]);
 
@@ -826,6 +826,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
     periodoRetorno,
     contexto: {
       fuenteDem:     grillaActiva?.fuente ?? datosShader?.fuente ?? null, relieve: muestreoRelieve,
+      pasoFuenteDemM: grillaActiva?.paso_fuente_m ?? datosShader?.paso_fuente_m ?? null,
       area_ha:       metricas?.area_ha ?? null,
       pendiente_pct: pendienteMedia,
     },
@@ -876,6 +877,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
       usle_c:         datosErosion.usle_c,
       nota_cobertura: datosErosion.nota_cobertura,
       fuenteDem:      grillaActiva?.fuente ?? datosShader?.fuente ?? null, relieve: muestreoRelieve,
+      pasoFuenteDemM: grillaActiva?.paso_fuente_m ?? datosShader?.paso_fuente_m ?? null,
       textura:        datosSuelo?.clase_textura ?? null,
       hayMagnitud:    perdidaErosion !== null,
       precipAnual_mm: datosClima?.precip_anual_mm ?? null,
@@ -3468,6 +3470,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
                 hidro={hidroPredio}
                 expansivo={datosSuelo?.expansivo ?? null}
                 fuenteRelieve={grillaActiva?.fuente ?? null}
+                pasoFuenteRelieveM={grillaActiva?.paso_fuente_m ?? null}
                 onPeriodoRetorno={setPeriodoRetorno}
                 onIrAClima={() => setTab('clima')}
                 onIrASuelo={() => setTab('suelo')}

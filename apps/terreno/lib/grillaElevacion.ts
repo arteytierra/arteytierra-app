@@ -95,6 +95,34 @@ export function relieveMedido(
   return { muestreo: g.muestreo, mesetas, caida_por_nodo_m: caida };
 }
 
+/**
+ * Las fuentes que publican MÁS DE UNA resolución del mismo lugar, con la más
+ * fina de las dos. `PASO_RELIEVE` guarda la gruesa, que es la que se puede
+ * prometer en cualquier predio; de acá sale la que se usa de verdad cuando el
+ * predio es chico, y la grilla la informa en `paso_fuente_m`.
+ *
+ * swissALTI3D tiene el mismo km² en 0,5 m y en 2 m. Cuál se lee lo decide el
+ * tamaño del predio: a 0,5 m un km² son ~16 MB, así que la resolución fina se
+ * pide cuando la grilla puede resolverla y la ventana entra en la descarga.
+ */
+export const PASO_FINO_RELIEVE: Partial<Record<FuenteRelieve, number>> = {
+  swisstopo: 0.5,
+};
+
+/**
+ * Paso del ráster del que salió esta grilla, en metros.
+ *
+ * El que vino CON la grilla manda sobre el del catálogo por fuente, porque hay
+ * fuentes que publican varias resoluciones del mismo lugar —swissALTI3D tiene
+ * el mismo km² en 0,5 m y en 2 m— y cuál se leyó lo sabe quien la leyó, no una
+ * tabla indexada por nombre de fuente.
+ */
+export function pasoFuenteM(
+  g: { fuente?: FuenteRelieve; paso_fuente_m?: number },
+): number {
+  return g.paso_fuente_m ?? (g.fuente ? PASO_RELIEVE[g.fuente] : PASO_RELIEVE.terrarium);
+}
+
 export function pasoEfectivoM(g: GrillaElevacion): number {
   const latC   = (g.latMin + g.latMax) / 2;
   const anchoM = (g.lngMax - g.lngMin) * 111_320 * Math.cos(latC * Math.PI / 180);
@@ -103,7 +131,7 @@ export function pasoEfectivoM(g: GrillaElevacion): number {
     g.cols > 1 ? anchoM / (g.cols - 1) : Infinity,
     g.rows > 1 ? altoM  / (g.rows - 1) : Infinity,
   );
-  const pasoFuente = g.fuente ? PASO_RELIEVE[g.fuente] : PASO_RELIEVE.terrarium;
+  const pasoFuente = pasoFuenteM(g);
   return Math.max(pasoFuente, Number.isFinite(pasoGrilla) ? pasoGrilla : pasoFuente);
 }
 
@@ -147,6 +175,16 @@ export interface GrillaElevacion {
    * desde otro programa. Ver `lib/elevacion/muestreo.ts`.
    */
   mesetas?: number;
+  /**
+   * Paso del ráster que se leyó realmente, en metros, cuando la fuente publica
+   * más de una resolución del mismo lugar. Le gana a `PASO_RELIEVE[fuente]`.
+   *
+   * Existe por swisstopo, que tiene el mismo km² en 0,5 m y en 2 m y elige
+   * según el tamaño del predio. Un `Record` por fuente no puede representar eso
+   * y, con la constante en 2 m, la app se negaba a dibujar curvas cada 0,25 m
+   * teniendo un modelo de 0,5 m con qué hacerlo.
+   */
+  paso_fuente_m?: number;
 }
 
 /**
@@ -183,6 +221,7 @@ export function remuestrearGrilla(g: GrillaElevacion, maxLado: number): GrillaEl
     elev_min: Number.isFinite(min) ? min : g.elev_min,
     elev_max: Number.isFinite(max) ? max : g.elev_max,
     fuente: g.fuente,
+    paso_fuente_m: g.paso_fuente_m,
   };
 }
 
@@ -255,6 +294,7 @@ export function recortarGrillaA(
     elev_min: min,
     elev_max: max,
     fuente: g.fuente,
+    paso_fuente_m: g.paso_fuente_m,
   };
 }
 
@@ -264,7 +304,7 @@ export function recortarGrillaA(
  */
 async function grillaDemRemota(
   latMin: number, latMax: number, lngMin: number, lngMax: number, cols: number, rows: number,
-): Promise<{ elev: Float64Array; fuente: FuenteRelieve; muestreo?: MuestreoDEM; mesetas?: number } | null> {
+): Promise<{ elev: Float64Array; fuente: FuenteRelieve; muestreo?: MuestreoDEM; mesetas?: number; paso_fuente_m?: number } | null> {
   try {
     const u = `/api/dem?w=${lngMin}&s=${latMin}&e=${lngMax}&n=${latMax}&cols=${cols}&rows=${rows}`;
     const res = await fetch(u, { signal: AbortSignal.timeout(45_000) });
@@ -272,11 +312,13 @@ async function grillaDemRemota(
     const j = await res.json() as {
       ok: boolean; fuente: FuenteRelieve; cols: number; rows: number;
       elev: Array<number | null>; muestreo?: MuestreoDEM; mesetas?: number;
+      paso_fuente_m?: number;
     };
     if (!j.ok || j.cols !== cols || j.rows !== rows || !Array.isArray(j.elev) || j.elev.length !== rows * cols) return null;
     const elev = new Float64Array(rows * cols);
     for (let i = 0; i < elev.length; i++) { const v = j.elev[i]; elev[i] = (v == null) ? NaN : v; }
-    return { elev, fuente: j.fuente, muestreo: j.muestreo, mesetas: j.mesetas };
+    return { elev, fuente: j.fuente, muestreo: j.muestreo, mesetas: j.mesetas,
+      paso_fuente_m: j.paso_fuente_m };
   } catch { return null; }
 }
 
@@ -393,7 +435,8 @@ export async function obtenerGrillaDensa(
     }
     if (isFinite(elev_min) && elev_max - elev_min >= 0.5)
       return { rows, cols, latMin, latMax, lngMin, lngMax, elev, dentro, elev_min, elev_max,
-        fuente: dem.fuente, muestreo: dem.muestreo, mesetas: dem.mesetas };
+        fuente: dem.fuente, muestreo: dem.muestreo, mesetas: dem.mesetas,
+        paso_fuente_m: dem.paso_fuente_m };
   }
 
   // Zoom: 2× oversample respecto del paso de la grilla, clamp 9–14
@@ -530,7 +573,8 @@ export async function obtenerGrillaHidro(
     }
     if (isFinite(elev_min) && elev_max - elev_min >= 0.5)
       return { rows, cols, latMin, latMax, lngMin, lngMax, elev: dem.elev, elev_min, elev_max,
-        fuente: dem.fuente, muestreo: dem.muestreo, mesetas: dem.mesetas };
+        fuente: dem.fuente, muestreo: dem.muestreo, mesetas: dem.mesetas,
+        paso_fuente_m: dem.paso_fuente_m };
   }
 
   // Zoom: 2× oversample respecto del paso de la grilla, clamp 9–14

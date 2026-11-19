@@ -128,6 +128,7 @@ export function PlanillaDeReplanteo({
     mojones: conCota,
     separacionPostes_m: sep.maximo_m,
     ...(topo?.fuenteRelieve != null ? { fuenteRelieve: topo.fuenteRelieve } : {}),
+    ...(topo?.pasoFuenteM != null ? { pasoFuenteRelieveM: topo.pasoFuenteM } : {}),
     ...(topo?.pendiente_pct != null ? { pendienteTerreno_pct: topo.pendiente_pct } : {}),
   });
   if (!planilla) return null;

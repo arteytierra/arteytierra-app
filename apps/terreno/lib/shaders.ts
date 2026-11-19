@@ -32,6 +32,8 @@ export interface DatosShader {
   elev_max:  number;
   pend_max:  number;
   fuente?:   FuenteRelieve;   // fuente del relieve (para atribución)
+  /** Paso del ráster realmente leído (m), si la fuente tiene más de uno (swissALTI3D). */
+  paso_fuente_m?: number;
 }
 
 // ─── Rampas de color ─────────────────────────────────────────────────────────
@@ -316,6 +318,7 @@ export async function fetchShader(
       status: string;
       results: Array<{ elevation: number | null }>;
       fuente?: FuenteRelieve;
+      paso_fuente_m?: number;
     };
     if (json.status !== 'OK') return { error: `API status: ${json.status}` };
 
@@ -374,7 +377,8 @@ export async function fetchShader(
 
     const pend_max = Math.max(...celdaShaders.map(c => c.pendiente_pct), 1);
 
-    return { celdas: celdaShaders, elev_min, elev_max, pend_max, fuente: json.fuente };
+    return { celdas: celdaShaders, elev_min, elev_max, pend_max, fuente: json.fuente,
+      paso_fuente_m: json.paso_fuente_m };
   } catch (e) {
     if ((e as Error).name === 'AbortError') return { error: 'Tiempo de espera agotado.' };
     return { error: String(e) };
@@ -399,6 +403,7 @@ export function shaderDesdeGrilla(grilla: {
   elev: Float64Array; elev_min: number; elev_max: number;
   dentro?: Uint8Array;
   fuente?: FuenteRelieve;
+  paso_fuente_m?: number;
 }, mojones?: Array<{ lat: number; lng: number }>): DatosShader | null {
   const { rows, cols, latMin, latMax, lngMin, lngMax, elev, elev_min, elev_max } = grilla;
   if (rows < 2 || cols < 2) return null;
@@ -477,9 +482,11 @@ export function shaderDesdeGrilla(grilla: {
       elev_max: Math.max(...es),
       pend_max: Math.max(...dentro.map(c => c.pendiente_pct), 1),
       fuente:   grilla.fuente,
+      paso_fuente_m: grilla.paso_fuente_m,
     };
   }
-  return { celdas, elev_min, elev_max, pend_max, fuente: grilla.fuente };
+  return { celdas, elev_min, elev_max, pend_max, fuente: grilla.fuente,
+    paso_fuente_m: grilla.paso_fuente_m };
 }
 
 /** Celdas cuyo centro cae dentro del polígono del predio (todas si no hay predio). */

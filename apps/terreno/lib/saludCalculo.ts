@@ -50,6 +50,8 @@ export interface EntradaCuencaSalud {
   /** la cuenca ya se extendió hasta la divisoria real */
   expandida:        boolean;
   fuenteDem?:       FuenteRelieve | null;
+  /** Paso del ráster de relieve realmente leído (m), si la fuente tiene más de uno. */
+  pasoFuenteDemM?:  number | null;
   /** cómo llegó muestreado el relieve: una grilla escalonada vacía el D8 */
   relieve?:         RelieveMedido | null;
   /** CN compuesto por cobertura satelital del predio, para contrastar */
@@ -169,7 +171,7 @@ export function confianzaCuenca(e: EntradaCuencaSalud): Confianza {
     });
   }
 
-  avisosDeContexto({ fuenteDem: e.fuenteDem, relieve: e.relieve, area_ha: e.area_ha, objeto: 'una cuenca' }, avisos);
+  avisosDeContexto({ fuenteDem: e.fuenteDem, pasoFuenteDemM: e.pasoFuenteDemM, relieve: e.relieve, area_ha: e.area_ha, objeto: 'una cuenca' }, avisos);
 
   if (e.duracion_min != null && e.intensidad_mm_h != null) {
     avisos.push({
@@ -234,6 +236,8 @@ export interface EntradaRepresaSalud {
    */
   expansivo?:          SueloExpansivo | null;
   fuenteDem?:          FuenteRelieve | null;
+  /** Paso del ráster de relieve realmente leído (m), si la fuente tiene más de uno. */
+  pasoFuenteDemM?:  number | null;
   /** cómo llegó muestreado el relieve: una grilla escalonada vacía el D8 */
   relieve?:         RelieveMedido | null;
 }
@@ -285,7 +289,7 @@ export function confianzaRepresa(e: EntradaRepresaSalud): Confianza {
   }
 
   avisosDeContexto(
-    { fuenteDem: e.fuenteDem, relieve: e.relieve, area_ha: e.area_espejo_m2 / 10_000, objeto: 'un espejo de agua' },
+    { fuenteDem: e.fuenteDem, pasoFuenteDemM: e.pasoFuenteDemM, relieve: e.relieve, area_ha: e.area_espejo_m2 / 10_000, objeto: 'un espejo de agua' },
     avisos,
   );
 
@@ -337,6 +341,8 @@ export interface EntradaErosionSalud {
   usle_c:         number | null;
   nota_cobertura: string;
   fuenteDem?:     FuenteRelieve | null;
+  /** Paso del ráster de relieve realmente leído (m), si la fuente tiene más de uno. */
+  pasoFuenteDemM?:  number | null;
   /** cómo llegó muestreado el relieve: una grilla escalonada vacía el D8 */
   relieve?:         RelieveMedido | null;
   /** clase textural del suelo (A4): matiza qué falta, y da el K si hay magnitud */
@@ -364,7 +370,7 @@ export function confianzaErosion(e: EntradaErosionSalud): Confianza {
     });
   }
 
-  avisosDeContexto({ fuenteDem: e.fuenteDem, relieve: e.relieve, area_ha: e.area_ha }, avisos);
+  avisosDeContexto({ fuenteDem: e.fuenteDem, pasoFuenteDemM: e.pasoFuenteDemM, relieve: e.relieve, area_ha: e.area_ha }, avisos);
 
   avisos.push({
     id: 'indice_relativo', nivel: 'ok',

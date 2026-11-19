@@ -216,6 +216,7 @@ export function KeylinePanel({ mojones, datosShader, parcelas, grupoHidro = null
       verticesCerrados: patron.verticesCerrados.length,
       pendienteTerreno_pct: patron.pendiente_media_pct,
       fuenteRelieve: grilla?.fuente ?? null,
+      pasoFuenteRelieveM: grilla?.paso_fuente_m ?? null,
     });
   }, [patron, patronAlDia, grilla]);
 

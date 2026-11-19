@@ -7,7 +7,9 @@
  * teniendo con qué, y avisaba de un "ruido del sensor SRTM" que no existía.
  */
 import { describe, it, expect } from 'vitest';
-import { pasoEfectivoM, PASO_RELIEVE, ETIQUETA_RELIEVE } from '@/lib/grillaElevacion';
+import {
+  pasoEfectivoM, pasoFuenteM, PASO_RELIEVE, PASO_FINO_RELIEVE, ETIQUETA_RELIEVE,
+} from '@/lib/grillaElevacion';
 import {
   intervaloConfiablePara,
   intervaloConfiableRemoto,
@@ -48,6 +50,44 @@ describe('pasoEfectivoM', () => {
   it('sin fuente declarada cae al satelital (nunca finge ser más fino)', () => {
     const g = grillaDesdeFn(111, 111, (r) => r, CIEN_M);   // sin `fuente`
     expect(pasoEfectivoM(g)).toBe(PASO_RELIEVE.terrarium);
+  });
+
+  /**
+   * swissALTI3D publica el mismo km² en 0,5 m y en 2 m, y cuál se leyó lo
+   * decide el tamaño del predio. Con la constante de 2 m la app se negaba a
+   * dibujar curvas cada 0,25 m teniendo el modelo de 0,5 m con qué hacerlo.
+   */
+  it('el paso que viene CON la grilla le gana a la tabla por fuente', () => {
+    const base = grillaDesdeFn(221, 221, (r) => r, CIEN_M);   // ~0,5 m de muestreo
+    const conTabla = { ...base, fuente: 'swisstopo' as const };
+    const leido    = { ...base, fuente: 'swisstopo' as const, paso_fuente_m: 0.5 };
+    expect(pasoFuenteM(conTabla)).toBe(2);
+    expect(pasoFuenteM(leido)).toBe(0.5);
+    expect(pasoEfectivoM(leido)).toBeLessThan(pasoEfectivoM(conTabla));
+    expect(intervaloConfiableRemoto(pasoEfectivoM(leido))).toBeLessThan(
+      intervaloConfiableRemoto(pasoEfectivoM(conTabla)),
+    );
+  });
+
+  it('el muestreo sigue mandando aunque el ráster sea de 0,5 m', () => {
+    // 12 nodos sobre 1,1 km son ~100 m de paso: leer el DTM fino no cambia que
+    // entre dos nodos hay interpolación y no terreno medido.
+    const g = { ...grillaDesdeFn(12, 12, (r) => r, KM), fuente: 'swisstopo' as const, paso_fuente_m: 0.5 };
+    expect(pasoEfectivoM(g)).toBeGreaterThan(90);
+  });
+});
+
+describe('PASO_FINO_RELIEVE', () => {
+  it('sólo lista fuentes que existen, y más finas que su paso de catálogo', () => {
+    for (const [f, fino] of Object.entries(PASO_FINO_RELIEVE)) {
+      const fuente = f as keyof typeof PASO_RELIEVE;
+      expect(PASO_RELIEVE[fuente]).toBeDefined();
+      expect(fino!).toBeLessThan(PASO_RELIEVE[fuente]);
+    }
+  });
+
+  it('declara los 0,5 m de swissALTI3D, que es por lo que existe', () => {
+    expect(PASO_FINO_RELIEVE.swisstopo).toBe(0.5);
   });
 });
 

@@ -36,6 +36,8 @@ interface Props {
    * cuánto puede estar corrida la traza de la zanja.
    */
   fuenteRelieve?: FuenteRelieve | null;
+  /** Paso del ráster leído (m), si la fuente publica más de uno (swissALTI3D). */
+  pasoFuenteRelieveM?: number | null;
   /**
    * Suelo expansivo en el punto (A4), si se pudo reconocer. Es el dato que
    * más cambia la lectura de este panel: una zanja a nivel es una obra de
@@ -64,7 +66,7 @@ export interface SwalesInputs {
 }
 
 export function SwalesPanel({
-  grillaLista, multi, hidro, analisis, fuenteRelieve = null,
+  grillaLista, multi, hidro, analisis, fuenteRelieve = null, pasoFuenteRelieveM = null,
   expansivo = null,
   onPeriodoRetorno, onGenerar, onColocar, onIrATopo, onIrAClima, onIrASuelo,
   inicial, onInputs,
@@ -283,7 +285,7 @@ export function SwalesPanel({
         </p>
       )}
 
-      {multi && <Resultados multi={multi} onColocar={onColocar} fuenteRelieve={fuenteRelieve} />}
+      {multi && <Resultados multi={multi} onColocar={onColocar} fuenteRelieve={fuenteRelieve} pasoFuenteRelieveM={pasoFuenteRelieveM} />}
     </div>
   );
 }
@@ -385,8 +387,9 @@ function AreaFila({ a, elegida, valor, onAlternar, onValor }: {
 
 // ─── Resultados ──────────────────────────────────────────────────────────────
 
-function Resultados({ multi, onColocar, fuenteRelieve }: {
+function Resultados({ multi, onColocar, fuenteRelieve, pasoFuenteRelieveM }: {
   multi: ResultadoSwalesMulti; onColocar: () => void; fuenteRelieve: FuenteRelieve | null;
+  pasoFuenteRelieveM: number | null;
 }) {
   const salieron = multi.bloques.filter(b => b.resultado);
   if (salieron.length === 0) {
@@ -414,7 +417,7 @@ function Resultados({ multi, onColocar, fuenteRelieve }: {
       </p>
 
       {multi.bloques.map(b => b.resultado
-        ? <BloqueDetalle key={b.id} b={b} solo={multi.bloques.length === 1} fuenteRelieve={fuenteRelieve} />
+        ? <BloqueDetalle key={b.id} b={b} solo={multi.bloques.length === 1} fuenteRelieve={fuenteRelieve} pasoFuenteRelieveM={pasoFuenteRelieveM} />
         : <Fallo key={b.id} b={b} />)}
 
       <button
@@ -427,8 +430,9 @@ function Resultados({ multi, onColocar, fuenteRelieve }: {
   );
 }
 
-function BloqueDetalle({ b, solo, fuenteRelieve }: {
+function BloqueDetalle({ b, solo, fuenteRelieve, pasoFuenteRelieveM }: {
   b: BloqueSwales; solo: boolean; fuenteRelieve: FuenteRelieve | null;
+  pasoFuenteRelieveM: number | null;
 }) {
   const r = b.resultado!;
   return (
@@ -445,7 +449,7 @@ function BloqueDetalle({ b, solo, fuenteRelieve }: {
       </p>
       {r.seccion && <Seccion s={r.seccion} rec={b.recomendacion} />}
       {r.infiltracion && <Infiltracion i={r.infiltracion} />}
-      <ReplanteoSwales b={b} fuenteRelieve={fuenteRelieve} />
+      <ReplanteoSwales b={b} fuenteRelieve={fuenteRelieve} pasoFuenteRelieveM={pasoFuenteRelieveM} />
     </div>
   );
 }
@@ -464,7 +468,9 @@ function BloqueDetalle({ b, solo, fuenteRelieve }: {
  * estar corrida, la curva está dibujada en otro lugar. En una ladera suave eso
  * son decenas de metros. Va impreso en la planilla.
  */
-function ReplanteoSwales({ b, fuenteRelieve }: { b: BloqueSwales; fuenteRelieve: FuenteRelieve | null }) {
+function ReplanteoSwales({ b, fuenteRelieve, pasoFuenteRelieveM }: {
+  b: BloqueSwales; fuenteRelieve: FuenteRelieve | null; pasoFuenteRelieveM: number | null;
+}) {
   const r = b.resultado!;
   const orden = useMemo(
     () => r.swales
@@ -489,8 +495,9 @@ function ReplanteoSwales({ b, fuenteRelieve }: { b: BloqueSwales; fuenteRelieve:
       rotulo: `Swale en la cota ${sw.cota.toFixed(2)} m · ${Math.round(sw.longitud_m)} m`,
       pendienteTerreno_pct: b.pendiente_pct,
       fuenteRelieve,
+      pasoFuenteRelieveM,
     });
-  }, [sw, r.seccion, b.pendiente_pct, fuenteRelieve]);
+  }, [sw, r.seccion, b.pendiente_pct, fuenteRelieve, pasoFuenteRelieveM]);
 
   if (!sw || !planilla) return null;
 

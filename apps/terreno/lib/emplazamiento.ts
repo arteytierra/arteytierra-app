@@ -141,7 +141,7 @@
  */
 
 import { dimsCelda } from './cuencaHidro';
-import { PASO_RELIEVE, pasoEfectivoM, type GrillaElevacion } from './grillaElevacion';
+import { pasoFuenteM, pasoEfectivoM, type GrillaElevacion } from './grillaElevacion';
 import { claseTexturaUSDA, type ClaseUSDA } from './textura';
 
 // ─── Fuentes citables ─────────────────────────────────────────────────────────
@@ -935,7 +935,7 @@ export function prepararEmplazamiento(
   return {
     g,
     paso_m:            paso,
-    paso_fuente_m:     g.fuente ? PASO_RELIEVE[g.fuente] : PASO_RELIEVE.terrarium,
+    paso_fuente_m:     pasoFuenteM(g),
     paso_efectivo_m:   pasoEfectivoM(g),
     area_celda_m2:     areaCelda,
     pend,

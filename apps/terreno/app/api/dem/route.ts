@@ -64,6 +64,11 @@ export async function GET(req: Request) {
     // dibuja curvas de nivel perfectamente buenas y deja el D8 sin salida.
     muestreo: grilla.muestreo,
     mesetas: Math.round(diag.mesetas * 1000) / 1000,
+    // Con qué paso se leyó el ráster, cuando la fuente tiene más de uno. Hoy
+    // sólo swisstopo (0,5 m o 2 m del mismo km², según el tamaño del predio).
+    // Sin esto el cliente lo buscaría en `PASO_RELIEVE`, que es una constante
+    // por fuente, y diría 2 m sobre un relieve de 0,5 m.
+    paso_fuente_m: grilla.pasoFuenteM,
   });
 
   // Una grilla escalonada NO se guarda treinta días.

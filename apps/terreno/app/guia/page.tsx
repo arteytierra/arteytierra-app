@@ -5,7 +5,7 @@ import {
   type AcequiaPlanId, type AcequiaFeature,
 } from '@arteytierra/config/acequia';
 import {
-  ETIQUETA_RELIEVE, PASO_RELIEVE, CREDITO_RELIEVE, type FuenteRelieve,
+  ETIQUETA_RELIEVE, PASO_RELIEVE, PASO_FINO_RELIEVE, CREDITO_RELIEVE, type FuenteRelieve,
 } from '@/lib/grillaElevacion';
 import {
   PERFILES, PELDANOS, HERRAMIENTAS, REGLAS_DE_LECTURA, LIMITES, SINTOMAS,
@@ -402,7 +402,9 @@ export default function GuidePage() {
                   <span className="text-water-500 text-xs font-semibold">
                     {f === 'usuario'
                       ? 'el paso del archivo que subas'
-                      : `~${String(PASO_RELIEVE[f]).replace('.', ',')} m de paso`}
+                      : PASO_FINO_RELIEVE[f] != null
+                        ? `~${String(PASO_FINO_RELIEVE[f]).replace('.', ',')} a ${String(PASO_RELIEVE[f]).replace('.', ',')} m de paso`
+                        : `~${String(PASO_RELIEVE[f]).replace('.', ',')} m de paso`}
                   </span>
                 </div>
                 <p className="text-ink-700/70 mt-1 text-sm leading-relaxed">{TERRITORIO_DEM[f]}</p>
@@ -412,7 +414,10 @@ export default function GuidePage() {
           </div>
           <p className="text-ink-700/70 mt-6 max-w-3xl text-sm leading-relaxed">
             El paso que figura arriba es el conservador: el que se puede prometer en cualquier punto
-            de la cobertura, no el del folleto. Y el paso <em>efectivo</em> de tu predio puede ser
+            de la cobertura, no el del folleto. Donde aparecen dos números es porque esa fuente
+            publica las dos resoluciones del mismo lugar y la app pide la fina cuando el predio es
+            lo bastante chico como para que la grilla la resuelva; cuál se usó lo dice el panel de
+            topografía. Y el paso <em>efectivo</em> de tu predio puede ser
             mayor, porque también depende de cuántos nodos se muestrean sobre esa superficie. Ese es
             el número que decide hasta qué intervalo de curvas tiene sentido dibujar.
           </p>

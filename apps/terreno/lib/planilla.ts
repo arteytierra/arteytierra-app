@@ -460,6 +460,13 @@ export interface EntradaPlanilla {
   cruces?:    ReadonlyArray<{ progresiva_m: number; que: string }>;
   /** Para declarar la precisión disponible contra la que pide la norma. */
   fuenteRelieve?: FuenteRelieve | null;
+  /**
+   * Paso del ráster realmente leído (m), cuando la fuente publica más de uno.
+   * No es cosmético: `incertidumbreDeCota` se NIEGA a declarar un desnivel
+   * entre dos puntos más cercanos que una celda, y con la constante de 2 m de
+   * swissALTI3D rechazaba desniveles que un modelo de 0,5 m sí sostiene.
+   */
+  pasoFuenteRelieveM?: number | null;
   pendienteTerreno_pct?: number | null;
   fecha?:     string;
   responsable?: string | null;
@@ -514,7 +521,7 @@ export function armarPlanilla(e: EntradaPlanilla): Planilla | null {
   }
 
   // ── Precisión: la que pide la norma contra la que trae el dato ──
-  const inc = incertidumbreDeCota(e.fuenteRelieve ?? null, e.pendienteTerreno_pct ?? null);
+  const inc = incertidumbreDeCota(e.fuenteRelieve ?? null, e.pendienteTerreno_pct ?? null, e.pasoFuenteRelieveM ?? null);
   const pedida = PRECISION_POR_OBRA[obra];
   const disponible = inc.u_relativa;
   const razon = disponible != null ? disponible / pedida : null;
@@ -670,6 +677,8 @@ export function planillaDeCierre(params: {
   cerrado?: boolean;
   fecha?: string;
   fuenteRelieve?: FuenteRelieve | null;
+  /** Paso del ráster leído (m), si la fuente publica más de uno (swissALTI3D). */
+  pasoFuenteRelieveM?: number | null;
   pendienteTerreno_pct?: number | null;
 }): Planilla | null {
   const { mojones, separacionPostes_m } = params;
@@ -709,6 +718,7 @@ export function planillaDeCierre(params: {
     cruces,
     fecha: params.fecha,
     ...(params.fuenteRelieve != null ? { fuenteRelieve: params.fuenteRelieve } : {}),
+    ...(params.pasoFuenteRelieveM != null ? { pasoFuenteRelieveM: params.pasoFuenteRelieveM } : {}),
     ...(params.pendienteTerreno_pct != null ? { pendienteTerreno_pct: params.pendienteTerreno_pct } : {}),
   });
   if (!planilla) return null;
@@ -875,6 +885,8 @@ export interface EntradaPlanillaMuro {
   taludExterno?:  number | null;
   zanja?: { prof_m: number; anchoFondo_m: number } | null;
   fuenteRelieve?: FuenteRelieve | null;
+  /** Paso del ráster leído (m), si la fuente publica más de uno (swissALTI3D). */
+  pasoFuenteRelieveM?: number | null;
   pendienteTerreno_pct?: number | null;
   fecha?: string;
   responsable?: string | null;
@@ -936,6 +948,7 @@ export function planillaDeMuro(e: EntradaPlanillaMuro): Planilla | null {
     fecha: e.fecha,
     ...(e.responsable != null ? { responsable: e.responsable } : {}),
     ...(e.fuenteRelieve != null ? { fuenteRelieve: e.fuenteRelieve } : {}),
+    ...(e.pasoFuenteRelieveM != null ? { pasoFuenteRelieveM: e.pasoFuenteRelieveM } : {}),
     ...(e.pendienteTerreno_pct != null ? { pendienteTerreno_pct: e.pendienteTerreno_pct } : {}),
   });
   if (!planilla) return null;
@@ -1086,6 +1099,8 @@ export interface EntradaPlanillaSwale {
   /** Pendiente media del área. Decide el corrimiento horizontal de la traza. */
   pendienteTerreno_pct?: number | null;
   fuenteRelieve?: FuenteRelieve | null;
+  /** Paso del ráster leído (m), si la fuente publica más de uno (swissALTI3D). */
+  pasoFuenteRelieveM?: number | null;
   cruces?: ReadonlyArray<{ progresiva_m: number; que: string }>;
   fecha?: string;
 }
@@ -1129,6 +1144,7 @@ export function planillaDeSwale(e: EntradaPlanillaSwale): PlanillaDeSwale | null
     ...(e.cruces ? { cruces: e.cruces } : {}),
     fecha: e.fecha,
     ...(e.fuenteRelieve != null ? { fuenteRelieve: e.fuenteRelieve } : {}),
+    ...(e.pasoFuenteRelieveM != null ? { pasoFuenteRelieveM: e.pasoFuenteRelieveM } : {}),
     ...(e.pendienteTerreno_pct != null ? { pendienteTerreno_pct: e.pendienteTerreno_pct } : {}),
   });
   if (!planilla) return null;
@@ -1211,6 +1227,8 @@ export interface EntradaPlanillaDirectriz {
   verticesCerrados?: number | null;
   pendienteTerreno_pct?: number | null;
   fuenteRelieve?: FuenteRelieve | null;
+  /** Paso del ráster leído (m), si la fuente publica más de uno (swissALTI3D). */
+  pasoFuenteRelieveM?: number | null;
   cruces?: ReadonlyArray<{ progresiva_m: number; que: string }>;
   fecha?: string;
 }
@@ -1244,6 +1262,7 @@ export function planillaDeDirectriz(e: EntradaPlanillaDirectriz): Planilla | nul
     ...(e.cruces ? { cruces: e.cruces } : {}),
     fecha: e.fecha,
     ...(e.fuenteRelieve != null ? { fuenteRelieve: e.fuenteRelieve } : {}),
+    ...(e.pasoFuenteRelieveM != null ? { pasoFuenteRelieveM: e.pasoFuenteRelieveM } : {}),
     ...(e.pendienteTerreno_pct != null ? { pendienteTerreno_pct: e.pendienteTerreno_pct } : {}),
   });
   if (!planilla) return null;

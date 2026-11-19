@@ -192,6 +192,14 @@ describe('hidrologiaPredio · avisos de contexto', () => {
     expect(resolucionDem('ignfr')).toBe(5);
     expect(resolucionDem('usuario')).toBeNull();   // DEM propio: no se sabe
     expect(resolucionDem(undefined)).toBeNull();
+    // El paso realmente leído le gana a la tabla: swissALTI3D tiene el mismo
+    // km² en 0,5 m y en 2 m, y con la tabla sola un predio suízo leído a 0,5 m
+    // contaba sus celdas como si midieran 2 m y el aviso de «DEM grueso»
+    // saltaba cuatro veces antes de lo que corresponde.
+    expect(resolucionDem('swisstopo')).toBe(2);
+    expect(resolucionDem('swisstopo', 0.5)).toBe(0.5);
+    expect(resolucionDem('swisstopo', null)).toBe(2);
+    expect(resolucionDem('usuario', 1.7)).toBe(1.7);
   });
 });
 

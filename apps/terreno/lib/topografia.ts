@@ -62,6 +62,15 @@ export interface DatosTopografia {
    */
   fuenteRelieve?:   FuenteRelieve;
   /**
+   * Paso del ráster realmente leído, en metros, cuando la fuente publica más
+   * de una resolución del mismo lugar. Le gana a `PASO_RELIEVE[fuenteRelieve]`.
+   *
+   * Existe por swissALTI3D: tiene el mismo km² en 0,5 m y en 2 m y cuál se usa
+   * lo decide el tamaño del predio, así que el número no puede vivir en una
+   * tabla por nombre de fuente. Ausente = el del catálogo.
+   */
+  pasoFuenteM?:     number;
+  /**
    * De dónde salen `elev_min`, `elev_max`, `desnivel`, `elev_media`,
    * `pendiente_pct`, `orientacion` y `escurrimiento`.
    *
@@ -294,7 +303,7 @@ export async function obtenerTopografia(mojones: Mojon[]): Promise<DatosTopograf
  */
 export function topografiaConGrillaDensa(
   topo: DatosTopografia,
-  shader: Pick<DatosShader, 'celdas' | 'fuente'>,
+  shader: Pick<DatosShader, 'celdas' | 'fuente' | 'paso_fuente_m'>,
 ): DatosTopografia {
   const dentro = shader.celdas.filter(c => c.dentro !== false);
   if (dentro.length < 2) return topo;
@@ -328,7 +337,8 @@ export function topografiaConGrillaDensa(
     ...(shader.fuente
       ? {
           fuenteRelieve: shader.fuente,
-          resolucion: `~${PASO_RELIEVE[shader.fuente]} m/píxel`,
+          ...(shader.paso_fuente_m != null ? { pasoFuenteM: shader.paso_fuente_m } : {}),
+          resolucion: `~${(shader.paso_fuente_m ?? PASO_RELIEVE[shader.fuente]).toString().replace('.', ',')} m/píxel`,
           fuente: CREDITO_RELIEVE[shader.fuente],
         }
       : {}),

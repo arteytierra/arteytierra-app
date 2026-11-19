@@ -54,7 +54,7 @@ export function ModeloDeclaradoAnexo({ mojones, topo, numero = 'B' }: Props) {
     mojones, sigma_vertice_m: SIGMA_MOJON_ASUMIDO_M,
   });
 
-  const inc = incertidumbreDeCota(topo?.fuenteRelieve, topo?.pendiente_pct);
+  const inc = incertidumbreDeCota(topo?.fuenteRelieve, topo?.pendiente_pct, topo?.pasoFuenteM);
   const desnivel = topo
     ? declararDesnivel({
         cota_alta_m: topo.elev_max,

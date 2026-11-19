@@ -520,6 +520,7 @@ export function CutFillPanel({ mojones, datosShader, poligonos, onDibujarEspejo,
       taludExterno: muroP.taludExterno,
       zanja: { prof_m: muro.zanja.prof_m, anchoFondo_m: muro.zanja.anchoFondo_m },
       fuenteRelieve: grilla?.fuente ?? null,
+      pasoFuenteRelieveM: grilla?.paso_fuente_m ?? null,
       pendienteTerreno_pct: pendienteSitio,
     });
   }, [ejeMuro, muro, perfilMuro, longitud, nivel, cargaVertedero, muroP.revancha,
