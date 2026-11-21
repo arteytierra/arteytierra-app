@@ -1,7 +1,7 @@
-# Fase 6 — la repesca: seis blancos con nombre, no un relevamiento
+# Fase 6 — la repesca: ocho blancos con nombre, no un relevamiento
 
 *Va junto con `ENCARGO_FASE_6_PRACTICAS.md`. **Un solo archivo: `11.json`.**
-Fecha: 06/11/2026.*
+Fecha: 06/11/2026, ampliado el 21/11/2026 con las dos de la sección 5 bis.*
 
 ---
 
@@ -12,10 +12,14 @@ distrito y a veces coordenada publicada, y en tres de los seis casos hasta el
 artículo exacto está nombrado con volumen y páginas. Lo que falta es una sola cosa
 por caso, y está dicha caso por caso.
 
-Es el lote más barato de toda la fase y el que más destraba: si entran los seis,
-**Indomalaya baja de 13 fichas sin ninguna práctica a 8**, y una de las que cierra
-—`ghats_norte_montano`— tiene dos candidatas distintas apuntándole, así que con
-una sola que abra alcanza.
+Es el lote más barato de toda la fase y el que más destraba: si entran los
+ocho, **Indomalaya baja de 13 fichas sin ninguna práctica a 6**, y una de las que
+cierra —`ghats_norte_montano`— tiene dos candidatas distintas apuntándole, así que
+con una sola que abra alcanza.
+
+Las dos últimas, las de la **sección 5 bis**, son de otra clase: ya se relevaron,
+ya se verificaron y se cayeron **sólo porque su ecorregión no tenía ficha**. La
+ficha ya está, así que lo único que falta es volver a escribir la entrada.
 
 Dónde estamos, con los números: el catálogo va en **457 entradas sobre 225 fichas
 de 252**. De Indomalaya, **13 de 38 fichas** no tienen ninguna práctica, y seis de
@@ -218,16 +222,79 @@ o con la coordenada**, que es lo que hizo funcionar la de Kolavade.
 
 ---
 
+## 5 bis · Las dos que ya estaban verificadas y ahora tienen ficha
+
+Agregadas el **21/11/2026**. Son el caso más barato del lote y el más incómodo de
+explicar: **las dos se relevaron bien, se verificaron contra la fuente y se
+cayeron porque su ECO_ID no tenía ficha todavía.** Las fichas se montaron el
+06/11/2026 —`pantanos_turba_sumatra` (280) y `pantanos_tonle_sap_mekong_turba`
+(286)—, así que el motivo del rechazo ya no existe.
+
+**Por qué hay que volver a pedirlas y no se montan de acá:** el texto de las dos
+entradas —`detalle`, `periodo`, `verificacion`— **no quedó guardado en ningún
+veredicto** de `_research/_encargos/`. Lo que quedó es el lugar, el ECO_ID y la
+fuente, que es lo que está abajo. La redacción hay que hacerla de nuevo contra la
+fuente, y por eso están acá y no en un commit.
+
+Las dos están en la sección 6 de este mismo encargo como «no mandar», con el
+motivo de entonces. **Ese motivo caducó: ahora sí se mandan.**
+
+### 5 bis.1 · `pantanos_tonle_sap_mekong_turba` — el arroz de recesión de Krong Stueng Saen
+
+**ECO_ID 286.** Doce fincas de arroz de recesión en la llanura de inundación del
+Tonlé Sap, Krong Stueng Saen, provincia de Kampong Thom, Camboya. Coordenadas
+publicadas **12°39′ a 12°41′ N, 104°47′ E**: las doce caen adentro del polígono
+del 286, y eso ya se resolvió, no hay que volver a resolverlo.
+
+**La fuente, ya abierta:** «Rice production in Tonle Sap floodplains in response
+to anthropogenic changes» (University of Washington),
+`https://digital.lib.washington.edu/bitstreams/bd67d9e6-9d59-485d-959b-93a2718c389f/download`
+
+**Lo que falta:** la entrada completa con el contrato de la sección 7. El arroz de
+recesión es un hecho de manejo fechado —se siembra sobre el suelo que deja el
+agua al bajar, con el calendario atado al pulso del lago—, así que lo que tiene
+que quedar escrito es **el mecanismo**: cuándo se siembra respecto de la bajante,
+qué hace el agricultor con el ciclo del lago y qué cambió con las alteraciones
+antrópicas que el título nombra. No alcanza con decir que existe.
+
+### 5 bis.2 · `pantanos_turba_sumatra` — el *sonor* de Perigi
+
+**ECO_ID 280.** Arroz sembrado al voleo sobre turba quemada. Aldea de **Perigi**,
+distrito de **Pangkalan Lampam**, regencia de Ogan Komering Ilir, Sumatra del Sur,
+Indonesia. Cae en el 280.
+
+**La fuente anotada:** Cahya, Suwignyo et al. (2022), *BIOVALENTIA* 8(1):69. La
+ruta que quedó registrada es
+`https://www.cifor-icraf.org/publications/pdf_files/articles/ABaral2206.pdf`, y
+**ese host devuelve 403 con un User-Agent de navegador y 200 con `curl` pelado**.
+
+**Cuidado con esa ruta, y es parte del pedido:** el nombre del archivo no se
+parece al artículo que se cita. **Abrí el PDF y confirmá que sea ese trabajo**; si
+no lo es, buscá la ruta de BIOVALENTIA —es una revista de la Universitas
+Sriwijaya— y mandá la que de verdad muestre el texto. Una ruta que devuelve 200
+con otro artículo adentro es exactamente la clase de cita que el circuito rechaza.
+
+**Lo que ya se leyó de esa fuente y conviene no contradecir sin dato:** el *sonor*
+tradicional promedia **1 a 2 t/ha**, y los **3,7 t/ha** del *Jajar Legowo* son un
+**tratamiento experimental**, no un rendimiento tradicional. Si la entrada
+atribuye el rinde alto a la práctica tradicional, se cae.
+
+**Y no mandes el *lebak* de Pampangan**, que también cae en el 280: ése sigue
+afuera por motivo propio, porque el artículo propone un esquema de manejo en vez
+de registrar lo que se hizo.
+
+---
+
 ## 6. Lo que **no** hay que mandar
 
 - **Nada del lago Toba para `pinar_toba`.** Tercera vez.
 - **El *pelak* de Semerap y de Jujun**, que ya está montado dos veces en
   `sumatra_montano`.
 - **El *vayal* de los kurichiya**, montado en `ghats_sur_montano`.
-- **El arroz de recesión del Tonle Sap y el *sonor* de Perigi.** Las dos están
-  entregadas, verificadas y esperando ficha: caen en los ECO_ID 286 y 280, que
-  están pedidos en `ENCARGO_FASE_4_LOTES_07_08.md`. Cuando las fichas estén, se
-  montan las entradas que ya hay.
+- ~~**El arroz de recesión del Tonle Sap y el *sonor* de Perigi.**~~ **Caducó el
+  21/11/2026**: las dos fichas se montaron el 06/11 y las dos entradas ahora se
+  piden, en la sección 5 bis. El motivo original era que los ECO_ID 286 y 280 no
+  tenían ficha.
 - **El *lebak* de Pampangan.** Cae en el 280 y además es una recomendación de los
   autores.
 - **Los ensayos de *Hardwickia binata* de Jhansi**, que están en el 287 y que
@@ -267,7 +334,7 @@ o con la coordenada**, que es lo que hizo funcionar la de Kolavade.
   un PDF chico. La regla que cierra las cuatro: **mirá el tipo de contenido, no
   sólo el código y el tamaño.** Un `text/html` donde esperabas
   `application/pdf` es el aviso.
-- **Seis entradas, un bloque JSON, sin prosa alrededor.** Si una no aparece, va a
-  `vacias` con lo que intentaste y en una línea por qué. **Cinco que aguantan
-  valen más que seis con una inventada**, y acá cada una que entra cierra una
+- **Ocho entradas, un bloque JSON, sin prosa alrededor.** Si una no aparece, va a
+  `vacias` con lo que intentaste y en una línea por qué. **Siete que aguantan
+  valen más que ocho con una inventada**, y acá cada una que entra cierra una
   ficha entera.
