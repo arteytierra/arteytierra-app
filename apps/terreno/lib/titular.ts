@@ -20,7 +20,15 @@ export interface Proveedor {
   razonSocial: string;
   /** Nombre comercial con el que se conoce al estudio. No contrata. */
   nombreComercial: string;
-  cuit: string;
+  /**
+   * Sólo se publica el de una sociedad. El CUIT de una persona humana lleva el
+   * DNI adentro (20-DNI-X), así que publicarlo es publicar el documento: por
+   * eso mientras el proveedor sea persona humana este campo va vacío y la
+   * página no muestra la fila. La identificación se cumple con nombre,
+   * domicilio y correo; el CUIT se da en la factura, que es donde la ley lo
+   * pide sin ponerlo a la vista de cualquiera.
+   */
+  cuit?: string;
   /**
    * Localidad y provincia. La calle NO se publica: la ley pide domicilio
    * identificable, y mientras el proveedor sea una persona humana ese domicilio
@@ -35,11 +43,26 @@ export interface Proveedor {
 export const PROVEEDOR: Proveedor = {
   razonSocial: 'Jonatan Gabriel Palma',
   nombreComercial: 'Arte y Tierra',
-  cuit: '20-33402098-4',
   domicilio: 'San Marcos Sierras, Provincia de Córdoba, República Argentina',
   email: 'info@arteytierra.org',
   forma: 'persona_humana',
 };
+
+/**
+ * Los registros de la marca «acequia» ante el INPI, concedidos el 30/10/2026
+ * por disposición DI-2026-384-APN-DNM#INPI, clase 42, vigentes hasta el
+ * 30/10/2036: la denominativa «ACEQUIA» y la mixta con el isologotipo.
+ *
+ * Están acá porque decir «marca registrada» sin número es una afirmación que
+ * nadie puede comprobar, y porque el día que haya que intimar a alguien el
+ * número es lo primero que se pide. Los títulos, en
+ * `_legal/licencia-software-y-marca.md`, Anexo II.
+ */
+export const MARCA = {
+  registros: ['3.978.600', '3.976.649'],
+  clase: 42,
+  vigenteHasta: '30 de octubre de 2036',
+} as const;
 
 /** Titular de los derechos sobre el software y la marca. */
 export const TITULAR_PI = {

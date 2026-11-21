@@ -29,6 +29,24 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <div className="bg-white rounded-2xl border border-bone-200 p-6 shadow-paper">
           <LoginForm initialState={query.estado} nextPath={nextPath} />
         </div>
+
+        {/* El botón de arrepentimiento va acá porque ésta es la primera
+            pantalla de acequia para quien no tiene sesión, y la Resolución
+            424/2020 lo pide visible en la primera pantalla, no escondido
+            adentro de los Términos. */}
+        <p className="mt-6 text-center text-xs text-ink-700/60">
+          <a href="/arrepentimiento" className="underline hover:text-moss-700">
+            Botón de arrepentimiento
+          </a>{' '}
+          ·{' '}
+          <a href="/terminos" className="underline hover:text-moss-700">
+            Términos
+          </a>{' '}
+          ·{' '}
+          <a href="/privacidad" className="underline hover:text-moss-700">
+            Privacidad
+          </a>
+        </p>
       </div>
     </div>
   );

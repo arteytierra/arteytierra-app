@@ -170,7 +170,8 @@ export default function PrivacidadPage() {
 
         <p className="mt-6 text-center text-xs text-ink-700/60">
           Arte y Tierra · arteytierra.org ·{' '}
-          <a href="/terminos" className="underline hover:text-moss-700">Términos de Servicio</a>
+          <a href="/terminos" className="underline hover:text-moss-700">Términos de Servicio</a> ·{' '}
+          <a href="/arrepentimiento" className="underline hover:text-moss-700">Botón de arrepentimiento</a>
         </p>
       </article>
     </div>

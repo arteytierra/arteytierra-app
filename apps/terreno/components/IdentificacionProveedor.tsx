@@ -21,10 +21,12 @@ export default function IdentificacionProveedor() {
         <dt className="font-medium text-ink-950">Nombre comercial:</dt>
         <dd>{PROVEEDOR.nombreComercial}</dd>
       </div>
-      <div className="flex flex-wrap gap-x-2">
-        <dt className="font-medium text-ink-950">CUIT:</dt>
-        <dd>{PROVEEDOR.cuit}</dd>
-      </div>
+      {PROVEEDOR.cuit ? (
+        <div className="flex flex-wrap gap-x-2">
+          <dt className="font-medium text-ink-950">CUIT:</dt>
+          <dd>{PROVEEDOR.cuit}</dd>
+        </div>
+      ) : null}
       <div className="flex flex-wrap gap-x-2">
         <dt className="font-medium text-ink-950">Domicilio:</dt>
         <dd>{PROVEEDOR.domicilio}</dd>

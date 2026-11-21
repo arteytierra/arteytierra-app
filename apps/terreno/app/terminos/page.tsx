@@ -1,5 +1,5 @@
 import IdentificacionProveedor from '@/components/IdentificacionProveedor';
-import { PROVEEDOR, TITULAR_PI } from '@/lib/titular';
+import { MARCA, PROVEEDOR, TITULAR_PI } from '@/lib/titular';
 
 export const metadata = { title: 'Términos de Servicio' };
 
@@ -60,8 +60,9 @@ export default function TerminosPage() {
               <strong>{TITULAR_PI.nombre}</strong>, su único titular, y están
               protegidos por la Ley 11.723 de Propiedad Intelectual.{' '}
               <strong>«acequia»</strong> es una marca registrada ante el Instituto
-              Nacional de la Propiedad Industrial (INPI), de la que es titular la
-              misma persona.
+              Nacional de la Propiedad Industrial (INPI) bajo los registros N.º{' '}
+              {MARCA.registros.join(' y N.º ')}, clase {MARCA.clase}, de la que
+              es titular la misma persona.
               {TITULAR_PI.explotaBajoLicencia
                 ? ' El Servicio se explota comercialmente bajo licencia exclusiva de su titular.'
                 : ''}
@@ -158,9 +159,13 @@ export default function TerminosPage() {
               >
                 {PROVEEDOR.email}
               </a>{' '}
-              desde el correo de tu cuenta: devolvemos el importe por el mismo medio
-              de pago. La baja de la suscripción se puede pedir por la misma vía, sin
-              trámite adicional ni necesidad de justificar.
+              desde el correo de tu cuenta, o usar el{' '}
+              <a href="/arrepentimiento" className="text-moss-700 underline">
+                botón de arrepentimiento
+              </a>
+              : devolvemos el importe por el mismo medio de pago. La baja de la
+              suscripción se puede pedir por la misma vía, sin trámite adicional
+              ni necesidad de justificar.
             </p>
           </section>
 
@@ -224,7 +229,9 @@ export default function TerminosPage() {
         </div>
 
         <p className="mt-6 text-center text-xs text-ink-700/60">
-          Arte y Tierra · arteytierra.org
+          Arte y Tierra · arteytierra.org ·{' '}
+          <a href="/privacidad" className="underline hover:text-moss-700">Política de Privacidad</a> ·{' '}
+          <a href="/arrepentimiento" className="underline hover:text-moss-700">Botón de arrepentimiento</a>
         </p>
       </article>
     </div>

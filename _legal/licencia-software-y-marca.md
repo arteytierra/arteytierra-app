@@ -33,7 +33,7 @@ Completar antes de firmar. Los dejo marcados en el contrato como `[…]`:
 |---|---|
 | Denominación social, CUIT y sede de la S.A.S. | resolución de inscripción de la IPJ |
 | Fecha y número de inscripción de la sociedad | ídem |
-| **Número de acta / registro de la marca y clases** | título del INPI — *pendiente que me lo pases* |
+| ~~Número de acta / registro de la marca y clases~~ | ✔ completado con los dos títulos del INPI (ver Anexo II) |
 | Número de expediente de la DNDA | constancia del depósito de obra |
 | Fecha de la reunión del socio único que aprueba el contrato | la ponés vos |
 
@@ -66,9 +66,13 @@ datos, su interfaz, su documentación y todo material conexo (en adelante, el
 **«SOFTWARE»**), obra registrada ante la Dirección Nacional del Derecho de Autor
 bajo expediente N.º […].
 
-**II.** El LICENCIANTE es asimismo titular del registro de la marca
-**«acequia»** ante el Instituto Nacional de la Propiedad Industrial, acta/
-registro N.º […], para las clases […] del Nomenclador Internacional, junto con
+**II.** El LICENCIANTE es asimismo titular del cien por ciento (100 %) de los
+registros de la marca **«acequia»** ante el Instituto Nacional de la Propiedad
+Industrial, a saber: el **registro N.º 3.978.600** (marca denominativa
+«ACEQUIA», acta N.º 4.776.908) y el **registro N.º 3.976.649** (marca mixta,
+acta N.º 4.776.907), ambos en la **clase 42** del Nomenclador Internacional de
+Niza, concedidos el 30 de octubre de 2026 por disposición
+DI-2026-384-APN-DNM#INPI y vigentes hasta el 30 de octubre de 2036, junto con
 sus logotipos, isologotipos y elementos distintivos asociados (en adelante, la
 **«MARCA»**).
 
@@ -306,10 +310,37 @@ de fecha […]. Versión depositada: […].
 
 ### Anexo II — Identificación de la MARCA
 
-Marca «acequia». Acta/registro N.º […] ante el Instituto Nacional de la
-Propiedad Industrial, clase(s) […] del Nomenclador Internacional, concedida con
-fecha […] y vigente hasta […]. Incluye el logotipo e isologotipo conforme el
-manual de marca vigente.
+Son **dos registros**, los dos a nombre de **PALMA JONATAN, 100 %**, los dos en
+la **clase 42** del Nomenclador Internacional de Niza, solicitados el 29 de
+agosto de 2026, concedidos el **30 de octubre de 2026** por disposición
+**DI-2026-384-APN-DNM#INPI** y vigentes hasta el **30 de octubre de 2036**:
+
+| Tipo | Registro N.º | Acta N.º | Título de fecha |
+|---|---|---|---|
+| **Denominativa** — «ACEQUIA» | 3.978.600 | 4.776.908 | 5 de noviembre de 2026 |
+| **Mixta** — isologotipo + «acequia» | 3.976.649 | 4.776.907 | 4 de noviembre de 2026 |
+
+Servicios protegidos en ambos: *software como servicio [SaaS]; servicios de
+cartografía [geografía]; suministro de software no descargable en línea.*
+
+La licencia comprende los dos registros, el logotipo y el isologotipo conforme
+el manual de marca vigente. Los títulos están en
+`C:\Arte y Tierra\Acequia\registro de marca` (`Doc4697197.pdf`, denominativa;
+`Doc4695217.pdf`, mixta); copia de ambos se agrega como anexo material al
+contrato.
+
+**Renovación: hay que pedirla dentro de los seis meses anteriores al 30 de
+octubre de 2036**, y la marca sólo se renueva si se acredita que se usó en los
+cinco años previos. La **cláusula 6.a)** pone esa obligación en cabeza del
+LICENCIANTE; el uso lo hace la LICENCIATARIA, así que conviene guardar
+facturas y publicidad fechadas desde ahora.
+
+**Y antes de eso hay un vencimiento más cercano: la declaración jurada de uso
+de medio término** (art. 26 de la Ley 22.362, texto según DNU 27/2018), que se
+presenta ante el INPI **entre el 30 de octubre de 2031 y el 30 de octubre de
+2032** —al cumplirse el quinto año— para cada uno de los dos registros. No
+presentarla no caduca la marca sola, pero la deja expuesta a la caducidad por
+falta de uso que puede pedir un tercero.
 
 ### Anexo III — Acta de reunión del socio único (modelo)
 
@@ -348,8 +379,9 @@ de la IPJ).
 
 ## Qué hacer con esto
 
-1. **Pasame el número de acta/registro de la marca y las clases concedidas**, y
-   el expediente de la DNDA. Completo los anexos.
+1. ~~Pasame el número de acta/registro de la marca y las clases concedidas.~~
+   ✔ Hecho: los dos registros están en el Anexo II y en el antecedente II.
+   **Falta el expediente de la DNDA** para cerrar el Anexo I.
 2. Cuando la S.A.S. esté inscripta, completo los datos de la sociedad.
 3. **Que lo lea un abogado** antes de firmar. Pedile que mire especialmente la
    cláusula 7 y la 11; el resto es estándar.

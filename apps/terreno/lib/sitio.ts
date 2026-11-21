@@ -44,6 +44,10 @@ export const ACEQUIA_APP_URL = `https://${ACEQUIA_APP_HOST}`;
  */
 export const RUTAS_PUBLICAS = [
   { path: '/guia',       prioridad: 0.9, frecuencia: 'monthly' as const },
+  // El botón de arrepentimiento TIENE que ser alcanzable sin sesión: la
+  // Resolución 424/2020 pide que el consumidor pueda revocar sin trámite, y
+  // alguien que no logra entrar a su cuenta se tiene que poder arrepentir.
+  { path: '/arrepentimiento', prioridad: 0.3, frecuencia: 'yearly' as const },
   { path: '/registro',   prioridad: 0.6, frecuencia: 'monthly' as const },
   { path: '/terminos',   prioridad: 0.3, frecuencia: 'yearly'  as const },
   { path: '/privacidad', prioridad: 0.3, frecuencia: 'yearly'  as const },

@@ -118,6 +118,14 @@ export function SuscribirConfirm({ plan, periodo, pagos, fechaPrimerCobro }: { p
             </a>
             .
           </p>
+          <p className="text-[10px] text-center text-ink-700/45 leading-relaxed">
+            Tenés diez días corridos para arrepentirte y que te devolvamos el
+            importe:{' '}
+            <a href="/arrepentimiento" target="_blank" rel="noopener" className="underline hover:text-moss-700">
+              botón de arrepentimiento
+            </a>
+            .
+          </p>
         </div>
 
         <a href="/canjear" className="mt-4 block text-center text-xs text-moss-700 hover:underline">
