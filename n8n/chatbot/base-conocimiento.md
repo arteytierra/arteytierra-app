@@ -45,7 +45,7 @@ Cada uno tiene una **meta de conversación** clara:
 - **Cancelación:** reembolso total si avisan 7 días antes.
 
 ### 4.3 Formación Integral en Construcción Natural (FICN) → META: **inscripción (formulario + WhatsApp + seña)**
-- **Fechas (ACTUALIZADAS):** **21 sep – 30 nov 2026** (~10 semanas). *(⚠️ la web todavía dice 7 sep–7 dic y "3 meses" → actualizar la web, tarea aparte.)*
+- **Fechas:** **21 sep – 30 nov 2026** (~10 semanas). La web dice lo mismo desde el 21/11/2026.
 - **Precio:** **$2.000.000 ARS / USD 1330**, todo incluido (hospedaje hab. compartida en Tay Pichín + alimentación). **Seña 50%.**
 - **Cupos:** 3 regulares **+ 2 vacantes para personas con experiencia al 50%** (**$1.000.000 ARS / USD 665**). *(⚠️ confirmar si el total es 3+2=5 o hay tope.)*
 - **Incluye:** certificado, Manual Diseño Simbiótico (PDF), acceso al curso grabado «Mi Tierra Mi Casa», asesorías de diseño cada 3 semanas, círculos de proceso mensuales, focalizador personal.

@@ -154,6 +154,32 @@ function precioUsd(montoArs: number): string {
   return `USD ${Math.round(montoArs / ARS_POR_USD / 5) * 5}`;
 }
 
+/* ── Formación Integral · el precio, de un solo número ─
+ * El 21/11/2026 el sitio cobraba $1.500.000 con seña del 10% y los dos
+ * archivos de n8n decían $2.000.000 con seña del 50%: dos bots cotizando
+ * distinto el curso más caro del catálogo. El precio real es $2.000.000, lo
+ * confirmó Jonatan, y la seña es la mitad.
+ *
+ * Estaba tipeado en ocho lugares entre el catálogo, el listado y las dos bases
+ * de conocimiento. Ahora sale de acá, y `tarifas.test.ts` ata los dos archivos
+ * de n8n a este número leyéndolos y comparando.
+ */
+const FICN_PRECIO = 2_000_000;
+/** La mitad: es la seña y también lo que pagan los dos cupos con experiencia. */
+const FICN_MITAD = FICN_PRECIO / 2;
+/** «$1.000.000», sin moneda: va dentro de frases que ya dicen pesos. */
+const FICN_MITAD_TEXTO = `$${FICN_MITAD.toLocaleString('es-AR')}`;
+
+/**
+ * Los dos importes listos para el listado de `/cursos` y para la base del
+ * chatbot de la web, que anuncian el precio fuera de la ficha. Que lo lean de
+ * acá es la única forma de que no se vuelvan a separar.
+ */
+export const FICN_PRECIOS = {
+  total: precioArs(FICN_PRECIO),
+  mitad: FICN_MITAD_TEXTO,
+} as const;
+
 /* ── Bioarquitectura · intensivo de diciembre ─────────
  * Los datos que las versiones en inglés y francés, el listado y los datos
  * estructurados también necesitan. Viven acá arriba para que ninguna de esas
@@ -328,7 +354,7 @@ export const COURSES: Record<string, CourseData> = {
       {
         id: 'completo',
         label: 'Formación completa · 2 meses',
-        precio: '$1.500.000 ARS',
+        precio: precioArs(FICN_PRECIO),
         includes: [
           'Hospedaje en habitación compartida en Ecohostel Tay Pichín',
           'Alimentación completa durante los dos meses',
@@ -340,13 +366,13 @@ export const COURSES: Record<string, CourseData> = {
           'Acompañamiento con focalizador personal',
         ],
         highlighted: true,
-        senaLabel: 'Reservá tu cupo — seña 10% ($150.000) →',
+        senaLabel: `Reservá tu cupo — seña 50% (${FICN_MITAD_TEXTO}) →`,
         senaHref: 'https://link.mercadopago.com.ar/arteytierra',
       },
       {
         id: 'con-experiencia',
         label: 'Cupo con experiencia previa · 50% dto',
-        precio: '$750.000 ARS',
+        precio: precioArs(FICN_MITAD),
         includes: [
           'Solo 2 cupos — para quienes ya hicieron talleres de bioconstrucción con nosotrxs o tienen experiencia previa comprobable',
           'Hospedaje en carpa en Tay Pichín (la traés vos)',
@@ -354,7 +380,7 @@ export const COURSES: Record<string, CourseData> = {
         ],
       },
     ],
-    opcionesNota: 'Reservás tu cupo con una seña del 10% ($150.000) por Mercado Pago. 3 cupos regulares + 2 cupos con 50% de descuento para personas con experiencia previa en bioconstrucción (hospedaje en carpa propia) — grupo chico para cuidar la profundidad del proceso.',
+    opcionesNota: `Reservás tu cupo con una seña del 50% (${FICN_MITAD_TEXTO}) por Mercado Pago. 3 cupos regulares + 2 cupos con 50% de descuento para personas con experiencia previa en bioconstrucción (hospedaje en carpa propia) — grupo chico para cuidar la profundidad del proceso.`,
     sinCarrito: true,
     formCurso: 'Formación Integral en Construcción Natural · 21 sep – 30 nov 2026',
     whatsapp: 'https://wa.me/5493549431594?text=Hola%2C%20quiero%20postularme%20a%20la%20Formaci%C3%B3n%20Integral%20en%20Construcci%C3%B3n%20Natural%20(arranca%20el%2021%20de%20septiembre)',

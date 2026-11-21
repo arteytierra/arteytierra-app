@@ -23,6 +23,7 @@ import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
 import { TARIFAS_HOSPEDAJE, importePorNoche } from '@/lib/hospedaje/precios';
 import { semanaDeInmersion } from '@/lib/courses/inmersion';
+import { COURSES, FICN_PRECIOS } from '@/lib/courses/data';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const REPO = join(RAIZ, '..', '..');
@@ -170,5 +171,61 @@ describe('el chatbot de n8n cotiza la Inmersión Viva igual que el sitio', () =>
     expect(m, 'no encontré el precio de la Inmersión Viva en el systemMessage').not.toBeNull();
     expect(m![1], 'el camping del workflow no coincide con data.ts').toBe(camping);
     expect(m![2], 'la habitación del workflow no coincide con data.ts').toBe(habitacion);
+  });
+});
+
+/*
+ * La Formación Integral es el curso más caro del catálogo y hasta el 21/11/2026
+ * tenía dos precios publicados: el sitio y el chatbot de la web cobraban
+ * $1.500.000 con seña del 10%, y los dos archivos de n8n $2.000.000 con seña
+ * del 50%. Dos bots cotizando distinto lo mismo, y nadie de este lado lo veía.
+ */
+describe('el chatbot de n8n cotiza la Formación Integral igual que el sitio', () => {
+  const total = FICN_PRECIOS.total.replace('$', '').replace(' ARS', '');
+  const mitad = FICN_PRECIOS.mitad.replace('$', '');
+
+  it('la base de conocimiento', () => {
+    const texto = readFileSync(join(REPO, 'n8n', 'chatbot', 'base-conocimiento.md'), 'utf8');
+    const precio = /\*\*\$([\d.]+) ARS \/ USD [\d.]+\*\*/.exec(texto);
+    expect(precio, 'no encontré el precio de la FICN en base-conocimiento.md').not.toBeNull();
+    expect(precio![1], 'el precio de n8n no coincide con data.ts').toBe(total);
+
+    const cupo = /al 50%\*\* \(\*\*\$([\d.]+) ARS/.exec(texto);
+    expect(cupo, 'no encontré el cupo con experiencia en base-conocimiento.md').not.toBeNull();
+    expect(cupo![1], 'el cupo con 50% de descuento no es la mitad del precio').toBe(mitad);
+  });
+
+  it('el systemMessage del workflow', () => {
+    const texto = readFileSync(join(REPO, 'n8n', 'workflows', '10-chatbot-omnicanal.json'), 'utf8');
+    const m = /Construcción Natural: [^,]+, \$([\d.]+) ARS/.exec(texto);
+    expect(m, 'no encontré el precio de la FICN en el systemMessage').not.toBeNull();
+    expect(m![1], 'el precio del workflow no coincide con data.ts').toBe(total);
+  });
+
+  it('la seña dice 50% en todas las veces que aparece, no en alguna', () => {
+    // `base-conocimiento.md` nombra la seña dos veces, en el precio y en la
+    // inscripción. Comprobar que *alguna* diga 50% no alcanza: bajar una de
+    // las dos al 10% pasaba el test. Se juntan todas y tienen que coincidir.
+    const porcentajes = (texto: string) =>
+      [...new Set([...texto.matchAll(/[Ss]eña (?:del )?(\d+)%/g)].map(m => m[1]!))];
+
+    for (const [nombre, ruta] of [
+      ['base-conocimiento.md', join(REPO, 'n8n', 'chatbot', 'base-conocimiento.md')],
+      ['el workflow', join(REPO, 'n8n', 'workflows', '10-chatbot-omnicanal.json')],
+    ] as const) {
+      const vistos = porcentajes(readFileSync(ruta, 'utf8'));
+      expect(vistos.length, `${nombre} nombra la seña y no coincide consigo mismo: ${vistos.join('% y ')}%`).toBe(1);
+      expect(vistos[0], `${nombre} anuncia otra seña`).toBe('50');
+    }
+
+    // Y el sitio, que la deriva del mismo número.
+    const ficn = COURSES['formacion-construccion-natural']!;
+    const enElSitio = porcentajes(
+      `${ficn.opcionesNota ?? ''} ${ficn.opciones.map(o => o.senaLabel ?? '').join(' ')}`,
+    );
+    expect(enElSitio, 'el sitio anuncia otra seña, o dos distintas').toEqual(['50']);
+    expect(ficn.opcionesNota, 'el importe de la seña no es la mitad del precio').toContain(
+      FICN_PRECIOS.mitad,
+    );
   });
 });
