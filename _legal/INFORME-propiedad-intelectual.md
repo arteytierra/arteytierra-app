@@ -1,7 +1,8 @@
 # Cómo se protege acequia
 
 Informe y paso a paso. Titular: Jonatan Gabriel Palma, persona humana, 100 %.
-Fecha: 24 de octubre de 2026. Versión de la obra: la etiqueta `v1.0` de git.
+Fecha: 24 de octubre de 2026; revisado el 21 de noviembre de 2026.
+Versión de la obra preparada para depositar: la etiqueta `v1.1` de git.
 
 ---
 
@@ -37,75 +38,106 @@ dos trámites que sí corresponden, más lo que no se tramita y ya está hecho.
 
 ## 2. Qué se hace, cuánto cuesta, en qué orden
 
-| | Trámite | Organismo | Costo | Prioridad |
+| | Trámite | Organismo | Costo | Estado |
 |---|---|---|---|---|
-| A | Depósito de obra inédita de software | DNDA | $1.400 | Hacelo ya |
-| B | Marca mixta «acequia», clases 9 y 42 | INPI | ~100 UMAPI por clase | Hacelo ya |
+| A | Depósito de obra inédita de software | DNDA | $1.400 | **Listo para presentar** |
+| B | Marca «acequia», clase 42 | INPI | pagado | **Concedida el 30/10/2026** |
 | C | Aviso de copyright y reserva en el repo | — | $0 | **Hecho** |
 | D | Secreto comercial (Ley 24.766) | — | $0 | **Hecho en parte** |
 
-El orden importa en **B**: la marca en Argentina es por orden de llegada. El
-que la pide primero la tiene. El depósito **A** no corre esa carrera, pero
-cuesta $1.400 y lleva una tarde.
+**B ya está.** No una marca sino dos: la denominativa «ACEQUIA» (registro
+N.º 3.978.600) y la mixta (registro N.º 3.976.649), las dos en clase 42,
+concedidas el 30 de octubre de 2026 y vigentes hasta el 30 de octubre de 2036.
+El detalle, los vencimientos y la declaración jurada de uso están en el
+Anexo II de `_legal/licencia-software-y-marca.md`.
+
+Queda **A**, que no corre ninguna carrera pero cuesta $1.400 y lleva una
+tarde, y es el único de los cuatro que todavía depende de que vos salgas a
+hacer algo.
 
 ---
 
 ## 3. Trámite A — Depósito en custodia en la DNDA
 
 Protege el **código fuente** con fecha cierta del Estado. Dura 3 años,
-renovable por 3 más dentro de los 30 días del vencimiento. Si no se renueva,
-se destruye (Decreto 972/2024).
+renovable por 3 más dentro de los 30 días **posteriores** al vencimiento. Si
+no se renueva, se destruye (Decreto 972/2024).
+
+Todo lo que sigue —arancel, datos bancarios, requisitos del sobre,
+direcciones— lo releí en la ficha oficial el **21 de noviembre de 2026**.
 
 ### Lo que ya está armado
 
-En `_legal/deposito/` (fuera de git, no se commitea) hay cuatro archivos:
+Hay **dos versiones del soporte** preparadas, cada una en su carpeta de
+`_legal/deposito/` (esa carpeta está fuera de git: no se commitea nada de
+esto). Depositás una sola:
+
+| Carpeta | Cuál es | Commit | Archivos | Fecha de la versión |
+|---|---|---|---|---|
+| `v1.1/` | **la que recomiendo** | `4a28534`, etiqueta `v1.1` | 1.690 | 21/11/2026 |
+| raíz | la de octubre | `7d975f8`, etiqueta `v1.0` | 1.570 | 24/10/2026 |
+
+Entre una y otra hay **87 commits**: entre ellos toda la obra legal de esta
+semana —la página de arrepentimiento, la identificación del proveedor, los
+registros de marca en los Términos— y el cálculo del cauce y el desagüe. El
+depósito dura tres años y protege *la versión que depositás*, así que conviene
+que sea la más completa. La de octubre queda ahí por si preferís la fecha de
+versión más vieja; no la borres hasta que el trámite esté cerrado.
+
+Cada carpeta tiene los mismos cuatro archivos, y son los cuatro que van al
+pendrive, nada más:
 
 | Archivo | Qué es |
 |---|---|
-| `acequia-fuente-v1.0.tar.gz` | ~32 MB. El código fuente completo de la obra. |
-| `MANIFIESTO-v1.0.txt` | SHA-256 de cada archivo, uno por uno, más el del tarball y las exclusiones declaradas. |
-| `DECLARACION-DE-AUTORIA.txt` | Declaración de autoría y titularidad. **Tiene cuatro campos por completar.** |
+| `acequia-fuente-v1.1.tar.gz` | 33 MB. El código fuente completo de la obra. |
+| `MANIFIESTO-v1.1.txt` | SHA-256 de cada uno de los 1.690 archivos, más el del tarball y las exclusiones declaradas. |
+| `DECLARACION-DE-AUTORIA.txt` | Declaración de autoría y titularidad. **Completa: no le falta ningún dato.** |
 | `LEEME-SOPORTE.txt` | Qué hay en el pendrive, para quien lo abra. |
 
 El SHA-256 del tarball está escrito en tres lugares del soporte —el
-`MANIFIESTO`, el `LEEME-SOPORTE` y la `DECLARACION-DE-AUTORIA`— y los tres
-tienen que coincidir. Ese es el número que te deja probar, dentro de tres o
-de diez años, que el archivo que se abre es exactamente el que depositaste.
-No lo copio acá para que no queden dos versiones del dato: el que vale es el
-del soporte.
+`MANIFIESTO`, el `LEEME-SOPORTE` y la `DECLARACION`— y verifiqué que los tres
+coinciden entre sí y con el archivo. Ese es el número que te deja probar,
+dentro de tres o de diez años, que el archivo que se abre es exactamente el
+que depositaste. No lo copio acá para que no queden dos versiones del dato: el
+que vale es el del soporte.
 
-**Qué dejé afuera del depósito, y por qué.** Dos cosas, ambas declaradas en
-el MANIFIESTO para que el depósito sea internamente honesto:
+En la v1.1 el comprimido es, byte por byte, el árbol del commit `4a28534`, y
+cada hash del inventario corresponde al archivo **tal como está adentro del
+`.tar.gz`**. Lo verifiqué extrayendo el comprimido y recalculando los 1.690
+hashes: los 1.690 dan. Eso quiere decir que cualquiera puede repetir la
+verificación sin acceso al repositorio.
+
+**Qué dejé afuera del depósito, y por qué.** Dos cosas, ambas declaradas en el
+MANIFIESTO para que el depósito sea internamente honesto:
 
 - `supabase/1/` — el binario de la CLI de Supabase. **Son 123 MB de software
   de terceros bajo licencia MIT, Copyright (c) 2021 Supabase, Inc., que están
   commiteados en el repo.** Depositarlo sería presentar obra ajena como
   propia. (Aparte: eso también habría que sacarlo del repo. Ver §7.)
-- `apps/web/public/` — 217 MB de fotos y video **ya publicados** en
+- `apps/web/public/` — las fotos y el video **ya publicados** en
   arteytierra.org. No son software y no son inéditos; meterlos en un depósito
   de «obra inédita» es contradecir la declaración.
 
-Lo que queda son 1.570 archivos, 238.600 líneas de TypeScript, SQL y CSS, y las
-63 migraciones de la base.
-
 **Y una cosa de terceros que sí entra, declarada como tal.** Los tres GeoTIFF
-de `apps/terreno/datos/koppen/` —el mapa climático Köppen-Geiger de 1 km, 35 MB—
-están adentro del depósito, porque la app los lee del disco y sin ellos el
-código no se entiende completo. Son de Beck y otros, *Scientific Data* 10, 724
-(2023), bajo **CC BY 4.0**, que autoriza expresamente redistribuirlos y usarlos
-comercialmente con atribución. La declaración los identifica uno por uno, dice
-que no son obra tuya, y el punto 5 reserva la salvedad: jurás ser autor único
-*con excepción* de lo listado en el punto 4. Sin esa aclaración estarías
-declarando como propio un mapa que no lo es.
+de `apps/terreno/datos/koppen/` —el mapa climático Köppen-Geiger de 1 km,
+35 MB— están adentro del depósito, porque la app los lee del disco y sin ellos
+el código no se entiende completo. Son de Beck y otros, *Scientific Data* 10,
+724 (2023), bajo **CC BY 4.0**, que autoriza expresamente redistribuirlos y
+usarlos comercialmente con atribución. La declaración los identifica uno por
+uno, dice que no son obra tuya, y el punto 5 reserva la salvedad: jurás ser
+autor único *con excepción* de lo listado en el punto 4. Sin esa aclaración
+estarías declarando como propio un mapa que no lo es.
 
 ### Paso a paso
 
-**1. Completá los campos de `DECLARACION-DE-AUTORIA.txt`**
-CUIT/CUIL, estado civil, domicilio real y teléfono. Están marcados
-`[COMPLETAR]`. Si me los pasás lo completo yo y te lo dejo listo para firmar.
+**1. Elegí la versión**
+`v1.1`, salvo que quieras la otra. Los cuatro archivos que vas a copiar son
+los de `_legal/deposito/v1.1/`. No hay nada que completar en ninguno: la
+declaración ya tiene tu CUIT, estado civil, domicilio y teléfono cargados
+desde el 29 de octubre.
 
 **2. Pagá el arancel: $1.400**
-Depósito o transferencia a:
+La ficha oficial dice «$1400.00 — Tasa incluida». Depósito o transferencia a:
 
 ```
 Beneficiario : Fondo Cooperador Ley 23.412 DNDA-CESSI
@@ -116,35 +148,51 @@ Banco        : Provincia de Buenos Aires, cuenta corriente 12479/5
 Importe      : $1.400
 ```
 
-Guardá el comprobante en PDF o imagen. Confirmá el importe en la página
-oficial del trámite antes de transferir: lo actualizan sin aviso.
+Guardá el comprobante en PDF o imagen: se sube en el paso 4. El monto lo
+confirmé hoy en la ficha oficial, que no publica fecha de vigencia del
+arancel; si pasan meses hasta que lo hagas, volvé a mirarlo antes de
+transferir.
 
 **3. Grabá el pendrive**
-Copiá los cuatro archivos de `_legal/deposito/` a un pendrive (o quemá un CD
-o DVD, los tres sirven). Nada más: sólo esos cuatro.
+Copiá los cuatro archivos de `_legal/deposito/v1.1/` a un pendrive. Nada más:
+sólo esos cuatro. La ficha acepta «cualquier soporte» y da como ejemplos CD,
+DVD o pendrive, así que el pendrive sirve.
 
 **4. Iniciá el expediente en TAD**
 Entrá a `tramitesadistancia.gob.ar` con tu Clave Fiscal de AFIP y buscá
-**«Depósito en custodia de obra inédita software»**. Subí el comprobante de
-pago y cargá los datos del autor y titular (los mismos de la declaración,
-100 % de titularidad).
+**«Depósito en custodia de obra inédita software»** (es el trámite id 534).
+Subí el comprobante de pago y cargá los datos.
+
+Los datos que pide por cada autor o titular son exactamente estos, y **los
+tenés todos en el punto 1 de la `DECLARACION-DE-AUTORIA.txt`**, que es el
+archivo que no se versiona justamente porque lleva tus datos personales:
+nombre completo, CUIL, nacionalidad, estado civil, correo, teléfono,
+domicilio y porcentaje de titularidad —100 %—. Copialos de ahí y no los
+tipees de memoria: tienen que coincidir con la hoja que firmás.
 
 El sistema te devuelve un **número de Expediente Electrónico** y **dos
 carátulas** en PDF: la de expediente y la variable. Imprimí las dos.
 
 **5. Armá el sobre**
 Sobre de **papel madera, tamaño A4 como mínimo**. Adentro: el pendrive y la
-hoja de la declaración de autoría firmada de puño y letra. Cerralo y
-**firmá sobre los puntos de cierre** —la firma tiene que cruzar el pegado, es
-lo que prueba que no se abrió. Escribí por fuera el título de la obra y tu
-nombre completo. Pegá por fuera las dos carátulas.
+hoja de la declaración de autoría firmada de puño y letra —antes de cerrar,
+completá a mano «Lugar y fecha» y firmá al pie, sobre la aclaración—.
+
+Cerralo y **firmá sobre los puntos de cierre**: la ficha lo pide
+expresamente, la firma tiene que cruzar el pegado y es lo que prueba que el
+sobre no se abrió. Escribí por fuera el **título de la obra** —«Arte y Tierra
+- plataforma acequia (v1.1)»— y tu **nombre completo**. Y adjuntá por fuera
+las dos carátulas.
 
 **6. Presentalo**
-- En persona: Moreno 1230, CABA, lunes a viernes de 9:30 a 14:30. Puede ir
-  cualquier persona, no hace falta que vayas vos.
-- Por correo: DNDA, Moreno 1228, C1091AAZ, CABA. El sobre con la obra y las
-  carátulas van dentro de otro sobre.
-- Desde el interior: por las receptorías, el listado está en el sitio.
+- **En persona:** Moreno 1230, CABA, mesa de entradas, lunes a viernes de 9:30
+  a 14:30. Puede ir cualquier persona, no hace falta que vayas vos.
+- **Por correo:** DNDA, Moreno 1228, C1091AAZ, CABA. El sobre con la obra y
+  las carátulas van dentro de otro sobre. (La ficha da 1230 para la
+  presentación personal y 1228 para el correo postal; así figura, no es un
+  error de transcripción mío.)
+- **Desde el interior:** por las receptorías; el listado está en el sitio.
+- Consultas: (+54 11) 4124-7200.
 
 **7. Esperá la constancia**
 Si hay un error te mandan una tarea de subsanación por TAD. Si no, te dan la
@@ -153,86 +201,62 @@ Si hay un error te mandan una tarea de subsanación por TAD. Si no, te dan la
 **8. Anotá el vencimiento**
 Tres años desde el depósito. La renovación es dentro de los **30 días
 posteriores** al vencimiento, ni antes ni después. Poné la alarma el día que
-recibas la constancia.
+recibas la constancia: si se pasa el plazo, lo depositado se destruye.
+
+### Para llevar en la mano
+
+- [ ] Comprobante de la transferencia de $1.400 (PDF o foto)
+- [ ] Pendrive con los **cuatro** archivos de `_legal/deposito/v1.1/`
+- [ ] La declaración impresa, con lugar, fecha y firma de puño y letra
+- [ ] Las dos carátulas de TAD impresas
+- [ ] Sobre de papel madera A4, cerrado, firmado sobre el cierre, con el título y tu nombre por fuera
 
 ### Lo que este depósito sí y no hace
 
 Prueba **esa versión** en **esa fecha**. Es una foto de un código que cambia
 todas las semanas. Lo que te da es una fecha sellada por el Estado, que es
-difícil de discutir. La prueba continua y gratis ya la tenés y es fuerte: 653
-commits desde el 17 de mayo de 2026 en un repositorio privado de GitHub, más
-el log de deployments de Vercel. El depósito no reemplaza eso: lo corona.
+difícil de discutir. La prueba continua y gratis ya la tenés y es fuerte: 759
+commits desde el 17 de mayo de 2026 en un repositorio privado de GitHub, las
+etiquetas `v1.0` y `v1.1` publicadas en el remoto, y el log de deployments de
+Vercel. El depósito no reemplaza eso: lo corona.
 
 ---
 
-## 4. Trámite B — Marca «acequia» en el INPI
+## 4. Trámite B — Marca «acequia» en el INPI: concedida
 
-Esto es lo que de verdad te pueden sacar, y lo único que tiene valor
-comercial transferible. Va a tu nombre como persona humana.
+Esto era lo que de verdad te podían sacar, y lo único que tiene valor
+comercial transferible. **Ya está hecho y aprobado, a tu nombre como persona
+humana.** El 30 de octubre de 2026 el INPI concedió **dos registros**, no uno:
 
-**Marca mixta** (isotipo + palabra), clases **9** (software) y **42**
-(SaaS y servicios técnicos). El arancel es de **100 UMAPI por clase** para
-hasta 20 productos o servicios.
+| Marca | Registro | Acta | Título |
+|---|---|---|---|
+| **Denominativa** — «ACEQUIA» | 3.978.600 | 4.776.908 | 5 de noviembre de 2026 |
+| **Mixta** — isologotipo + «acequia» | 3.976.649 | 4.776.907 | 4 de noviembre de 2026 |
 
-> **Sobre el costo.** La UMAPI se creó por Resolución INPI 75/2026 y arrancó
-> en $360, o sea $36.000 por clase. Pero **se actualiza todos los meses por
-> IPC del INDEC**, así que a octubre de 2026 el número es otro y hay que
-> leerlo en el portal del INPI antes de pagar. Las notas periodísticas de
-> este año dan cifras que difieren entre sí por un factor de seis: no te
-> guíes por ellas.
+Las dos en **clase 42**, vigentes hasta el **30 de octubre de 2036**. Tener la
+denominativa además de la mixta es mejor de lo que yo había recomendado acá en
+octubre: la palabra sola protege el nombre independientemente del logo.
 
-### Lo que ya está armado
+Los dos títulos en PDF están en `C:\Arte y Tierra\Acequia\registro de marca`.
+El detalle completo —servicios protegidos, disposición, y los dos
+vencimientos que hay que anotar— está en el **Anexo II** de
+`_legal/licencia-software-y-marca.md`.
 
-- `_legal/marca/acequia-marca-mixta.jpg` — el logo sobre fondo blanco,
-  1400 x 600 px, listo para subir.
-- `_legal/marca/SOLICITUD-MARCA-acequia.md` — las listas de productos y
-  servicios de las clases 9 y 42, redactadas y para copiar y pegar, más una
-  clase 44 opcional.
+### Lo único que queda de este trámite son dos fechas
 
-### Paso a paso
+- **Declaración jurada de uso de medio término** (art. 26 de la Ley 22.362,
+  texto del DNU 27/2018): entre el **30 de octubre de 2031** y el **30 de
+  octubre de 2032**, una por registro. Si no se presenta, la marca cae.
+- **Renovación**: 2036, y hay que acreditar uso en los cinco años anteriores.
 
-**1. Buscá antecedentes antes de pagar**
-En el buscador de marcas del INPI, clases 9 y 42: `acequia` exacta, `acequia`
-dentro de otro signo, y los parecidos fonéticos (`azequia`, `asequia`,
-`acekia`). Si aparece algo idéntico o confundible vigente, se replantea antes
-de pagar, no después. Busqué por fuera del padrón y no encontré nada, pero
-**eso no es una búsqueda en el padrón** y no alcanza. Si querés te la hago
-con el navegador; si salta un captcha lo tenés que pasar vos.
+### Lo que queda sin registrar
 
-**2. Verificá la redacción contra la Clasificación de Niza**
-Rige la **13ª edición, versión 2026** desde el 01/01/2026. El INPI manda a
-subsanar los términos que no figuran tal cual en la lista oficial. Pegá las
-dos listas en el clasificador del propio INPI y confirmá cada término. Si uno
-no aparece, reemplazalo por el oficial más cercano en vez de inventar.
-
-**3. Presentá la solicitud**
-Portal de trámites del INPI, con Clave Fiscal. Solicitante: vos, persona
-humana. Tipo: mixta. Subí el JPG. Pegá la lista de la clase 9 en una
-solicitud y la de la clase 42 en otra: **son dos solicitudes y dos aranceles,
-no una sola con dos clases.**
-
-**4. Pagá los dos aranceles**
-
-**5. Publicación y oposiciones**
-El INPI publica la solicitud en el Boletín de Marcas. Desde la publicación
-corren **30 días** para que un tercero se oponga. Si nadie se opone, sigue el
-examen de fondo. Si alguien se opone, te llega la notificación y hay un plazo
-para contestar: ahí sí conviene un agente de la propiedad industrial.
-
-**6. Concesión**
-Si sale, la marca dura **10 años** desde la concesión, renovable
-indefinidamente por períodos de 10. En la renovación hay que declarar que se
-usó la marca.
-
-### Dos cosas que decidir
-
-- **¿«Arte y Tierra» también?** Es tu marca de estudio y no está registrada.
-  Es otro trámite completo, con su arancel por clase. Si el presupuesto da
-  para una sola ahora, acequia es la urgente: es la que tiene un producto
-  vendiendo suscripciones y un dominio.
-- **¿La palabra sola, además de la mixta?** Da protección más amplia pero es
-  más objetable y es otra solicitud por clase. Mi recomendación: arrancá con
-  la mixta. Si prende el producto, después sumás la denominativa.
+- **«Arte y Tierra»** sigue sin registrar. Es tu marca de estudio y es otro
+  trámite completo, con su arancel por clase. Ahora que acequia está cubierta,
+  es la siguiente candidata si querés gastar en esto.
+- **Clase 9** (software como producto) no se pidió: las dos marcas son de
+  clase 42 (servicios, que es lo que acequia presta como SaaS). Si algún día
+  vendés el software empaquetado, ahí sí hace falta.
 
 ---
 
@@ -264,7 +288,7 @@ de confidencialidad antes. Te lo redacto cuando haga falta.
 
 **En el historial de git figura Claude.** Dos niveles:
 
-- **566 commits** tienen el trailer `Co-Authored-By: Claude`.
+- **667 commits** tienen el trailer `Co-Authored-By: Claude`.
 - **24 commits** tienen a `Claude <noreply@anthropic.com>` como **autor** del
   commit, no sólo como co-autor.
 
@@ -295,6 +319,7 @@ sesiones. Decime y lo encaro con cuidado.
 
 - [Ley 24.481 de Patentes, texto actualizado](https://www.argentina.gob.ar/normativa/nacional/35001/actualizacion)
 - [Art. 6(c) y Anexo III de las Directrices de Patentabilidad del INPI (OMPI)](https://wipo.int/ip-development/en/agenda/flexibilities/details.jsp?id=8778)
+- [Depósito en custodia de obra inédita software — ficha oficial del trámite, releída el 21/11/2026](https://www.argentina.gob.ar/servicio/deposito-en-custodia-de-obra-inedita-software)
 - [Depósito en custodia de obra inédita de software — DNDA](https://www.argentina.gob.ar/registrar-la-autoria-de-un-software-inedito)
 - [Registrar software puesto en conocimiento público — DNDA](https://www.argentina.gob.ar/registrar-la-autoria-de-un-software-inedito-0)
 - [Resolución INPI 75/2026 — creación de la UMAPI](https://abogados.com.ar/la-unidad-de-medida-arancelaria-de-la-propiedad-industrial-umapi-resolucion-inpi-752026/38789)

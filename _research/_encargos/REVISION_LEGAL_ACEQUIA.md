@@ -42,9 +42,8 @@ paso 8 de la mudanza.
 
 ### 1. Quiénes somos
 
-Acequia es un servicio operado por **Jonatan Gabriel Palma**, CUIT
-**20-33402098-4**, con domicilio en **Av. Los Quebrachos y Mariano Moreno, San
-Marcos Sierras, Provincia de Córdoba, Argentina**. Consultas:
+Acequia es un servicio operado por **Jonatan Gabriel Palma**, CUIT y domicilio 〔los datos personales no se versionan: estan en
+`apps/terreno/lib/titular.ts` y en `_legal/`, fuera de git〕. Consultas:
 acequia.app@gmail.com. 〔Condición fiscal a confirmar por el contador — monotributo
 o responsable inscripto; no cambia el texto, es para la sección de facturación.〕
 
@@ -153,8 +152,8 @@ domicilio), intervienen los tribunales ordinarios de la Provincia de Córdoba.
 
 ### 13. Contacto
 
-Jonatan Gabriel Palma — acequia.app@gmail.com — Av. Los Quebrachos y Mariano
-Moreno, San Marcos Sierras, Córdoba, Argentina.
+Jonatan Gabriel Palma — acequia.app@gmail.com — domicilio 〔no se versiona: ver
+`apps/terreno/lib/titular.ts`〕.
 
 ---
 
@@ -164,9 +163,7 @@ Moreno, San Marcos Sierras, Córdoba, Argentina.
 
 ### 1. Responsable del tratamiento
 
-Jonatan Gabriel Palma (fundador y director de Arte y Tierra), CUIT 20-33402098-4,
-domicilio Av. Los Quebrachos y Mariano Moreno, San Marcos Sierras, Córdoba,
-Argentina. Contacto: acequia.app@gmail.com. La inscripción de la base de datos
+Jonatan Gabriel Palma (fundador y director de Arte y Tierra), CUIT y domicilio 〔no se versionan: ver `apps/terreno/lib/titular.ts` y `_legal/`〕. Contacto: acequia.app@gmail.com. La inscripción de la base de datos
 personales ante la Agencia de Acceso a la Información Pública (Ley 25.326) está
 pendiente y se completará antes del lanzamiento comercial.
 
@@ -251,8 +248,8 @@ servicio antes de que el cambio entre en vigor.
 
 ### 11. Contacto
 
-Jonatan Gabriel Palma — acequia.app@gmail.com — Av. Los Quebrachos y Mariano
-Moreno, San Marcos Sierras, Córdoba, Argentina.
+Jonatan Gabriel Palma — acequia.app@gmail.com — domicilio 〔no se versiona: ver
+`apps/terreno/lib/titular.ts`〕.
 
 ---
 
