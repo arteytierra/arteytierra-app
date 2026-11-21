@@ -79,13 +79,20 @@ describe('las fotos de cada obra', () => {
   it('no deja ninguna foto de la carpeta afuera de la galería', () => {
     // Al revés que el anterior: si alguien suma fotos a la carpeta y no las
     // declara, la ficha muestra menos obra de la que hay y nadie se entera.
+    //
+    // La excepción son los originales de cámara guardados a propósito: están
+    // en la carpeta como archivo de obra y no se publican. Van también en
+    // `NO_SON_IMAGENES_DE_LA_WEB`, en `peso-de-las-imagenes.test.ts`, que es
+    // donde se explica por qué no pasan por las reglas de peso y de lado.
+    const ARCHIVO_DE_OBRA = new Set(['alihuen/IMG_20240302_113305 (1).jpg']);
     const olvidadas: string[] = [];
     for (const p of PROYECTOS) {
       const carpeta = join(RAIZ, 'public', 'img', 'proyectos', p.slug);
       if (!existsSync(carpeta)) continue;
       const declaradas = new Set(p.fotos.map((f) => f.split('/').pop()));
       for (const archivo of readdirSync(carpeta)) {
-        if (!declaradas.has(archivo)) olvidadas.push(`${p.slug}/${archivo}`);
+        const ruta = `${p.slug}/${archivo}`;
+        if (!declaradas.has(archivo) && !ARCHIVO_DE_OBRA.has(ruta)) olvidadas.push(ruta);
       }
     }
     expect(olvidadas, `fotos en la carpeta que la ficha no muestra:\n  ${olvidadas.join('\n  ')}`).toEqual([]);

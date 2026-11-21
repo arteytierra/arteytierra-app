@@ -64,6 +64,25 @@ const SIN_USAR_A_PROPOSITO: Record<string, string> = {
   '/img/acequia/isotipo-blanco.svg': 'isotipo de acequia',
 };
 
+/**
+ * Archivos que viven bajo `public/img` y NO son imágenes de la web.
+ *
+ * Son material de archivo guardado ahí a mano: el original de cámara de una
+ * obra y el PDF de un anteproyecto. Ninguna página los sirve, así que las
+ * reglas de peso, de lado y de formato no les aplican —el original de cámara
+ * mide 3840 px y pesa 2,9 MB justamente por ser el original, y un PDF no tiene
+ * firma de imagen porque no lo es—. Quedan afuera de `TODAS`: si alguna vez
+ * una página los nombra, hay que redimensionarlos y sacarlos de esta lista.
+ *
+ * Nada que se publique entra acá. Esta lista no es la puerta de atrás para
+ * subir una foto pesada: para eso está `SIN_USAR_A_PROPOSITO`, que sí pasa por
+ * el peso y el lado.
+ */
+const NO_SON_IMAGENES_DE_LA_WEB: Record<string, string> = {
+  '/img/proyectos/alihuen/IMG_20240302_113305 (1).jpg': 'original de cámara, archivo de obra',
+  '/img/servicios/Anteproyecto Lili.pdf': 'PDF del anteproyecto, no es una imagen',
+};
+
 /** Todos los archivos bajo `public/img`, como rutas web (`/img/...`). */
 function archivos(carpeta: string): string[] {
   const salida: string[] = [];
@@ -75,7 +94,7 @@ function archivos(carpeta: string): string[] {
   return salida;
 }
 
-const TODAS = archivos(IMG);
+const TODAS = archivos(IMG).filter((web) => !(web in NO_SON_IMAGENES_DE_LA_WEB));
 const enDisco = (web: string) => join(RAIZ, 'public', web.slice(1));
 
 /** Todo archivo de código bajo una carpeta. */
@@ -226,5 +245,17 @@ describe('nada se queda en public/img sin que lo use alguien', () => {
   it('la lista de excepciones no tiene fantasmas', () => {
     const fantasmas = Object.keys(SIN_USAR_A_PROPOSITO).filter((web) => !TODAS.includes(web));
     expect(fantasmas, `ya no están en public/:\n  ${fantasmas.join('\n  ')}`).toEqual([]);
+  });
+
+  it('lo que no es imagen de la web sigue estando, y nadie lo nombra', () => {
+    const idas = Object.keys(NO_SON_IMAGENES_DE_LA_WEB).filter((web) => {
+      try {
+        statSync(enDisco(web));
+        return false;
+      } catch {
+        return true;
+      }
+    });
+    expect(idas, `ya no están en public/:\n  ${idas.join('\n  ')}`).toEqual([]);
   });
 });
