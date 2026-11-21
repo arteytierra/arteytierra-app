@@ -64,7 +64,13 @@ renovable por 3 más dentro de los 30 días **posteriores** al vencimiento. Si
 no se renueva, se destruye (Decreto 972/2024).
 
 Todo lo que sigue —arancel, datos bancarios, requisitos del sobre,
-direcciones— lo releí en la ficha oficial el **21 de noviembre de 2026**.
+direcciones— lo releí el **21 de noviembre de 2026** en las dos páginas
+oficiales, que son las que explican el trámite completo:
+
+- **La ficha del trámite**, que es la que hay que leer:
+  <https://www.argentina.gob.ar/servicio/deposito-en-custodia-de-obra-inedita-software>
+- **El listado de receptorías del interior**:
+  <https://www.argentina.gob.ar/justicia/derechodeautor/receptorias>
 
 ### Lo que ya está armado
 
@@ -169,9 +175,14 @@ archivo que no se versiona justamente porque lleva tus datos personales:
 nombre completo, CUIL, nacionalidad, estado civil, correo, teléfono,
 domicilio y porcentaje de titularidad —100 %—. Copialos de ahí y no los
 tipees de memoria: tienen que coincidir con la hoja que firmás.
-
 El sistema te devuelve un **número de Expediente Electrónico** y **dos
-carátulas** en PDF: la de expediente y la variable. Imprimí las dos.
+carátulas** en PDF: la **carátula de expediente** y la **carátula variable**.
+Son dos hojas que genera el propio TAD con el número de expediente, tus datos
+y el trámite; no las escribís vos, se descargan y se imprimen. Imprimí las
+dos: son las que la DNDA usa para encontrar tu expediente electrónico cuando
+le llega el sobre, y por eso van **por fuera**, pegadas o engrapadas al sobre
+cerrado, nunca adentro. Si van adentro, el sobre llega sin identificación y no
+se puede vincular al expediente.
 
 **5. Armá el sobre**
 Sobre de **papel madera, tamaño A4 como mínimo**. Adentro: el pendrive y la
@@ -180,19 +191,59 @@ completá a mano «Lugar y fecha» y firmá al pie, sobre la aclaración—.
 
 Cerralo y **firmá sobre los puntos de cierre**: la ficha lo pide
 expresamente, la firma tiene que cruzar el pegado y es lo que prueba que el
-sobre no se abrió. Escribí por fuera el **título de la obra** —«Arte y Tierra
-- plataforma acequia (v1.1)»— y tu **nombre completo**. Y adjuntá por fuera
-las dos carátulas.
+sobre no se abrió.
+
+Por fuera va, textual de la ficha, «título y nombre completo de el/los
+autores, el/los coordinadores y/o los titulares». O sea dos cosas:
+
+```
+acequia  (v1.1)
+Jonatan Gabriel Palma
+```
+
+**El título de la obra es «acequia», no «Arte y Tierra».** Arte y Tierra es el
+nombre de tu estudio: no es autor, no es titular y no es una persona jurídica.
+El autor y titular sos vos, persona humana, al 100 %. Corregí esto en los tres
+archivos del soporte el 21/11/2026: donde decía «Arte y Tierra - plataforma
+acequia» ahora dice `Titulo: acequia`, con el subtítulo «plataforma de
+análisis de territorio y diseño regenerativo» y la aclaración de que el
+soporte lleva el monorepo entero —acequia más arteytierra.org—, del mismo
+autor. Eso último conviene que esté dicho: en el pendrive viaja también el
+código del sitio del estudio, y el depósito tiene que describir lo que
+realmente contiene.
+
+Y por fuera, además, las **dos carátulas** del paso 4.
 
 **6. Presentalo**
-- **En persona:** Moreno 1230, CABA, mesa de entradas, lunes a viernes de 9:30
-  a 14:30. Puede ir cualquier persona, no hace falta que vayas vos.
-- **Por correo:** DNDA, Moreno 1228, C1091AAZ, CABA. El sobre con la obra y
-  las carátulas van dentro de otro sobre. (La ficha da 1230 para la
-  presentación personal y 1228 para el correo postal; así figura, no es un
-  error de transcripción mío.)
-- **Desde el interior:** por las receptorías; el listado está en el sitio.
-- Consultas: (+54 11) 4124-7200.
+- **En persona, en CABA:** Moreno 1230, mesa de entradas, lunes a viernes de
+  9:30 a 14:30. Puede ir cualquier persona, no hace falta que vayas vos.
+- **Por correo, que es lo tuyo:** el sobre de papel madera cerrado **más las
+  dos carátulas** se meten dentro de **otro sobre**, y ese segundo sobre se
+  despacha a:
+
+  ```
+  Direccion Nacional del Derecho de Autor
+  Moreno 1228
+  C1091AAZ - Ciudad Autonoma de Buenos Aires
+  ```
+
+  (La ficha da 1230 para la presentación personal y 1228 para el correo
+  postal; así figura, no es un error de transcripción mío.) Mandalo con
+  seguimiento y guardá el número: es tu prueba de despacho.
+
+- **Desde Córdoba, lo que hay de cerca.** La DNDA tiene receptorías en el
+  interior, pero en la provincia de Córdoba el listado oficial muestra **una
+  sola**, y no está en la capital: el **Instituto de Extensión de la
+  Universidad Nacional de Villa María** —Oficina de Propiedad Intelectual,
+  Santiago del Estero 1365, Villa María, tel. (0353) 453-9116,
+  agiordano@unvm.edu.ar—. **Ojo con esa entrada:** otras receptorías del
+  listado dicen «Tramita obra inédita no musical» y ésta dice sólo «Brinda
+  asesoramiento general». O sea que **no está claro que reciba el depósito**;
+  habría que llamar y preguntar antes de manejar las dos horas y media desde
+  San Marcos. Desde San Marcos Sierras, salvo que por teléfono te confirmen
+  que Villa María lo recibe, **el camino práctico es el correo postal**: te
+  ahorra el viaje y el trámite es el mismo.
+- Consultas en la DNDA: (+54 11) 4124-7200.
 
 **7. Esperá la constancia**
 Si hay un error te mandan una tarea de subsanación por TAD. Si no, te dan la
@@ -208,8 +259,9 @@ recibas la constancia: si se pasa el plazo, lo depositado se destruye.
 - [ ] Comprobante de la transferencia de $1.400 (PDF o foto)
 - [ ] Pendrive con los **cuatro** archivos de `_legal/deposito/v1.1/`
 - [ ] La declaración impresa, con lugar, fecha y firma de puño y letra
-- [ ] Las dos carátulas de TAD impresas
-- [ ] Sobre de papel madera A4, cerrado, firmado sobre el cierre, con el título y tu nombre por fuera
+- [ ] Las dos carátulas de TAD impresas (las genera TAD en el paso 4)
+- [ ] Sobre de papel madera A4, cerrado, firmado cruzando el cierre, con «acequia (v1.1)» y «Jonatan Gabriel Palma» escritos por fuera
+- [ ] Las dos carátulas **por fuera** del sobre, no adentro
 
 ### Lo que este depósito sí y no hace
 
@@ -320,6 +372,7 @@ sesiones. Decime y lo encaro con cuidado.
 - [Ley 24.481 de Patentes, texto actualizado](https://www.argentina.gob.ar/normativa/nacional/35001/actualizacion)
 - [Art. 6(c) y Anexo III de las Directrices de Patentabilidad del INPI (OMPI)](https://wipo.int/ip-development/en/agenda/flexibilities/details.jsp?id=8778)
 - [Depósito en custodia de obra inédita software — ficha oficial del trámite, releída el 21/11/2026](https://www.argentina.gob.ar/servicio/deposito-en-custodia-de-obra-inedita-software)
+- [Receptorías en el interior del país — DNDA, releída el 21/11/2026](https://www.argentina.gob.ar/justicia/derechodeautor/receptorias)
 - [Depósito en custodia de obra inédita de software — DNDA](https://www.argentina.gob.ar/registrar-la-autoria-de-un-software-inedito)
 - [Registrar software puesto en conocimiento público — DNDA](https://www.argentina.gob.ar/registrar-la-autoria-de-un-software-inedito-0)
 - [Resolución INPI 75/2026 — creación de la UMAPI](https://abogados.com.ar/la-unidad-de-medida-arancelaria-de-la-propiedad-industrial-umapi-resolucion-inpi-752026/38789)
