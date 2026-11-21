@@ -359,6 +359,40 @@ export const ESPECIES: Especie[] = [
     tmin_letal_c: 5, agua_mm: 600, kc: 0.90, koppen: ['Aw', 'BSh', 'Cwa', 'Cfa'],
     nota: 'Fructifica bajo tierra: quiere suelo suelto, no el que se compacta con la máquina.',
   },
+  /**
+   * Las dos que el informe de Niassa nombraba y el catálogo no tenía.
+   *
+   * Los rangos de temperatura y de lluvia son de las fichas de **Ecocrop**
+   * (FAO): lablab, óptimo 18 a 32 °C y 600 a 1.000 mm, absolutos 3 a 38 °C y
+   * 200 a 2.500 mm; poroto bambara, óptimo 19 a 30 °C y 750 a 1.400 mm,
+   * absolutos 16 a 38 °C y 300 a 3.000 mm, con ciclo publicado de 90 a 180
+   * días. `agua_mm` toma el extremo BAJO del óptimo porque las dos son de
+   * secano y es contra ese número que se mide el déficit.
+   *
+   * `tmin_letal_c` es el mínimo absoluto de temperatura de Ecocrop. Es una
+   * media anual y el campo pide una mensual, así que el número queda del lado
+   * conservador: descarta lugares marginales antes que proponerlos. Y los 16 °C
+   * del bambara no son un redondeo: la literatura coincide en que abajo de 16 y
+   * arriba de 38 no hay producción de vaina.
+   *
+   * `tbase_c`, `gdd_ciclo` y `kc` NO están publicados en esas fichas y van por
+   * analogía con la especie del catálogo más cercana, que en los dos casos es el
+   * caupí —*Vigna unguiculata*, el mismo género que el bambara— con el ciclo
+   * corrido según el ciclo publicado de cada una. Queda escrito porque es el
+   * único número de estas dos fichas que no se puede leer contra el papel.
+   */
+  {
+    id: 'lablab', nombre: 'Lablab / poroto chaucha', cientifico: 'Lablab purpureus',
+    rol: 'abono_verde', perenne: false, tbase_c: 12, gdd_ciclo: 1800,
+    tmin_letal_c: 3, agua_mm: 600, kc: 0.85, koppen: ['Aw', 'Am', 'BSh', 'Cwa', 'Cwb', 'Cfa'],
+    nota: 'Fija nitrógeno, tapa el suelo y da grano y forraje; una vez prendido aguanta la seca.',
+  },
+  {
+    id: 'bambara', nombre: 'Poroto bambara', cientifico: 'Vigna subterranea',
+    rol: 'principal', perenne: false, tbase_c: 12, gdd_ciclo: 1700,
+    tmin_letal_c: 16, agua_mm: 750, kc: 0.85, koppen: ['Aw', 'Am', 'BSh'],
+    nota: 'Fructifica bajo tierra en suelo arenoso y pobre: da cosecha donde el maní ya no.',
+  },
   {
     id: 'batata', nombre: 'Batata / camote', cientifico: 'Ipomoea batatas',
     rol: 'principal', perenne: false, tbase_c: 12, gdd_ciclo: 2000,

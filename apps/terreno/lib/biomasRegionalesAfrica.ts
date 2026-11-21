@@ -383,15 +383,18 @@ export const BIOMAS_REGIONALES_AFRICA: Record<string, BiomaFicha> = {
       'Teca africana (Baikiaea plurijuga)',
       'Mninga (Pterocarpus angolensis)',
     ],
-    // Los once salen del informe de Niassa, que es el único dato agronómico
+    // Los trece salen del informe de Niassa, que es el único dato agronómico
     // medido adentro del polígono: los cereales de base (maíz, sorgo, mijo), las
     // raíces (yuca, batata) y las leguminosas que la gente ya cultiva (maní,
-    // caupí, guandul), más las cuatro que el propio informe propone introducir
-    // para armar la capa arable (soja, guandul, girasol y sésamo; el lablab y el
-    // poroto bambara no existen en el catálogo y no se sustituyeron). El arroz
-    // de secano salió de la lista: venía de la meseta de Makonde, que da ECO_ID
-    // 28 y bioma 1.
-    cultivos: ['maiz_tropical', 'sorgo', 'mijo', 'yuca', 'batata', 'mani', 'caupi', 'guandul', 'soja', 'girasol', 'sesamo'],
+    // caupí, guandul), más las que el propio informe propone introducir para
+    // armar la capa arable (soja, guandul, girasol, sésamo, lablab y poroto
+    // bambara). El arroz de secano salió de la lista: venía de la meseta de
+    // Makonde, que da ECO_ID 28 y bioma 1.
+    //
+    // El lablab y el bambara entraron el 21/11/2026, cuando el catálogo de
+    // `lib/especies.ts` los tuvo: hasta entonces el informe los nombraba, la
+    // ficha no los podía listar y no se sustituyeron por nada parecido.
+    cultivos: ['maiz_tropical', 'sorgo', 'mijo', 'yuca', 'batata', 'mani', 'caupi', 'guandul', 'soja', 'girasol', 'sesamo', 'lablab', 'bambara'],
     aptitud: [
       { uso: 'pasturas', delta: 0, razon: 'El bioma suma 20 porque «el sistema pastoril es el nativo», y acá el nativo es un bosque, igual que en el miombo húmedo pero con el primario abierto. El estrato herbáceo es el 2 a 5 % de la biomasa aérea: 0,1 a 4,0 Mg/ha, con la mayoría de los registros por debajo de 2,0. La lluvia anual no lo predice —la regresión publicada a escala regional da r de 0,147, no significativa, y de pendiente negativa— y lo que sí sube con la lluvia es el área basal leñosa, mientras el rinde herbáceo cae exponencialmente contra ella: el dosel se cierra alrededor de 10 m²/ha y todo el rango de lluvia de esta ecorregión está en o arriba de ese cierre. La calidad decide el resto: la proteína bruta de las gramíneas baja de 10 % a 3 % en la seca, que acá dura hasta seis meses, y el animal pierde peso en la mitad del año que importa; el ramoneo mantiene más de 10 % todo el año pero trae taninos condensados. Y la tsetsé restringe dónde se puede tener ganado, con el agravante de que las razas indígenas trypanotolerantes fueron reemplazadas por exóticas susceptibles. No baja a negativo porque el pastoreo es real y porque el miombo seco es justamente donde el desmonte queda abierto: pero el pasto que se compra desmontando es más pasto de peor especie —en el centro de Zimbabue el desmonte reemplazó Panicum maximum por no palatables— y menos confiable en los años de sequía, porque el árbol tolera la seca mejor que la hierba. Mirá la cobertura leñosa del punto antes de decidir, no la lluvia: acá la variable es el dosel, y nadie publicó todavía la densidad de árboles que optimiza el forraje.' },
       { uso: 'huerta', delta: -20, razon: 'El bioma de sabana no nombra la huerta, así que esto es un agregado y no una confirmación. El mecanismo no es el chitemene del miombo húmedo: acá el suelo medido no es ácido —el pH va de 6,5 a 7,3— y la condición física es buena, con estructura, drenaje y porosidad sanos. Lo que falta es capacidad de retener nutrientes y los nutrientes mismos: la capacidad de intercambio catiónico efectiva es de 3,84 a 1,52 meq/100 g en los primeros 20 cm y baja a 0,67 entre 40 y 60, y lo deficitario en todo el perfil es materia orgánica, nitrógeno, fósforo y potasio. A eso se le suma una seca de hasta seis meses y una trampa biológica que ninguna otra fuente del catálogo trajo: la Striga, asiatica y hermonthica, se vuelve severa después de dos o tres años seguidos de cereal y es, junto con la caída de fertilidad, lo que hace abandonar la chacra; en Mbamba la superficie de chacras pasó de 1.084 ha en 2006 a más de 2.215 acumuladas en 2016 y lo abandonado nunca se reusó. La salida que propone la propia fuente es construir la capa arable con fijadores de nitrógeno —soja, guandul, lablab, girasol— y con Faidherbia albida, que tira la hoja en la estación de lluvias; no es cal lo que falta, es carbono y nitrógeno.' },

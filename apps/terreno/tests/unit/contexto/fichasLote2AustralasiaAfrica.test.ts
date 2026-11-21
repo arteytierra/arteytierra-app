@@ -333,15 +333,21 @@ describe('el miombo seco: el cero vuelve, con el primario abierto', () => {
     expect(seco().aptitud!.map((m) => m.uso)).toEqual(['pasturas', 'huerta', 'forestal']);
   });
 
-  it('los once cultivos existen en el catálogo', () => {
+  it('los trece cultivos existen en el catálogo', () => {
     for (const id of seco().cultivos ?? []) {
       expect(ESPECIES_POR_ID[id], id).toBeDefined();
     }
-    expect(seco().cultivos).toHaveLength(11);
-    // El lablab y el poroto bambara los nombra el informe y no están en el
-    // catálogo, así que no se sustituyeron por nada parecido.
-    expect(seco().cultivos).not.toContain('lablab');
-    expect(seco().cultivos).not.toContain('bambara');
+    expect(seco().cultivos).toHaveLength(13);
+    /**
+     * El lablab y el poroto bambara son los dos que el informe propone para
+     * armar la capa arable y que el catálogo no tenía: la ficha los nombraba en
+     * la razón de aptitud y no los podía listar. Entraron el 21/11/2026 con sus
+     * rangos de Ecocrop, así que ahora la lista los trae y la razón de la huerta
+     * y los cultivos dicen lo mismo.
+     */
+    expect(seco().cultivos).toContain('lablab');
+    expect(seco().cultivos).toContain('bambara');
+    expect(seco().aptitud!.find((m) => m.uso === 'huerta')!.razon).toMatch(/lablab/);
   });
 });
 
