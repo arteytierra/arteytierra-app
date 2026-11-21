@@ -113,62 +113,32 @@ export async function getCourseWithCurriculum(slug: string): Promise<CourseWithC
   return localizeRow(data as never as Record<string, unknown>, locale, [...PRODUCT_I18N_FIELDS]) as never as CourseWithCurriculum;
 }
 
-export interface LandingMeta {
-  badge: string;
-  tag: string;
-  section: 'activo' | 'inmersion' | 'proximo';
-  sort_order: number;
-  precio_display?: string;
-  precio_note?: string;
-  datos?: Array<{ label: string; val: string }>;
-  contenidos?: string[];
-  whatsapp_msg: string;
-  whatsapp_numero?: string;
-}
-
-export interface LandingProduct extends ProductRow {
-  landing_meta: LandingMeta;
-  courses?: Array<{ is_live: boolean; is_recorded: boolean }> | null;
-}
-
-export interface CoursesForLanding {
-  activos: LandingProduct[];
-  inmersion: LandingProduct | null;
-  proximos: LandingProduct[];
-}
-
-export async function getCoursesForLanding(): Promise<CoursesForLanding> {
-  const admin = createSupabaseAdminClient();
-  const locale = await getLocale();
-
-  const { data, error } = await admin
-    .schema('shop')
-    .from('products')
-    .select(
-      'id, slug, name, subtitle, gallery, base_price_cents, compare_at_cents, currency, is_active, landing_meta, courses(is_live, is_recorded)'
-    )
-    .in('type', ['course', 'immersion'] as never[]);
-
-  if (error) console.error('[getCoursesForLanding]', error);
-
-  const rows = ((data ?? []) as unknown as LandingProduct[])
-    .map(
-      (p) =>
-        localizeRow(
-          p as never as Record<string, unknown>,
-          locale,
-          [...PRODUCT_I18N_FIELDS]
-        ) as unknown as LandingProduct
-    )
-    .filter((p) => p.landing_meta?.section)
-    .sort((a, b) => (a.landing_meta.sort_order ?? 99) - (b.landing_meta.sort_order ?? 99));
-
-  return {
-    activos:  rows.filter((p) => p.landing_meta.section === 'activo'),
-    inmersion: rows.find((p) => p.landing_meta.section === 'inmersion') ?? null,
-    proximos:  rows.filter((p) => p.landing_meta.section === 'proximo'),
-  };
-}
+/*
+ * Acá vivía `getCoursesForLanding()`, que armaba el listado de `/cursos` con
+ * `shop.products` y su columna `landing_meta`. Se borró el 21/11/2026 por dos
+ * razones, y la segunda es la que importa:
+ *
+ *  1. **Nunca funcionó.** Pedía `courses(is_live, is_recorded)` desde el
+ *     esquema `shop`, y `courses` vive en `edu`: PostgREST no resuelve un
+ *     recurso embebido de otro esquema, así que devolvía PGRST200 en cada
+ *     carga de la página y el listado caía siempre en su catálogo estático.
+ *     No faltaba ninguna foreign key —`edu.courses.product_id` referencia
+ *     `shop.products(id)` desde la 0001— y las vistas pass-through que lo
+ *     taparían ya se probaron y se revirtieron (migraciones 0033 y 0034).
+ *  2. **Arreglarla habría empeorado la página.** La base tiene diez de los
+ *     trece cursos que el sitio publica —le faltan la Formación Integral, el
+ *     Intensivo y el Voluntariado— y su copia de los precios quedó atrás. El
+ *     «fallback» era el catálogo bueno.
+ *
+ * El listado lee ahora `lib/courses/data.ts`, igual que las fichas, los
+ * formularios de inscripción, el chatbot y los tests. `landing_meta` sigue en
+ * la base sin consumidor: si alguna vez la base pasa a ser la fuente del
+ * listado, hay que cargar los tres cursos que faltan, refrescar los precios y
+ * resolver el embed con dos consultas en vez de una.
+ *
+ * El resto de las consultas que cruzan de esquema están contadas en
+ * `tests/unit/consultas-cruzadas.test.ts`.
+ */
 
 export function getProductCover(product: { gallery: unknown }): string | undefined {
   const arr = (Array.isArray(product.gallery) ? product.gallery : []) as Array<{ url?: string } | string>;

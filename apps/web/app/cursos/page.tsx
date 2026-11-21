@@ -8,7 +8,6 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { coursesItemListJsonLd } from '@/lib/seo/jsonld';
 import { buildSocial } from '@/lib/seo/og';
 import { YouTubeFacade } from '@/components/media/YouTubeFacade';
-import { getCoursesForLanding, getProductCover } from '@/lib/commerce/products';
 import { getCourse } from '@/lib/courses/data';
 import { horarioApertura, modalidadTeoriaPractica, rangoFechas, rangoPrecios } from '@/lib/courses/formato';
 
@@ -299,47 +298,28 @@ function CourseCard({ c, reverse }: { c: Curso; reverse?: boolean }) {
 
 /* ─── Page ───────────────────────────────────────────── */
 
+/*
+ * Hasta el 21/11/2026 esta página intentaba armarse con `shop.products` y caía
+ * en estas listas como «fallback». Nunca lo logró: la consulta pedía
+ * `courses(is_live, is_recorded)` desde el esquema `shop`, y `courses` vive en
+ * `edu` — PostgREST no embebe entre esquemas, así que devolvía PGRST200 en cada
+ * carga. Ver `tests/unit/consultas-cruzadas.test.ts`.
+ *
+ * Y el día que se arreglara iba a ser peor, no mejor: la base tiene diez de los
+ * trece cursos —le faltan la Formación Integral, el Intensivo y el
+ * Voluntariado— y su copia de los precios quedó atrás (bioarquitectura a
+ * $130.000–$160.000 cuando el catálogo deriva $110.000–$150.000). El
+ * «fallback» era el catálogo bueno.
+ *
+ * Así que el listado lee lo mismo que todo el resto del sitio: el catálogo de
+ * `lib/courses/data.ts` y estas listas. `landing_meta` queda en la base sin
+ * consumidor, a propósito, hasta que alguien decida que la base es la fuente.
+ */
 export default async function CursosPage() {
-  // Intentar cargar desde DB; si falla o devuelve vacío, usar fallback estático
-  let todos = FALLBACK_TODOS;
-  let cursos = FALLBACK_CURSOS;
-  let proximos = FALLBACK_PROXIMOS;
-  let inmersionWa = waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero info de la Inmersión Viva');
-
-  try {
-    const { activos, inmersion, proximos: dbProximos } = await getCoursesForLanding();
-    if (activos.length > 0) {
-      todos = [...activos, ...(inmersion ? [inmersion] : []), ...dbProximos].map(p => ({
-        slug: p.slug,
-        name: p.name,
-        tag: p.landing_meta.tag,
-        img: getProductCover(p as never) ?? '/img/cursos/cursos/1.jpg',
-        badge: p.landing_meta.badge,
-        tentativo: !p.is_active,
-        online: p.landing_meta.badge.toLowerCase().includes('online'),
-      }));
-      cursos = activos.map(p => {
-        const lm = p.landing_meta;
-        return {
-          slug: p.slug, badge: lm.badge, name: p.name, tag: lm.tag,
-          desc: p.subtitle ?? '', img: getProductCover(p as never) ?? '/img/cursos/cursos/1.jpg',
-          datos: lm.datos, contenidos: lm.contenidos,
-          precio: lm.precio_display ?? '', precioNote: lm.precio_note ?? '',
-          href: `/cursos/${p.slug}`,
-          whatsapp: waLink(lm.whatsapp_numero ?? WHATSAPP_PRINCIPAL, lm.whatsapp_msg),
-        };
-      });
-      proximos = dbProximos.map(p => ({
-        slug: p.slug, name: p.name, badge: p.landing_meta.badge,
-        desc: p.subtitle ?? '',
-        img: getProductCover(p as never) ?? '/img/cursos/cursos/1.jpg',
-        whatsapp: waLink(p.landing_meta.whatsapp_numero ?? WHATSAPP_PRINCIPAL, p.landing_meta.whatsapp_msg),
-      }));
-      if (inmersion) inmersionWa = waLink(inmersion.landing_meta.whatsapp_numero ?? WHATSAPP_PRINCIPAL, inmersion.landing_meta.whatsapp_msg);
-    }
-  } catch (e) {
-    console.error('[CursosPage] DB fallback activado:', e);
-  }
+  const todos = FALLBACK_TODOS;
+  const cursos = FALLBACK_CURSOS;
+  const proximos = FALLBACK_PROXIMOS;
+  const inmersionWa = waLink(WHATSAPP_PRINCIPAL, 'Hola, quiero info de la Inmersión Viva');
 
   // Vigentes: 2 filas de 3 (las 3 presenciales insignia + las 3 online) y, abajo,
   // las dos propuestas de voluntariado a todo el ancho. Las sin fecha confirmada
