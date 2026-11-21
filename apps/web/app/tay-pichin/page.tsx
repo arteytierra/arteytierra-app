@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { BOOKING_URL, puntajeBooking, comentariosBooking } from '@/lib/hospedaje/booking';
+import { semanaDeInmersion } from '@/lib/courses/inmersion';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { breadcrumbJsonLd } from '@/lib/seo/jsonld';
 
@@ -234,7 +235,7 @@ export default function TayPichinPage() {
               <p className="font-sans text-sm text-bone-200 leading-relaxed mb-5">
                 <strong className="text-bone-50">Camping</strong> — alimentación básica y alojamiento en zona de camping.
               </p>
-              <p className="font-display text-3xl text-clay-500">$40.000 ARS<span className="text-xl"> / sem</span></p>
+              <p className="font-display text-3xl text-clay-500">{semanaDeInmersion('camping', 'es')} ARS<span className="text-xl"> / sem</span></p>
             </div>
 
             {/* Proceso Profundo */}
@@ -244,7 +245,7 @@ export default function TayPichinPage() {
               <p className="font-sans text-sm text-bone-200 leading-relaxed mb-5">
                 <strong className="text-bone-50">Habitación compartida</strong> — alimentación básica y habitación compartida.
               </p>
-              <p className="font-display text-3xl text-clay-300">$80.000 ARS<span className="text-xl"> / sem</span></p>
+              <p className="font-display text-3xl text-clay-300">{semanaDeInmersion('habitacion', 'es')} ARS<span className="text-xl"> / sem</span></p>
             </div>
           </div>
 

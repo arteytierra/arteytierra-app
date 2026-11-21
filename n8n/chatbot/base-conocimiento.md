@@ -39,7 +39,7 @@ Cada uno tiene una **meta de conversación** clara:
 - **Qué es:** estancia inmersiva en Tay Pichín: bioconstrucción, agroecología, biocosmética, diseño hidrológico, organización comunitaria. 4-6 h diarias de práctica. **Se llega los lunes.**
 - **Duración:** desde 2 semanas, extensible a un mes o más según disponibilidad.
 - **Incluye:** comida completa + hospedaje (camping o hab. compartida) + todas las actividades/talleres del período + participación en la logística.
-- **Precio:** **Camping $40.000/semana · Habitación compartida $80.000/semana (recomendada).**
+- **Precio:** **Camping $80.000/semana · Habitación compartida $120.000/semana (recomendada).**
 - **Cómo se aplica:** formulario → instrucciones de pago 24-48h → transferencia + comprobante por WhatsApp → confirman cupo (limitados).
 - **Flujo del bot:** presentar → resolver **inquietudes mínimas** (qué incluye, qué llevar, cómo se llega, fechas de llegada los lunes) → tomar la **fecha de llegada** deseada → **agendar una videollamada ~2 semanas antes de esa fecha** con la persona. Meta cumplida = llamada agendada. *(Requiere herramienta de agenda — ver §12.)*
 - **Cancelación:** reembolso total si avisan 7 días antes.

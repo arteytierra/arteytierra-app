@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { BOOKING_URL, puntajeBooking } from '@/lib/hospedaje/booking';
+import { TARIFAS_HOSPEDAJE, importePorNoche } from '@/lib/hospedaje/precios';
 
 export const metadata: Metadata = {
   title: 'EcoHostel Tay Pichín — Accommodation in Earth Architecture',
@@ -11,14 +12,11 @@ export const metadata: Metadata = {
   alternates: { canonical: '/en/hospedaje' },
 };
 
-const PRECIOS = [
-  { tipo: 'Camping', precio: '$8,000', sub: 'ARS / night per person' },
-  { tipo: 'Shared dorm', precio: '$15,000', sub: 'ARS / night per person' },
-  { tipo: 'Double room', precio: '$35,000', sub: 'ARS / night for 2', featured: true },
-  { tipo: 'Triple room', precio: '$45,000', sub: 'ARS / night for 3' },
-  { tipo: 'Weekly camping', precio: '$45,000', sub: 'ARS / week per person' },
-  { tipo: 'Weekly room', precio: '$85,000', sub: 'ARS / week per person' },
-];
+// Las tarifas salen de `lib/hospedaje/precios.ts`. Esta página vendía otra
+// lista: la cama compartida a $15.000 cuando en castellano costaba $17.000, la
+// doble a $35.000 cuando eran $45.000, y dos filas —camping por noche y precio
+// semanal— de productos que el hostel no ofrece. Era la única tabla que lee un
+// huésped extranjero y era la equivocada.
 
 const AMENITIES = [
   { icon: '🍳', text: 'Shared communal kitchen' },
@@ -103,15 +101,15 @@ export default function HospedajeEnPage() {
               <h2 className="font-display text-4xl md:text-5xl text-ink-950">Accommodation <em>options.</em></h2>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-5 mb-8">
-              {PRECIOS.map(p => (
-                <div key={p.tipo} className={`p-6 ${p.featured ? 'bg-clay-700' : 'bg-bone-100'}`}>
-                  <p className={`font-sans text-xs font-bold uppercase tracking-widest mb-3 ${p.featured ? 'text-clay-300' : 'text-clay-700'}`}>{p.tipo}</p>
-                  <p className={`font-display text-3xl ${p.featured ? 'text-bone-50' : 'text-ink-950'}`}>{p.precio}</p>
-                  <p className={`font-sans text-xs mt-1 ${p.featured ? 'text-bone-200/70' : 'text-ink-700/70'}`}>{p.sub}</p>
+              {TARIFAS_HOSPEDAJE.map(t => (
+                <div key={t.id} className={`p-6 ${t.destacada ? 'bg-clay-700' : 'bg-bone-100'}`}>
+                  <p className={`font-sans text-xs font-bold uppercase tracking-widest mb-3 ${t.destacada ? 'text-clay-300' : 'text-clay-700'}`}>{t.nombre.en}</p>
+                  <p className={`font-display text-3xl ${t.destacada ? 'text-bone-50' : 'text-ink-950'}`}>{importePorNoche(t, 'en')}</p>
+                  <p className={`font-sans text-xs mt-1 ${t.destacada ? 'text-bone-200/70' : 'text-ink-700/70'}`}>ARS · {t.detalle.en}</p>
                 </div>
               ))}
             </div>
-            <p className="font-sans text-sm text-ink-700/60 italic">Rates may vary by season. Contact us to confirm availability.</p>
+            <p className="font-sans text-sm text-ink-700/60 italic">Prices in Argentine pesos, per night. Rates on Booking and Airbnb may vary by date and availability. For a direct booking, or for a long stay of a month or more, message us on WhatsApp.</p>
           </div>
         </section>
 

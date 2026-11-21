@@ -787,8 +787,11 @@ export const COURSES: Record<string, CourseData> = {
     },
     facilitadores: [JONATAN],
     opciones: [
-      { id: 'camping', label: 'En zona de camping', precio: '$40.000', precioPor: 'semana', includes: ['Alimentación completa', 'Lugar de camping en Tay Pichín', 'Participación en todas las actividades'] },
-      { id: 'habitacion', label: 'En habitación compartida', precio: '$80.000', precioPor: 'semana', includes: ['Alimentación completa', 'Habitación compartida en Tay Pichín', 'Participación en todas las actividades'], highlighted: true },
+      // Actualizados el 20/11/2026. Son el único lugar donde se decide cuánto
+      // sale una semana de Inmersión Viva: las tres páginas de Tay Pichín y la
+      // base del chatbot los leen de acá.
+      { id: 'camping', label: 'En zona de camping', precio: '$80.000', precioPor: 'semana', includes: ['Alimentación completa', 'Lugar de camping en Tay Pichín', 'Participación en todas las actividades'] },
+      { id: 'habitacion', label: 'En habitación compartida', precio: '$120.000', precioPor: 'semana', includes: ['Alimentación completa', 'Habitación compartida en Tay Pichín', 'Participación en todas las actividades'], highlighted: true },
     ],
     opcionesNota: `Podés extenderte a un mes, a tres meses o más según disponibilidad — consultanos por WhatsApp. Del ${VOLUNTARIADO_RANGO} la Inmersión Viva está pausada: en esa ventana la única entrada era la convocatoria de voluntariado, y sus ${VOLUNTARIADO_CUPOS} cupos ya están cubiertos.`,
     formCurso: 'Inmersión Viva · Tay Pichín',

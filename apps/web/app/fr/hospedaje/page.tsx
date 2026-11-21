@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { BOOKING_URL } from '@/lib/hospedaje/booking';
+import { TARIFAS_HOSPEDAJE, importePorNoche } from '@/lib/hospedaje/precios';
 
 export const metadata: Metadata = {
   title: 'Écolodge Tay Pichín — Hébergement à San Marcos Sierras',
@@ -11,14 +12,9 @@ export const metadata: Metadata = {
   alternates: { canonical: '/fr/hospedaje' },
 };
 
-const PRECIOS = [
-  { tipo: 'Lit en dortoir partagé', precio: '$17.000', detalle: 'par nuit · mixte' },
-  { tipo: 'Chambre privée · 1 personne', precio: '$35.000', detalle: 'par nuit' },
-  { tipo: 'Chambre privée · 2 personnes', precio: '$45.000', detalle: 'par nuit' },
-  { tipo: 'Chambre privée · 3 personnes', precio: '$55.000', detalle: 'par nuit' },
-  { tipo: 'Chambre privée · 4 personnes', precio: '$65.000', detalle: 'par nuit' },
-  { tipo: 'Location mensuelle · chambre partagée', precio: '$200.000', detalle: 'par mois' },
-];
+// Las tarifas salen de `lib/hospedaje/precios.ts`, que es el único lugar donde
+// se decide un precio del hostel. Antes estaban acá, y en castellano y en
+// inglés había otras dos listas.
 
 const AMENITIES = [
   { label: 'Cuisine équipée partagée', desc: 'Gaz, réfrigérateur, ustensiles. Cuisinez librement.' },
@@ -118,14 +114,17 @@ export default function HospedajeFrPage() {
               </h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
-              {PRECIOS.map(p => (
-                <div key={p.tipo} className="bg-bone-100 p-6 border-l-4 border-clay-700">
-                  <p className="font-sans text-sm text-ink-700 mb-3">{p.tipo}</p>
-                  <p className="font-display text-3xl text-clay-700">{p.precio}</p>
-                  <p className="font-sans text-xs text-ink-700/70 mt-1">{p.detalle}</p>
+              {TARIFAS_HOSPEDAJE.map(t => (
+                <div key={t.id} className="bg-bone-100 p-6 border-l-4 border-clay-700">
+                  <p className="font-sans text-sm text-ink-700 mb-3">{t.nombre.fr}</p>
+                  <p className="font-display text-3xl text-clay-700">{importePorNoche(t, 'fr')}</p>
+                  <p className="font-sans text-xs text-ink-700/70 mt-1">ARS · {t.detalle.fr}</p>
                 </div>
               ))}
             </div>
+            <p className="font-sans text-xs text-ink-700/70 leading-relaxed mb-8">
+              Prix en pesos argentins, par nuit. Pour une réservation directe ou un long séjour —un mois ou plus— écrivez-nous sur WhatsApp. Les prix sur Booking et Airbnb peuvent varier selon la date et la disponibilité.
+            </p>
             <div className="flex flex-wrap gap-4">
               <a href={BOOKING_URL.fr} target="_blank" rel="noopener noreferrer" className="inline-flex bg-clay-700 text-bone-50 font-sans font-bold text-sm uppercase tracking-widest px-8 py-4 hover:bg-clay-900 transition-colors">
                 Booking.com →

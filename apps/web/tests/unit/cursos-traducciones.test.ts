@@ -124,8 +124,8 @@ describe('formato de fechas y precios', () => {
     // Estaba pegada al importe («$40.000 / semana») y se colaba en castellano
     // dentro de las fichas en inglés y francés.
     const semanal = COURSES['inmersion-viva']!.opciones[0]!;
-    expect(precioParaMostrar(semanal, 'es')).toBe('$40.000 / semana');
-    expect(precioParaMostrar(semanal, 'en')).toBe('$40,000 / week');
+    expect(precioParaMostrar(semanal, 'es')).toBe('$80.000 / semana');
+    expect(precioParaMostrar(semanal, 'en')).toBe('$80,000 / week');
     expect(precioParaMostrar(semanal, 'fr')).toContain('/ semaine');
   });
 

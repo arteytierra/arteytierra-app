@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { BOOKING_URL, puntajeBooking, comentariosBooking } from '@/lib/hospedaje/booking';
+import { TARIFAS_HOSPEDAJE, importePorNoche } from '@/lib/hospedaje/precios';
 import { UBICACION } from '@/lib/ubicacion';
 
 export const metadata: Metadata = {
@@ -15,14 +16,9 @@ export const metadata: Metadata = {
 const AIRBNB_URL = 'https://www.airbnb.com.ar/rooms/1346556039732742474';
 const WA_URL = 'https://wa.me/5493549431594?text=Hola%21%20Quiero%20consultar%20por%20hospedaje%20en%20Tay%20Pichín.';
 
-const PRECIOS = [
-  { tipo: 'Cama en dormitorio compartido', precio: '$17.000', detalle: 'por noche · mixto', icon: '◈' },
-  { tipo: 'Habitación privada · 1 persona', precio: '$35.000', detalle: 'por noche', icon: '◉' },
-  { tipo: 'Habitación privada · 2 personas', precio: '$45.000', detalle: 'por noche', icon: '◉' },
-  { tipo: 'Habitación privada · 3 personas', precio: '$55.000', detalle: 'por noche', icon: '◉' },
-  { tipo: 'Habitación privada · 4 personas', precio: '$65.000', detalle: 'por noche', icon: '◉' },
-  { tipo: 'Alquiler mensual · hab. compartida', precio: '$200.000', detalle: 'por mes', icon: '◈' },
-];
+// Las tarifas salen de `lib/hospedaje/precios.ts`, que es el único lugar donde
+// se decide un precio del hostel. Antes estaban acá, y en inglés y en francés
+// había otras dos listas distintas.
 
 const GALERIA = [
   { src: '/img/taypichin/carousel/6.jpg',  alt: 'Salón comedor — Ecohostel Tay Pichín',        span: 'col-span-2 row-span-2' },
@@ -266,16 +262,16 @@ export default function HospedajePage() {
             </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
-            {PRECIOS.map(p => (
-              <div key={p.tipo} className="bg-bone-50 border border-bone-200 p-6 flex flex-col gap-3">
-                <p className="font-sans text-xs font-bold uppercase tracking-widest text-clay-700">{p.icon} {p.detalle}</p>
-                <p className="font-sans text-sm text-ink-700 leading-snug">{p.tipo}</p>
-                <p className="font-display text-3xl text-ink-950 mt-auto">{p.precio} <span className="text-sm font-sans text-ink-700">ARS</span></p>
+            {TARIFAS_HOSPEDAJE.map(t => (
+              <div key={t.id} className="bg-bone-50 border border-bone-200 p-6 flex flex-col gap-3">
+                <p className="font-sans text-xs font-bold uppercase tracking-widest text-clay-700">{t.icono} {t.detalle.es}</p>
+                <p className="font-sans text-sm text-ink-700 leading-snug">{t.nombre.es}</p>
+                <p className="font-display text-3xl text-ink-950 mt-auto">{importePorNoche(t, 'es')} <span className="text-sm font-sans text-ink-700">ARS</span></p>
               </div>
             ))}
           </div>
           <p className="font-sans text-xs text-ink-700/70 leading-relaxed">
-            Precios en pesos argentinos. Para reservas directas consultanos por WhatsApp. Los precios en Booking y Airbnb pueden variar según fecha y disponibilidad.
+            Precios en pesos argentinos, por noche. Para reservas directas o estadías largas —por mes o más— consultanos por WhatsApp. Los precios en Booking y Airbnb pueden variar según fecha y disponibilidad.
           </p>
         </div>
       </section>

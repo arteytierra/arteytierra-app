@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { BOOKING_URL, puntajeBooking, comentariosBooking } from '@/lib/hospedaje/booking';
+import { semanaDeInmersion } from '@/lib/courses/inmersion';
 
 export const metadata: Metadata = {
   title: 'Tay Pichín — Écoécole et Écolodge',
@@ -152,7 +153,7 @@ export default function TayPichinFrPage() {
                 <p className="font-sans text-sm text-bone-200 leading-relaxed mb-4">
                   <strong className="text-bone-100">Camping</strong> — repas de base et hébergement en zone de camping.
                 </p>
-                <p className="font-display text-3xl text-clay-700">$40.000 ARS / sem.</p>
+                <p className="font-display text-3xl text-clay-700">{semanaDeInmersion('camping', 'fr')} ARS / sem.</p>
               </div>
               <div className="bg-clay-900 p-10 text-center">
                 <p className="text-xs font-sans font-bold uppercase tracking-widest text-clay-300 mb-4">Processus Profond</p>
@@ -160,7 +161,7 @@ export default function TayPichinFrPage() {
                 <p className="font-sans text-sm text-bone-200 leading-relaxed mb-4">
                   <strong className="text-bone-100">Chambre partagée</strong> — repas de base et chambre partagée.
                 </p>
-                <p className="font-display text-3xl text-clay-700">$80.000 ARS / sem.</p>
+                <p className="font-display text-3xl text-clay-700">{semanaDeInmersion('habitacion', 'fr')} ARS / sem.</p>
               </div>
             </div>
             <p className="font-sans text-sm text-clay-700 font-bold tracking-wide mb-8">

@@ -1,6 +1,7 @@
 import 'server-only';
 import { getCourse } from '@/lib/courses/data';
 import { horarioApertura, rangoFechas, rangoPrecios } from '@/lib/courses/formato';
+import { semanaDeInmersion } from '@/lib/courses/inmersion';
 
 /* El bot tiene prohibido inventar fechas y precios, así que tampoco se los
    tipea a mano: los lee del mismo catálogo que la web. */
@@ -8,6 +9,8 @@ const BIOARQ = getCourse('bioarquitectura')!;
 const BIOARQ_FECHAS = BIOARQ.fechas ? rangoFechas(BIOARQ.fechas, 'es') : 'fechas a confirmar';
 const BIOARQ_HORARIO = BIOARQ.fechas ? horarioApertura(BIOARQ.fechas, 'es') ?? '' : '';
 const BIOARQ_PRECIOS = rangoPrecios(BIOARQ.opciones) ?? 'consultar';
+const INMERSION_CAMPING = semanaDeInmersion('camping', 'es');
+const INMERSION_HABITACION = semanaDeInmersion('habitacion', 'es');
 
 /**
  * Base de conocimiento + reglas del asistente de WhatsApp de Arte y Tierra.
@@ -47,7 +50,7 @@ Cancelación: reembolso total si avisan 7 días antes; si no, se transfiere el c
 Estancia inmersiva en Tay Pichín: bioconstrucción, agroecología, biocosmética, diseño hidrológico, organización comunitaria. 4-6 h diarias de práctica. Se llega los lunes.
 Duración: desde 2 semanas, extensible a un mes, tres meses o más según disponibilidad. Recomendamos 3 meses para alcanzar a practicar en todas las áreas: las áreas no son un cronograma cerrado, cada semana se trabaja en lo que el espacio necesita, así que en dos semanas se entra a fondo en una o dos y no en todas.
 Incluye: comida completa + hospedaje (camping o habitación compartida) + todas las actividades/talleres del período + participación en la logística.
-Precio: Camping $40.000/semana · Habitación compartida $80.000/semana (recomendada).
+Precio: Camping ${INMERSION_CAMPING}/semana · Habitación compartida ${INMERSION_HABITACION}/semana (recomendada).
 Cómo se aplica: formulario → instrucciones de pago en 24-48h → transferencia + comprobante por WhatsApp → confirman cupo (limitados).
 Flujo: presentar → resolver inquietudes mínimas (qué incluye, qué llevar, cómo se llega, que se llega los lunes) → tomar la fecha de llegada deseada → invitar a agendar una videollamada con el equipo ~2 semanas antes de esa fecha.
 Cancelación: reembolso total si avisan 7 días antes.

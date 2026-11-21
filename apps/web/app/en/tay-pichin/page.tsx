@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { SiteHeader } from '@/components/site/SiteHeader';
 import { SiteFooter } from '@/components/site/SiteFooter';
 import { BOOKING_URL, puntajeBooking, comentariosBooking } from '@/lib/hospedaje/booking';
+import { semanaDeInmersion } from '@/lib/courses/inmersion';
 
 export const metadata: Metadata = {
   title: 'Tay Pichín — Permaculture EcoSchool & EcoHostel',
@@ -163,8 +164,8 @@ export default function TayPichinEnPage() {
               </p>
               <div className="grid grid-cols-2 gap-4 mb-6">
                 {[
-                  { label: 'Camping', price: '$40,000 ARS/week' },
-                  { label: 'Shared room', price: '$80,000 ARS/week' },
+                  { label: 'Camping', price: `${semanaDeInmersion('camping', 'en')} ARS/week` },
+                  { label: 'Shared room', price: `${semanaDeInmersion('habitacion', 'en')} ARS/week` },
                 ].map(p => (
                   <div key={p.label} className="bg-bone-50 p-5">
                     <p className="font-sans text-xs font-bold uppercase tracking-widest text-clay-700 mb-2">{p.label}</p>
