@@ -717,6 +717,22 @@ export interface SeccionCauce {
   /** Las dos condiciones del método, cada una por separado. */
   sueloAguanta:       boolean;
   pastoAguanta:       boolean;
+  /**
+   * El tapiz con el que se diseñó esta sección, y las dos clases de
+   * retardancia que la decidieron.
+   *
+   * Va en el resultado porque es **parte de la obra, no del cálculo**: la
+   * sección sale de suponer un pasto, y el capítulo se niega a admitir un
+   * esfuerzo mayor «unless the designer can be certain that the quality of the
+   * vegetative cover will always be maintained». El renglón de semilla de la
+   * lista de materiales sale de acá.
+   */
+  cobertura:          { id: string; nombre: string };
+  calidadTapiz:       CalidadTapiz;
+  /** La clase densa, que decidió la profundidad. */
+  claseCapacidad:     ClaseRetardancia;
+  /** La clase pobre, que decidió el ancho. */
+  claseEstabilidad:   ClaseRetardancia;
   avisos:             AvisoCalculo[];
   fuentes:            string[];
 }
@@ -851,6 +867,10 @@ export function dimensionarCauce(e: EntradaCauce): SeccionCauce | null {
     ci_estabilidad:     ciEst,
     sueloAguanta:       pobre.tauEf <= tauAdm,
     pastoAguanta:       GAMMA_LB_FT3 * Dcap * S <= tauVegAdm,
+    cobertura:          { id: cob.id, nombre: cob.nombre },
+    calidadTapiz:       calidad,
+    claseCapacidad:     e.retardanciaCapacidad ?? RETARDANCIA_CAPACIDAD_DEFECTO,
+    claseEstabilidad:   e.retardanciaEstabilidad ?? RETARDANCIA_ESTABILIDAD_DEFECTO,
     avisos:             [],
     fuentes:            [FUENTE_EFH7, FUENTE_AH667],
   };

@@ -111,6 +111,8 @@ import type { EconomiaResumen } from '@/lib/economia';
 import type { CarbonoResumen } from '@/lib/carbono';
 import { ComandoPalette, AtajosAyuda, type Comando } from './ComandoPalette';
 import { KeylinePanel, type KeylineInputs } from './KeylinePanel';
+import type { CamellonResumen, ResultadoCamellon } from '@/lib/camellon';
+import { claseTexturaUSDA } from '@/lib/textura';
 import { SwalesPanel, type SwalesInputs } from './SwalesPanel';
 import { CortafuegosPanel, type CortafuegosInputs } from './CortafuegosPanel';
 import { CortinasPanel, type CortinasInputs } from './CortinasPanel';
@@ -381,6 +383,13 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
   const [viewshed,    setViewshed]    = useState<ResultadoViewshed | null>(null);
   const [alturaObs,   setAlturaObs]   = useState(1.7);
   const [redAguaResumen, setRedAguaResumen] = useState<RedAguaResumen | null>(null);
+  /**
+   * El resumen del camellón. Vive acá y no en el panel porque lo leen tres
+   * consumidores distintos: el guardado del proyecto, el informe y la lista de
+   * materiales. Es el estado que faltaba para que el motor del camellón tuviera
+   * lector.
+   */
+  const [camellonResumen, setCamellonResumen] = useState<CamellonResumen | null>(null);
   const [represaResumen, setRepresaResumen] = useState<RepresaResumen | null>(null);
   const [riegoResumen,   setRiegoResumen]   = useState<RiegoResumen | null>(null);
   const [riegoInputs,    setRiegoInputs]    = useState<RiegoInputs | null>(null);
@@ -1040,6 +1049,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
     if (cuenca)          m['cuenca']   = cuenca;
     if (cuencasGuardadas.length) m['cuencas_guardadas'] = cuencasGuardadas;
     if (redAguaResumen)  m['red_agua'] = redAguaResumen;
+    if (camellonResumen) m['camellon'] = camellonResumen;
     if (represaResumen)  m['represa']  = represaResumen;
     if (riegoResumen)    m['riego']    = riegoResumen;
     if (riegoInputs)     m['riego_inputs']    = riegoInputs;
@@ -1082,7 +1092,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
     return m;
   // Shader, clima crudo y calibración se leen arriba y faltaban acá: el shader
   // se guardaba de rebote, y cambiarlo solo dejaba guardado el relieve anterior.
-  }, [datosShader, datosClimaRaw, calibracionPrecip, datosTopografia, captacionSnap, reservaSnap, datosSuelo, datosExtremosRaw, cuenca, cuencasGuardadas, redAguaResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, represaInputs, represasGuardadas, panelInputs, rodeo, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, subCapasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios, analisisHecho, zona0, acceso]);
+  }, [datosShader, datosClimaRaw, calibracionPrecip, datosTopografia, captacionSnap, reservaSnap, datosSuelo, datosExtremosRaw, cuenca, cuencasGuardadas, redAguaResumen, camellonResumen, represaResumen, riegoResumen, riegoInputs, redAguaInputs, represaInputs, represasGuardadas, panelInputs, rodeo, economiaResumen, carbonoResumen, potrerosLayer, pastoreoInputs, datosCobertura, datosEntorno, sombrasObjetos, zonas, sectores, pines, caminos, dibujos, aguadasLayer, capasUsuario, programaMP, masterPlan, capas, overlay, ocultosIds, capasOcultas, subCapasOcultas, rotulo, rotuloVisible, capturaTitulo, intervaloContorno, keylineCheck, escenarios, analisisHecho, zona0, acceso]);
 
   // ─── Rango hipsométrico para TerrariumLayer ───────────────────────────────
   // Prioridad: shader (mejor fuente) → topografía → autodetectado → fallback
@@ -1999,6 +2009,32 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
     setTab('caminos');
   }, []);
 
+  /**
+   * Las tres líneas del camellón al plano, como caminos.
+   *
+   * Mismo criterio que el patrón: van a la lista de caminos porque son líneas
+   * medibles y exportables, no capas decorativas. Los camellones en sí no se
+   * dibujan uno por uno —son las paralelas a la guía cada 1,5 m— y dibujar
+   * cientos de líneas paralelas llenaría el plano sin agregar una decisión.
+   */
+  const handleAplicarCamellon = useCallback((r: ResultadoCamellon) => {
+    const nuevos: Camino[] = [];
+    if (r.guia && r.guia.puntos.length >= 2) {
+      const c = crearCamino(r.guia.puntos);
+      nuevos.push({ ...c, nombre: `Camellón — línea guía (${r.banda.grado_pct} %)`, color: '#6D4C41' });
+    }
+    if (r.desague && r.desague.puntos.length >= 2) {
+      const c = crearCamino(r.desague.puntos);
+      nuevos.push({ ...c, nombre: 'Camellón — desagüe de parcela', color: '#039BE5' });
+    }
+    if (r.cauce && r.cauce.puntos.length >= 2) {
+      const c = crearCamino(r.cauce.puntos);
+      nuevos.push({ ...c, nombre: 'Camellón — cauce empastado de salida', color: '#1565C0' });
+    }
+    if (nuevos.length) setCaminos(prev => [...prev, ...nuevos]);
+    setTab('caminos');
+  }, []);
+
   // ─── Escenarios (snapshots del diseño) ────────────────────────────────────
   const snapshotActual = useCallback((): DocDisenoSnapshot => ({
     mojones, zonas, sectores, pines, caminos, aguadasLayer, dibujos, capasUsuario,
@@ -2466,6 +2502,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
     setCuenca((meta['cuenca']        as Cuenca)            ?? null);
     setCuencasGuardadas((meta['cuencas_guardadas'] as CuencaGuardada[]) ?? []);
     setRedAguaResumen((meta['red_agua'] as RedAguaResumen)  ?? null);
+    setCamellonResumen((meta['camellon'] as CamellonResumen) ?? null);
     setRepresaResumen((meta['represa']  as RepresaResumen)  ?? null);
     setRiegoResumen((meta['riego']      as RiegoResumen)    ?? null);
     setRiegoInputs((meta['riego_inputs'] as RiegoInputs)     ?? null);
@@ -2560,6 +2597,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
       extremos: datosExtremos ?? undefined,
       captacion: captacionSnap ?? undefined, suelo: datosSuelo ?? undefined,
       redAgua: redAguaResumen ?? undefined, represa: represaResumen ?? undefined,
+      camellon: camellonResumen ?? undefined,
       riego: riegoResumen ?? undefined,
       cobertura: coberturaResumen ?? undefined,
       entorno: entornoResumen ?? undefined,
@@ -2576,7 +2614,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
       sinDescarga: !can(plan, 'informe.descarga'),
     });
     window.open('/informe/borrador', '_blank');
-  }, [proyectoActual, mojones, metricas, datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, redAguaResumen, represaResumen, riegoResumen, coberturaResumen, entornoResumen, zonas, zoomSatelital, economiaResumen, carbonoResumen, plan]);
+  }, [proyectoActual, mojones, metricas, datosClima, datosTopografia, captacionSnap, datosSuelo, datosExtremos, redAguaResumen, camellonResumen, represaResumen, riegoResumen, coberturaResumen, entornoResumen, zonas, zoomSatelital, economiaResumen, carbonoResumen, plan]);
 
   // ─── Captura (hook useCapturaPng) ──────────────────────────────────────────
   // Exporta #print-capture-root a PNG vía html-to-image; el nombre sale del
@@ -3422,7 +3460,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
           )}
           {tab === 'keyline' && (
             <div className="px-4 py-4">
-              <KeylinePanel mojones={mojones} datosShader={datosShader} parcelas={poligonosCutFill} grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null} lluvia10a24h_mm={datosExtremos?.tormenta.recurrencias.find(r => r.periodo_retorno === 10)?.mm ?? null} expansivo={datosSuelo?.expansivo ?? null} onAplicarGuias={handleAplicarKeyline} onAplicarComoCaminos={handleKeylineComoCaminos} onAplicarPatron={handleAplicarPatron} inicial={panelInputs['keyline'] as KeylineInputs ?? null} onInputs={usarInputs('keyline')} />
+              <KeylinePanel mojones={mojones} datosShader={datosShader} parcelas={poligonosCutFill} grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null} lluvia10a24h_mm={datosExtremos?.tormenta.recurrencias.find(r => r.periodo_retorno === 10)?.mm ?? null} expansivo={datosSuelo?.expansivo ?? null} textura={claseTexturaUSDA(datosSuelo?.arcilla ?? NaN, datosSuelo?.arena ?? NaN, datosSuelo?.limo ?? NaN)} onAplicarGuias={handleAplicarKeyline} onAplicarComoCaminos={handleKeylineComoCaminos} onAplicarPatron={handleAplicarPatron} onCamellon={setCamellonResumen} onAplicarCamellon={handleAplicarCamellon} inicial={panelInputs['keyline'] as KeylineInputs ?? null} onInputs={usarInputs('keyline')} />
             </div>
           )}
           {tab === 'caminos' && (

@@ -18,6 +18,7 @@ import type { MetricasPoligono } from './geometria';
 import type { PerfilProfesional } from './profesional';
 import type { EconomiaResumen }  from './economia';
 import type { CarbonoResumen }   from './carbono';
+import type { CamellonResumen }  from './camellon';
 
 export interface InformeData {
   nombre:     string;
@@ -30,6 +31,12 @@ export interface InformeData {
   captacion?: CaptacionSnapshot;
   suelo?:     DatosSuelo;
   redAgua?:   RedAguaResumen;
+  /**
+   * El sistema de camellones, si se trazó. Lo lee la lista de materiales, que
+   * saca de acá el surco, la yunta, la excavación de las dos salidas y el
+   * empastado.
+   */
+  camellon?:  CamellonResumen;
   represa?:   RepresaResumen;
   riego?:     RiegoResumen;
   cobertura?: CoberturaResumen;

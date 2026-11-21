@@ -88,14 +88,31 @@
  * - `cantidadesCamellon`: metros de surco, camellones y jornadas de yunta.
  * - `trazarCamellon`: el armado completo, con sus avisos.
  *
- * Lo que NO hay, a propósito: **la sección del cauce empastado y del desagüe.**
- * Dimensionarlas pide el pico de la tormenta de 10 años y la velocidad admisible
- * del NRCS 412 contra la NEH 650 cap. 7, que es otro motor y otra fuente. Acá se
- * decide **por dónde** van, no **cuánto** miden.
+ * - `dimensionarSalida`: el caudal pico y la **sección** de cada salida.
+ * - `resumenCamellon`: el snapshot serializable que leen los consumidores.
  *
- * Qué se rompe si cambia: nada calcula contra esto todavía. Cuando el panel y la
- * lista de materiales lo consuman, `metrosDeSurcoPorHa` es el renglón de la
- * lista y `cantidadesCamellon().jornadasYunta` es la mano de obra.
+ * Hasta el 20/11/2026 acá decía que la sección del cauce empastado y del
+ * desagüe no estaba a propósito, y que dimensionarlas pedía «el pico de la
+ * tormenta de 10 años y la velocidad admisible del NRCS 412». La primera mitad
+ * de esa frase era correcta y la segunda estaba equivocada: **el método de
+ * velocidad admisible es el viejo.** Salió del Technical Paper 61 del SCS en
+ * 1947, se usó todo el siglo XX, y el cap. 7 del EFH 650 lo reemplazó por el de
+ * **esfuerzo efectivo** del Agriculture Handbook 667 (Temple et al., 1987), que
+ * separa lo que aguanta el suelo de lo que aguanta el pasto. Eso es lo que hay
+ * ahora en `lib/cauceEmpastado.ts`, y es lo que este módulo pide para los dos
+ * trazos que ya dibujaba.
+ *
+ * Quién lo lee, desde el 21/11/2026: `CamellonBloque.tsx` lo llama con la
+ * parcela elegida en el panel de líneas clave, `MapaTerrenoApp` guarda el
+ * resumen en el proyecto y lo manda al informe, y `materiales.ts` saca de ahí
+ * cinco renglones —el surco, la yunta, la excavación de las dos salidas y el
+ * empastado—. Antes de eso el módulo estaba completo y no lo leía nadie: la
+ * lista de materiales declaraba una ausencia donde había cantidades.
+ *
+ * Qué se rompe si cambia `CamellonResumen`: la lista de materiales cotiza el
+ * movimiento de suelo con `salida*.excavacion_m3`, la semilla con
+ * `salida*.empastado_m2`, el surco con `surco_m` y la mano de obra con
+ * `jornadasYunta`. Sacarle un campo deja un renglón sin cantidad.
  *
  * Fuentes:
  * - Kanwar, J.S., Kampen, J. y Virmani, S.M. (1982). «Management of Vertisols
@@ -133,6 +150,13 @@ import {
 // es este archivo, y ahí hay que moverlos cuando `saludCalculo.ts` deje de estar
 // modificado por otra sesión.
 import { BBF_SURCO_MIN_PCT, BBF_SURCO_MAX_PCT } from './saludCalculo';
+import { COBERTURAS } from './cuenca';
+import type { ClaseUSDA } from './textura';
+import {
+  caudalDeDiseno, dimensionarCauce, erodibilidadDeTextura,
+  type CaudalDiseno, type SeccionCauce, type ErodibilidadSuelo, type FormaCauce,
+  type ClaseRetardancia,
+} from './cauceEmpastado';
 import type { GrupoHidro } from './cuenca';
 import type { AvisoCalculo } from './hidrologiaPredio';
 
@@ -751,8 +775,9 @@ export function trazarDesague(
  * hasta que el eje deja de ser un eje. Es el elemento que la figura 6 de Kanwar
  * et al. dibuja como `grassed waterway` y es a donde descargan los desagües.
  *
- * Dimensionarlo es otra cosa y no está acá: la sección sale del pico de la
- * tormenta de diseño y de la velocidad admisible del NRCS 412.
+ * La sección la pone `dimensionarSalida` con el pico de la tormenta de diseño y
+ * el método de esfuerzo efectivo del cap. 7 del EFH 650. Acá sólo sale el eje,
+ * su largo y su pendiente, que son las tres cosas que esa cuenta necesita.
  */
 export function trazarCauce(
   g: GrillaElevacion,
@@ -799,6 +824,81 @@ export function trazarCauce(
   return medirTrazo(g, arriba.reverse(), malla.acc);
 }
 
+// ─── La sección de las dos salidas ───────────────────────────────────────────
+
+/**
+ * La cobertura con la que se compone el CN del lote del camellón.
+ *
+ * El sistema publicado es un lote de **cultivo en línea**: el camellón se hace
+ * para sembrar arriba del lomo, con hileras a 30, 45, 75 o 150 cm. Así que el
+ * número de curva que corresponde al área de aporte del desagüe es el del
+ * cultivo en línea en buena condición, no el de una pastura. Quien llame puede
+ * pasar su propio CN si el lote es otra cosa.
+ */
+export const COBERTURA_LOTE_CAMELLON = 'cultivo_bueno';
+
+export function cnDelLoteCamellon(grupo: GrupoHidro | null | undefined): number | null {
+  if (!grupo) return null;
+  const c = COBERTURAS.find(x => x.id === COBERTURA_LOTE_CAMELLON);
+  return c ? c.cn[grupo] : null;
+}
+
+export interface SalidaDimensionada {
+  caudal: CaudalDiseno;
+  seccion: SeccionCauce;
+}
+
+/**
+ * De un trazo de salida a su sección: el caudal pico del área que le llega y,
+ * con ese caudal, el ancho y la profundidad que pide el cap. 7 del EFH 650.
+ *
+ * El largo y la pendiente del recorrido salen del trazo que el D8 ya dibujó, y
+ * el área de aporte la pone quien llama: la unidad de drenaje para el desagüe
+ * de parcela, el lote entero para el cauce empastado. No hay hidrología nueva.
+ *
+ * Devuelve `null` si falta alguno de los tres datos que no se pueden suponer:
+ * la lámina de la tormenta de diseño, el número de curva o la textura del
+ * suelo del cauce. Un ancho de obra inventado es peor que un ancho ausente.
+ */
+export function dimensionarSalida(
+  trazo: TrazoFlujo | null,
+  area_ha: number | null,
+  o: {
+    lluvia10a24h_mm?: number | null;
+    cn?: number | null;
+    erodibilidad?: ErodibilidadSuelo | null;
+    forma?: FormaCauce;
+    coberturaId?: string;
+    resguardo_m?: number;
+  },
+): SalidaDimensionada | null {
+  if (trazo == null || area_ha == null || !(area_ha > 0)) return null;
+  if (o.lluvia10a24h_mm == null || o.cn == null || o.erodibilidad == null) return null;
+  if (!(trazo.largo_m > 0) || !(trazo.pendiente_pct > 0)) return null;
+
+  const caudal = caudalDeDiseno({
+    area_ha,
+    largoFlujo_m: trazo.largo_m,
+    pendienteFlujo_m_m: trazo.pendiente_pct / 100,
+    lluvia10a24h_mm: o.lluvia10a24h_mm,
+    cn: o.cn,
+    coberturaId: COBERTURA_LOTE_CAMELLON,
+  });
+  if (caudal == null) return null;
+
+  const seccion = dimensionarCauce({
+    caudal_m3s: caudal.caudal_m3s,
+    pendiente_pct: trazo.pendiente_pct,
+    forma: o.forma ?? 'parabolica',
+    erodibilidad: o.erodibilidad,
+    coberturaId: o.coberturaId,
+    resguardo_m: o.resguardo_m,
+  });
+  if (seccion == null) return null;
+
+  return { caudal, seccion };
+}
+
 // ─── El armado ───────────────────────────────────────────────────────────────
 
 export interface EntradaCamellon {
@@ -811,6 +911,20 @@ export interface EntradaCamellon {
   sueloExpansivo?: boolean;
   superficie_ha?: number | null;
   paso_m?: number;
+  /**
+   * Lámina de la tormenta de 10 años y 24 h (mm). Es la tormenta de diseño que
+   * pide el cap. 7 del EFH 650 para un cauce empastado, y `climaExtremos` ya la
+   * calcula. Sin esto, el desagüe y el cauce salen trazados pero sin sección.
+   */
+  lluvia10a24h_mm?: number | null;
+  /** Clase textural del suelo del cauce: decide el esfuerzo que aguanta. */
+  textura?: ClaseUSDA | null;
+  /** CN del lote. Si no viene, sale del grupo hidrológico con cultivo en línea. */
+  cn?: number | null;
+  /** Tapiz del cauce empastado (ver `COBERTURAS_CAUCE`). */
+  coberturaCauceId?: string;
+  /** Resguardo sobre la profundidad de capacidad del cauce (m). */
+  resguardoCauce_m?: number;
 }
 
 export interface ResultadoCamellon {
@@ -820,6 +934,10 @@ export interface ResultadoCamellon {
   desague: TrazoFlujo | null;
   cauce: TrazoFlujo | null;
   cantidades: CantidadesCamellon | null;
+  /** Caudal y sección del desagüe de parcela, que junta los surcos. */
+  salidaDesague: SalidaDimensionada | null;
+  /** Caudal y sección del cauce empastado, que saca el agua del lote. */
+  salidaCauce: SalidaDimensionada | null;
   avisos: AvisoCalculo[];
   /** false cuando no hay geometría que dibujar, con el motivo en los avisos. */
   trazable: boolean;
@@ -908,7 +1026,8 @@ export function trazarCamellon(
   const avisos = avisosCamellon(e, banda);
   const vacio: ResultadoCamellon = {
     banda, guia: null, unidad: null, desague: null, cauce: null,
-    cantidades: null, avisos, trazable: false,
+    cantidades: null, salidaDesague: null, salidaCauce: null,
+    avisos, trazable: false,
   };
   if (banda.vacia || banda.grado_pct == null) return vacio;
 
@@ -995,6 +1114,82 @@ export function trazarCamellon(
     });
   }
 
+  /**
+   * Las dos secciones. El área de aporte de cada una es distinta y la
+   * diferencia importa: el desagüe de parcela junta **una** unidad de drenaje
+   * —su ancho por el largo de la guía— y el cauce empastado junta el lote
+   * entero. Dimensionar el desagüe con el área del lote da una obra tres veces
+   * más grande que la que hace falta, y al revés deja el cauce chico.
+   */
+  const erod = erodibilidadDeTextura(e.textura ?? null);
+  const cn = e.cn ?? cnDelLoteCamellon(e.grupoHidro);
+  const comunes = {
+    lluvia10a24h_mm: e.lluvia10a24h_mm ?? null,
+    cn,
+    erodibilidad: erod,
+    coberturaId: e.coberturaCauceId,
+    resguardo_m: e.resguardoCauce_m,
+  };
+  /**
+   * El área de la unidad de drenaje, acotada por el lote.
+   *
+   * El tope no es prolijidad: `anchoUnidadDeDrenaje` devuelve **hasta dónde se
+   * pueden correr los camellones** antes de que la deriva saque el surco de la
+   * banda, que es un límite de diseño y no una medición del lote. En un lote
+   * más chico que ese límite —el caso normal— el ancho por el largo de la guía
+   * da un rectángulo más grande que el lote entero, y con eso el desagüe de
+   * parcela se dimensionaba para un área que no existe. Al desagüe no le puede
+   * llegar más agua que la que cae en el lote.
+   */
+  const areaRect_ha = unidad != null && unidad.ancho_m > 0
+    ? (unidad.ancho_m * guia.largo_m) / 10_000
+    : null;
+  const areaUnidad_ha = areaRect_ha == null
+    ? null
+    : e.superficie_ha != null && e.superficie_ha > 0
+      ? Math.min(areaRect_ha, e.superficie_ha)
+      : areaRect_ha;
+  const salidaDesague = dimensionarSalida(desague, areaUnidad_ha, comunes);
+  const salidaCauce = dimensionarSalida(cauce, e.superficie_ha ?? null, comunes);
+
+  if (salidaDesague == null && salidaCauce == null) {
+    const falta: string[] = [];
+    if (e.lluvia10a24h_mm == null) falta.push('la lámina de la tormenta de 10 años y 24 h');
+    if (cn == null) falta.push('el grupo hidrológico del suelo, para el número de curva');
+    if (erod == null) falta.push('la clase textural del suelo del cauce');
+    avisos.push({
+      id: 'camellon_salidas_sin_seccion',
+      nivel: 'aviso',
+      titulo: 'El desagüe y el cauce están trazados, pero sin sección',
+      detalle: falta.length > 0
+        ? `Para decir cuánto miden falta ${falta.join(', ')}. Por dónde van ya está resuelto; `
+          + 'el ancho y la profundidad salen del pico de la tormenta de diseño y del esfuerzo '
+          + 'que el suelo aguanta, y sin esos datos un ancho sería inventado.'
+        : 'El pico de la tormenta no alcanza para dimensionar una sección en este trazo: '
+          + 'o el recorrido no tiene pendiente, o el área de aporte es despreciable.',
+    });
+  }
+
+  if (salidaCauce != null) {
+    const sc = salidaCauce.seccion;
+    avisos.push({
+      id: 'camellon_cauce_dimensionado',
+      nivel: 'ok',
+      titulo: `El cauce de salida pide ${coma(sc.anchoTotal_m)} m de ancho`
+        + ` y ${coma(sc.profundidadTotal_m)} m de profundidad`,
+      detalle: `Es la sección mínima para el pico de ${coma(salidaCauce.caudal.caudal_m3s)} m³/s de la `
+        + `tormenta de 10 años y 24 h, con el tapiz más pobre que se espera decidiendo el ancho. `
+        + `Mueve del orden de ${coma(sc.areaExcavacion_m2)} m³ de suelo por cada metro de cauce. `
+        + 'El detalle, los avisos de rango y las dos condiciones de estabilidad salen con la '
+        + 'sección.',
+    });
+    // Los avisos de la sección viajan con ella y los muestra quien la dibuja;
+    // acá sólo se eleva el que cambia la decisión de hacer la obra.
+    for (const a of sc.avisos) {
+      if (a.nivel === 'alerta') avisos.push(a);
+    }
+  }
+
   if (desague == null || (cauce != null && desague.acumulacion < cauce.acumulacion * 0.1)) {
     avisos.push({
       id: 'camellon_sin_salida', nivel: 'alerta',
@@ -1018,5 +1213,149 @@ export function trazarCamellon(
       + 'campo. Es el mismo límite que la planilla de replanteo.',
   });
 
-  return { banda, guia, unidad, desague, cauce, cantidades, avisos, trazable: true };
+  return {
+    banda, guia, unidad, desague, cauce, cantidades,
+    salidaDesague, salidaCauce, avisos, trazable: true,
+  };
+}
+
+
+// ─── El resumen que viaja ────────────────────────────────────────────────────
+
+/**
+ * La sección de una salida, reducida a lo que se compra y lo que se replantea.
+ *
+ * Es el puente entre el motor y los dos consumidores: la lista de materiales
+ * —que necesita metros cúbicos y metros cuadrados, no coeficientes— y el
+ * informe, que viaja por localStorage y por la base, así que tiene que ser
+ * serializable y chico. Los puntos del trazo no viajan: el plano se dibuja en
+ * el mapa, no en el informe.
+ *
+ * Las dos cantidades de obra son productos, y por eso se calculan acá y no en
+ * `materiales.ts`: la sección da un área transversal y el trazo da un largo.
+ * Multiplicarlos en el consumidor sería repetir la cuenta en cada consumidor.
+ */
+export interface SalidaResumen {
+  cual:               'desague' | 'cauce';
+  /** Largo del trazo (m) y su pendiente media (%). */
+  largo_m:            number;
+  pendiente_pct:      number;
+  /** Área de aporte con la que se dimensionó (ha). */
+  area_ha:            number;
+  caudal_m3s:         number;
+  lluvia_mm:          number;
+  cn:                 number;
+  tc_min:             number;
+  forma:              FormaCauce;
+  ancho_m:            number;
+  anchoTotal_m:       number;
+  profundidad_m:      number;
+  profundidadTotal_m: number;
+  velocidad_ms:       number;
+  /** Talud de la orilla (z:1). Es la cota con la que se excava. */
+  taludOrilla:        number;
+  /** Movimiento de suelo: sección de excavación por el largo del trazo (m³). */
+  excavacion_m3:      number;
+  /** Superficie a empastar: ancho total por el largo del trazo (m²). */
+  empastado_m2:       number;
+  cobertura:          string;
+  claseCapacidad:     ClaseRetardancia;
+  claseEstabilidad:   ClaseRetardancia;
+  sueloAguanta:       boolean;
+  pastoAguanta:       boolean;
+  esfuerzoEfectivo_pa:  number;
+  esfuerzoAdmisible_pa: number;
+  avisos:             AvisoCalculo[];
+}
+
+/**
+ * El camellón entero, reducido a lo que entra en el informe.
+ *
+ * Quién lo lee: `materiales.ts` saca de acá los cinco renglones del sistema
+ * —surco, yunta, las dos excavaciones y el empastado— y `InformeData` lo
+ * guarda tal cual. Si se le agrega un campo, los dos lo ven; si se le saca
+ * uno, la lista de materiales deja de poder cotizar ese renglón.
+ */
+export interface CamellonResumen {
+  pendienteTerreno_pct: number;
+  superficie_ha:      number | null;
+  paso_m:             number;
+  /** Grado al que se traza el surco (%), o `null` si la banda salió vacía. */
+  grado_pct:          number | null;
+  banda:              { min_pct: number; max_pct: number; vacia: boolean; nota: string };
+  guia:               { largo_m: number; grado_medido_pct: number; corte: CorteGuia } | null;
+  anchoUnidad_m:      number | null;
+  camellones:         number | null;
+  surco_m:            number | null;
+  jornadasYunta:      { min: number; max: number } | null;
+  salidaDesague:      SalidaResumen | null;
+  salidaCauce:        SalidaResumen | null;
+  trazable:           boolean;
+  avisos:             AvisoCalculo[];
+  fuentes:            string[];
+}
+
+function resumirSalida(
+  cual: 'desague' | 'cauce',
+  trazo: TrazoFlujo | null,
+  sal: SalidaDimensionada | null,
+): SalidaResumen | null {
+  if (trazo == null || sal == null) return null;
+  const s = sal.seccion;
+  return {
+    cual,
+    largo_m:            Math.round(trazo.largo_m),
+    pendiente_pct:      trazo.pendiente_pct,
+    area_ha:            sal.caudal.area_ha,
+    caudal_m3s:         sal.caudal.caudal_m3s,
+    lluvia_mm:          sal.caudal.lluvia_mm,
+    cn:                 sal.caudal.cn,
+    tc_min:             sal.caudal.tc_min,
+    forma:              s.forma,
+    ancho_m:            s.ancho_m,
+    anchoTotal_m:       s.anchoTotal_m,
+    profundidad_m:      s.profundidad_m,
+    profundidadTotal_m: s.profundidadTotal_m,
+    velocidad_ms:       s.velocidad_ms,
+    taludOrilla:        s.taludOrilla,
+    excavacion_m3:      Math.round(s.areaExcavacion_m2 * trazo.largo_m),
+    empastado_m2:       Math.round(s.anchoTotal_m * trazo.largo_m),
+    cobertura:          s.cobertura.nombre,
+    claseCapacidad:     s.claseCapacidad,
+    claseEstabilidad:   s.claseEstabilidad,
+    sueloAguanta:       s.sueloAguanta,
+    pastoAguanta:       s.pastoAguanta,
+    esfuerzoEfectivo_pa:  s.esfuerzoEfectivo_pa,
+    esfuerzoAdmisible_pa: s.esfuerzoAdmisible_pa,
+    avisos:             s.avisos,
+  };
+}
+
+export function resumenCamellon(e: EntradaCamellon, r: ResultadoCamellon): CamellonResumen {
+  return {
+    pendienteTerreno_pct: r1(e.pendienteTerreno_pct),
+    superficie_ha:  e.superficie_ha ?? null,
+    paso_m:         e.paso_m ?? PASO_BBF_M,
+    grado_pct:      r.banda.grado_pct,
+    banda: {
+      min_pct: r.banda.min_pct, max_pct: r.banda.max_pct,
+      vacia: r.banda.vacia, nota: r.banda.nota,
+    },
+    guia: r.guia
+      ? {
+        largo_m: Math.round(r.guia.largo_m),
+        grado_medido_pct: r.guia.grado_medido_pct,
+        corte: r.guia.corte,
+      }
+      : null,
+    anchoUnidad_m:  r.unidad?.ancho_m ?? null,
+    camellones:     r.cantidades?.camellones ?? null,
+    surco_m:        r.cantidades?.surco_m ?? null,
+    jornadasYunta:  r.cantidades?.jornadasYunta ?? null,
+    salidaDesague:  resumirSalida('desague', r.desague, r.salidaDesague),
+    salidaCauce:    resumirSalida('cauce', r.cauce, r.salidaCauce),
+    trazable:       r.trazable,
+    avisos:         r.avisos,
+    fuentes:        [FUENTE_ICRISAT_1982, FUENTE_MARESHA, FUENTE_NRCS330],
+  };
 }

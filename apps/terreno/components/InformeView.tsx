@@ -1801,6 +1801,7 @@ export function InformeView({ datos, compartido = false }: Props) {
           red={datos.redAgua ?? null}
           suelo={datos.suelo ?? null}
           capacidadRepresa_m3={datos.represa?.capacidad_m3 ?? null}
+          camellon={datos.camellon ?? null}
           numero="M"
         />
         <PlanDeEtapas

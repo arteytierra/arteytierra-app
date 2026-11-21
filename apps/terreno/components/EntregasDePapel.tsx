@@ -40,6 +40,7 @@ import {
 } from '../lib/sueloEnElPapel';
 import type { MetricasPoligono } from '../lib/geometria';
 import type { RedAguaResumen } from '../lib/hidraulica';
+import type { CamellonResumen } from '../lib/camellon';
 import type { Mojon } from '../lib/types';
 
 /**
@@ -191,13 +192,15 @@ export function PlanillaDeReplanteo({
 // ─── 2 · La lista de materiales ───────────────────────────────────────────────
 
 export function ListaDeMaterialesSeccion({
-  metricas, mojones, red, suelo, capacidadRepresa_m3, numero = 'M',
+  metricas, mojones, red, suelo, capacidadRepresa_m3, camellon, numero = 'M',
 }: {
   metricas?: MetricasPoligono | null;
   mojones:   readonly Mojon[];
   red?:      RedAguaResumen | null;
   suelo?:    DatosSuelo | null;
   capacidadRepresa_m3?: number | null;
+  /** El camellón trazado, si hay: trae el surco, la yunta y las dos salidas. */
+  camellon?: CamellonResumen | null;
   numero?:   string;
 }) {
   const lista: ListaDeMateriales = armarLista({
@@ -206,6 +209,7 @@ export function ListaDeMaterialesSeccion({
     cierre: metricas ? CIERRE_SUPUESTO : null,
     red: red ?? null,
     capacidadRepresa_m3: capacidadRepresa_m3 ?? null,
+    camellon: camellon ?? null,
   });
   if (lista.renglones.length === 0) return null;
 

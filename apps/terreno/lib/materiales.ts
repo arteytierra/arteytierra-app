@@ -116,6 +116,14 @@ import { PIE_M, PULGADA_M, YARDA3_M3 } from './represaDiseno';
 import type { ResultadoMuro, BalanceTierra } from './cutfill';
 import type { RedAguaResumen } from './hidraulica';
 import type { MetricasPoligono } from './geometria';
+import type { CamellonResumen, SalidaResumen } from './camellon';
+import {
+  FUENTE_ICRISAT_1982, FUENTE_MARESHA, PASO_BBF_M, PASO_BBM_ILCA_M,
+  PASO_MANUAL_MIN_M, PASO_MANUAL_MAX_M, JORNADA_YUNTA_H,
+  JORNADA_YUNTA_HA_MIN, JORNADA_YUNTA_HA_MAX, VIDA_CAMELLON_ANIOS_MIN,
+  VIDA_CAMELLON_ANIOS_MAX, metrosDeSurcoPorHa,
+} from './camellon';
+import { FUENTE_EFH7, RETARDANCIA_TEXTO } from './cauceEmpastado';
 
 // ─── 0 · Fuentes ──────────────────────────────────────────────────────────────
 
@@ -164,6 +172,7 @@ export type BaseDeMedicion =
   | 'disponible_en_prestamo'
   | 'suministrado'
   | 'superficie'
+  | 'largo_trazado'
   | 'unidad';
 
 export const BASE_TEXTO: Record<BaseDeMedicion, string> = {
@@ -172,6 +181,7 @@ export const BASE_TEXTO: Record<BaseDeMedicion, string> = {
   disponible_en_prestamo: 'disponible en el préstamo',
   suministrado:           'suministrado',
   superficie:             'superficie tratada',
+  largo_trazado:          'largo trazado en obra',
   unidad:                 'por unidad',
 };
 
@@ -319,6 +329,9 @@ export function separacionDePostes(
 
 let _n = 0;
 const nuevoId = (p: string) => `${p}${(_n++).toString(36)}`;
+
+/** Número con coma decimal, como se escribe en castellano. */
+const num = (x: number) => String(Math.round(x * 100) / 100).replace('.', ',');
 
 export interface EntradaCierre {
   largo_m:   number;
@@ -634,7 +647,200 @@ export function renglonesDeRed(red: RedAguaResumen): RenglonMaterial[] {
   return out;
 }
 
-// ─── 6 · La lista de verificación del cap. 5 del EFH ──────────────────────────
+// ─── 6 · Renglones del camellón y sus dos salidas ─────────────────────────────
+
+/**
+ * El implemento que traza un paso dado, cuando es uno de los publicados.
+ *
+ * Devuelve `null` para cualquier otro paso, y eso es la respuesta: el paso no
+ * es un parámetro libre, es el ancho de trabajo de una máquina. Un renglón de
+ * yunta con un paso que ningún implemento publicado traza sale **sin calidad
+ * declarada**, que es lo que corresponde cuando la fuente no dice con qué se
+ * hace.
+ */
+export function implementoDelPaso(paso_m: number): string | null {
+  const cerca = (a: number, b: number) => Math.abs(a - b) < 0.05;
+  if (cerca(paso_m, PASO_BBF_M)) {
+    return `Carro de ruedas del ICRISAT, ancho de trabajo ${Math.round(PASO_BBF_M * 100)} cm. `
+      + 'Es el implemento con el que se midió el rendimiento de la yunta.';
+  }
+  if (cerca(paso_m, PASO_BBM_ILCA_M)) {
+    return 'Broadbed maker de la ILCA: dos mareshas con las puntas separadas '
+      + `${Math.round(PASO_BBM_ILCA_M * 100)} cm, montadas sobre el arado tradicional.`;
+  }
+  if (paso_m >= PASO_MANUAL_MIN_M - 0.05 && paso_m <= PASO_MANUAL_MAX_M + 0.05) {
+    return 'Trazado a mano, como el camellón de Inewari: surcos cada 0,8 a 1 m. '
+      + 'No lleva implemento de tracción, lleva jornales.';
+  }
+  return null;
+}
+
+/** La calidad del tapiz con el que se diseñó una sección, escrita para comprar semilla. */
+function calidadDelTapiz(s: SalidaResumen): string {
+  return `${s.cobertura}. El ancho se calculó con el tapiz MÁS POBRE que se espera `
+    + `(clase ${s.claseEstabilidad}: ${RETARDANCIA_TEXTO[s.claseEstabilidad]}) y la profundidad con el `
+    + `más denso (clase ${s.claseCapacidad}: ${RETARDANCIA_TEXTO[s.claseCapacidad]}). `
+    + 'El mantenimiento del tapiz es parte del cálculo y no del cuidado: con pasto más corto que esa '
+    + 'clase el agua corre más rápido y el esfuerzo que llega al suelo sube con el cuadrado de la '
+    + 'rugosidad que se pierde.';
+}
+
+/**
+ * Los renglones del sistema de camellones: el surco, la yunta que lo arma, la
+ * excavación de las dos salidas y el empastado que las sostiene.
+ *
+ * Es el renglón que faltaba. El motor del camellón calculaba metros de surco y
+ * jornadas de yunta desde el 18/11/2026 y la lista de materiales no los leía:
+ * declaraba una ausencia donde había una cantidad. Las cantidades no se
+ * recalculan acá —salen del resumen— salvo los dos productos de obra, que ya
+ * vienen multiplicados por el largo del trazo en `resumenCamellon`.
+ *
+ * Qué se rompe si cambia: el presupuesto cotiza sobre estas mismas cantidades.
+ *
+ * Fuentes: ICRISAT (1982) para el sistema y el rendimiento de la yunta; el cap.
+ * 6 del manual de la maresha para el implemento; EFH 650 cap. 7 para las dos
+ * secciones y el tapiz.
+ */
+export function renglonesDeCamellon(c: CamellonResumen): RenglonMaterial[] {
+  const out: RenglonMaterial[] = [];
+  const porHa = metrosDeSurcoPorHa(c.paso_m);
+  const grado = c.grado_pct != null ? num(c.grado_pct) : null;
+
+  // ── El surco ──
+  if (c.surco_m != null && c.surco_m > 0 && grado != null) {
+    out.push({
+      id: nuevoId('cs'),
+      rubro: 'Camellón',
+      concepto: `Surco al ${grado} % entre camellones de ${num(c.paso_m)} m`,
+      cantidad: c.surco_m,
+      unidad: 'm',
+      base: 'largo_trazado',
+      calidad: `Surco trazado al ${grado} % de pendiente, dentro de la banda publicada de `
+        + `${num(c.banda.min_pct)} a ${num(c.banda.max_pct)} %. El grado se replantea con nivel: `
+        + 'ningún modelo de elevación tiene la exactitud vertical que pide un surco de ese grado. '
+        + `El camellón dura ${VIDA_CAMELLON_ANIOS_MIN} a ${VIDA_CAMELLON_ANIOS_MAX} años antes de rehacerse.`,
+      deDonde: porHa != null
+        ? `Un surco cada ${num(c.paso_m)} m son ${porHa} m de surco por hectárea, por `
+          + `${num(c.superficie_ha ?? 0)} ha (metrosDeSurcoPorHa).`
+        : 'Cantidades del camellón.',
+      fuente: FUENTE_ICRISAT_1982,
+      margen: null,
+      estado: 'necesario',
+    });
+  } else {
+    out.push({
+      id: nuevoId('cs'),
+      rubro: 'Camellón',
+      concepto: 'Surco entre camellones',
+      cantidad: 0,
+      unidad: 'm',
+      base: 'largo_trazado',
+      calidad: null,
+      deDonde: 'Sin calcular.',
+      fuente: FUENTE_ICRISAT_1982,
+      margen: null,
+      estado: 'necesario',
+      advertencia: c.banda.vacia
+        ? `Con ${num(c.pendienteTerreno_pct)} % de pendiente de terreno la banda de grado del surco sale `
+          + 'vacía, así que no hay surco que trazar: el camellón publicado no se puede hacer acá. El '
+          + 'motivo completo está en los avisos del camellón.'
+        : 'Falta la superficie del área que se va a trabajar, así que los metros de surco no se pueden '
+          + 'dar. Es una identidad geométrica —un surco cada paso sobre la superficie—, no una '
+          + 'estimación: con el área, el renglón sale exacto.',
+    });
+  }
+
+  // ── La yunta ──
+  if (c.jornadasYunta) {
+    const impl = implementoDelPaso(c.paso_m);
+    out.push({
+      id: nuevoId('cy'),
+      rubro: 'Camellón',
+      concepto: `Armado del camellón con yunta (jornadas de ${JORNADA_YUNTA_H} h)`,
+      cantidad: Math.ceil(c.jornadasYunta.max),
+      unidad: 'jornadas',
+      base: 'unidad',
+      calidad: impl,
+      deDonde: `El rango publicado es de ${num(JORNADA_YUNTA_HA_MIN)} a ${num(JORNADA_YUNTA_HA_MAX)} ha `
+        + `por jornada de ${JORNADA_YUNTA_H} h de una yunta, o sea ${num(c.jornadasYunta.min)} a `
+        + `${num(c.jornadasYunta.max)} jornadas para esta superficie. El renglón toma el techo. El rango `
+        + 'es ancho en la fuente misma —depende de las pasadas, del estado del suelo y de los bueyes—, '
+        + 'y darlo como un solo número sería inventarle precisión.',
+      fuente: FUENTE_MARESHA,
+      margen: null,
+      estado: 'necesario',
+      advertencia: impl == null
+        ? `Ningún implemento publicado traza un paso de ${num(c.paso_m)} m: los publicados son `
+          + `${num(PASO_BBF_M)} m (carro de ruedas), ${num(PASO_BBM_ILCA_M)} m (broadbed maker) y `
+          + `${num(PASO_MANUAL_MIN_M)} a ${num(PASO_MANUAL_MAX_M)} m a mano. El rendimiento de la yunta `
+          + 'se midió con el primero, así que para otro paso esta cantidad es una referencia.'
+        : undefined,
+    });
+  }
+
+  // ── Las dos salidas ──
+  const salidas: SalidaResumen[] = [];
+  if (c.salidaDesague) salidas.push(c.salidaDesague);
+  if (c.salidaCauce)   salidas.push(c.salidaCauce);
+
+  for (const s of salidas) {
+    const nombre = s.cual === 'desague' ? 'desagüe de parcela' : 'cauce empastado de salida';
+    out.push({
+      id: nuevoId('cx'),
+      rubro: 'Camellón',
+      concepto: `Excavación del ${nombre}`,
+      cantidad: s.excavacion_m3,
+      unidad: 'm³',
+      base: 'banco_excavado',
+      calidad: `Sección ${s.forma === 'parabolica' ? 'parabólica' : 'trapezoidal'} de `
+        + `${num(s.anchoTotal_m)} m de ancho superior y ${num(s.profundidadTotal_m)} m de profundidad, `
+        + `con talud de orilla ${num(s.taludOrilla)}:1. Es la sección MÍNIMA: más angosta, el esfuerzo `
+        + 'sobre el suelo pasa del admisible.',
+      deDonde: `Sección por el largo del trazo (${num(s.largo_m)} m al ${num(s.pendiente_pct)} %), `
+        + `dimensionada para el pico de ${num(s.caudal_m3s)} m³/s de la tormenta de 10 años y 24 h sobre `
+        + `${num(s.area_ha)} ha de aporte (CN ${s.cn}).`,
+      fuente: FUENTE_EFH7,
+      margen: null,
+      estado: 'necesario',
+      advertencia: !s.sueloAguanta
+        ? 'A esta pendiente el suelo no aguanta el esfuerzo ni con el cauce más ancho que el método '
+          + `admite (${num(s.esfuerzoEfectivo_pa)} Pa contra ${num(s.esfuerzoAdmisible_pa)} Pa `
+          + 'admisibles). La sección está, pero un cauce empastado no es la obra: hace falta '
+          + 'revestimiento o estructuras de caída.'
+        : !s.pastoAguanta
+          ? 'El esfuerzo pasa de lo que aguanta el pasto, no de lo que aguanta el suelo: el tapiz se '
+            + 'levanta antes de que el suelo se desprenda. Hace falta un tapiz mejor que el supuesto o '
+            + 'un revestimiento.'
+          : undefined,
+    });
+  }
+
+  const empastado = salidas.reduce((a, s) => a + s.empastado_m2, 0);
+  const primera = salidas[0];
+  if (empastado > 0 && primera) {
+    out.push({
+      id: nuevoId('cp'),
+      rubro: 'Camellón',
+      concepto: salidas.length === 2
+        ? 'Empastado del desagüe y del cauce de salida'
+        : `Empastado del ${primera.cual === 'desague' ? 'desagüe de parcela' : 'cauce de salida'}`,
+      cantidad: empastado,
+      unidad: 'm²',
+      base: 'superficie',
+      calidad: calidadDelTapiz(primera),
+      deDonde: 'Ancho superior por el largo de cada trazo. Es la superficie que tiene que estar '
+        + 'empastada ANTES de que el cauce reciba la primera tormenta: un cauce recién excavado y sin '
+        + 'tapiz no tiene la rugosidad con la que se calculó.',
+      fuente: FUENTE_EFH7,
+      margen: null,
+      estado: 'necesario',
+    });
+  }
+
+  return out;
+}
+
+// ─── 7 · La lista de verificación del cap. 5 del EFH ──────────────────────────
 
 /**
  * Quién puede contestar cada punto de la lista.
@@ -683,7 +889,7 @@ export const CHECKLIST_EFH5: readonly ItemChecklist[] = [
     comoSeContesta: 'La pestaña Presupuesto arma el costo sobre estas mismas cantidades; los precios son del lugar y los pone el usuario.' },
 ];
 
-// ─── 7 · La lista completa ────────────────────────────────────────────────────
+// ─── 8 · La lista completa ────────────────────────────────────────────────────
 
 export interface ListaDeMateriales {
   renglones:  RenglonMaterial[];
@@ -705,6 +911,8 @@ export interface EntradaLista {
   muro?:     { muro: ResultadoMuro; balance: BalanceTierra } | null;
   /** Sólo para decir que con esto no se puede dar el volumen de tierra. */
   capacidadRepresa_m3?: number | null;
+  /** El sistema de camellones, si se trazó: surco, yunta y las dos salidas. */
+  camellon?: CamellonResumen | null;
 }
 
 export function armarLista(e: EntradaLista): ListaDeMateriales {
@@ -727,6 +935,18 @@ export function armarLista(e: EntradaLista): ListaDeMateriales {
   }
 
   if (e.red) renglones.push(...renglonesDeRed(e.red));
+
+  if (e.camellon) {
+    renglones.push(...renglonesDeCamellon(e.camellon));
+    if (e.camellon.salidaDesague == null && e.camellon.salidaCauce == null) {
+      advertencias.push(
+        'El camellón entra en la lista con el surco y la yunta, pero sin las dos salidas: el desagüe de '
+        + 'parcela y el cauce de salida están trazados y no dimensionados. Un sistema de camellones sin '
+        + 'salida no es una obra de drenaje, así que esos dos renglones no son opcionales. Lo que falta '
+        + 'para calcularlos está en los avisos del camellón.',
+      );
+    }
+  }
 
   if (e.muro) {
     renglones.push(...renglonesDeMuro(e.muro.muro, e.muro.balance));

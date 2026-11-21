@@ -13,6 +13,7 @@ import type { DatosTopografia } from '@/lib/topografia';
 import type { CaptacionSnapshot } from '@/lib/captacion';
 import type { DatosSuelo } from '@/lib/suelos';
 import type { RedAguaResumen } from '@/lib/hidraulica';
+import type { CamellonResumen } from '@/lib/camellon';
 import type { RepresaResumen } from '@/lib/represa';
 import type { RiegoResumen } from '@/lib/riego';
 import { resumirCobertura, type DatosCobertura } from '@/lib/cobertura';
@@ -92,6 +93,7 @@ export default async function InformeTokenPage({ params }: PageProps) {
     captacion: meta['captacion'] as CaptacionSnapshot | undefined,
     suelo:    meta['suelo'] as DatosSuelo | undefined,
     redAgua:  meta['red_agua'] as RedAguaResumen | undefined,
+    camellon: meta['camellon'] as CamellonResumen | undefined,
     represa:  meta['represa'] as RepresaResumen | undefined,
     riego:    meta['riego'] as RiegoResumen | undefined,
     cobertura: (() => {

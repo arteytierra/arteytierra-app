@@ -14,8 +14,11 @@ import { planillaDeDirectriz } from '@/lib/planilla';
 import { ValidacionPatronBloque } from './ValidacionPatronBloque';
 import { PlanillaBloque } from './PlanillaBloque';
 import { AvisoSueloObra } from './AvisoSueloObra';
+import { CamellonBloque } from './CamellonBloque';
 import { avisoKeylineExpansivo } from '@/lib/saludCalculo';
 import type { SueloExpansivo } from '@/lib/sueloExpansivo';
+import type { ClaseUSDA } from '@/lib/textura';
+import type { CamellonResumen, ResultadoCamellon } from '@/lib/camellon';
 
 /**
  * Detectar el keypoint descarga relieve y tarda: se guarda el resultado, no
@@ -80,15 +83,25 @@ interface Props {
    * estándar. Ver `avisoKeylineExpansivo`.
    */
   expansivo?:   SueloExpansivo | null;
+  /**
+   * Clase textural del suelo. La usa el camellón y sólo el camellón: de ella
+   * sale el esfuerzo que el suelo del cauce de salida aguanta, y sin ella el
+   * desagüe y el cauce salen trazados pero sin sección.
+   */
+  textura?:     ClaseUSDA | null;
   onAplicarGuias: (res: ResultadoKeyline) => void;
   /** Salida opcional: colocar también las guías como caminos transitables. */
   onAplicarComoCaminos?: (res: ResultadoKeyline) => void;
   onAplicarPatron: (res: ResultadoPatron) => void;
+  /** El resumen del camellón, que viaja al proyecto, al informe y a la lista. */
+  onCamellon?: (r: CamellonResumen | null) => void;
+  /** Lleva la guía, el desagüe y el cauce al plano. */
+  onAplicarCamellon?: (r: ResultadoCamellon) => void;
   inicial?:  KeylineInputs | null;
   onInputs?: (i: KeylineInputs) => void;
 }
 
-export function KeylinePanel({ mojones, datosShader, parcelas, grupoHidro = null, lluvia10a24h_mm = null, expansivo = null, onAplicarGuias, onAplicarComoCaminos, onAplicarPatron, inicial, onInputs }: Props) {
+export function KeylinePanel({ mojones, datosShader, parcelas, grupoHidro = null, lluvia10a24h_mm = null, expansivo = null, textura = null, onAplicarGuias, onAplicarComoCaminos, onAplicarPatron, onCamellon, onAplicarCamellon, inicial, onInputs }: Props) {
   const [cargando, setCargando] = useState(false);
   const [error,    setError]    = useState<string | null>(null);
   const [res,      setRes]      = useState<ResultadoKeyline | null>(inicial?.res ?? null);
@@ -444,6 +457,28 @@ export function KeylinePanel({ mojones, datosShader, parcelas, grupoHidro = null
           </div>
         )}
       </div>
+
+      {/* ── El camellón ──
+          Último porque es la variante del patrón para suelo expansivo: se lee
+          después de haber visto la deriva del patrón, y usa la misma parcela
+          elegida arriba. */}
+      {parcelas.length > 0 && (
+        <CamellonBloque
+          parcelas={parcelas}
+          parcelaId={parcelaId}
+          obtenerGrilla={obtenerGrilla}
+          grupoHidro={grupoHidro}
+          lluvia10a24h_mm={lluvia10a24h_mm}
+          textura={textura}
+          // `null` y no `false`: que el diagnóstico no pueda afirmar que el
+          // suelo es expansivo no afirma que no lo sea —la fuente puede no
+          // traer CEC, o la celda puede promediar—, y decirle al motor que no
+          // lo es le haría imprimir un aviso que nadie midió.
+          sueloExpansivo={expansivo != null ? true : null}
+          onResumen={onCamellon}
+          onAplicar={onAplicarCamellon}
+        />
+      )}
     </div>
   );
 }

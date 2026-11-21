@@ -12,12 +12,17 @@ import { describe, it, expect } from 'vitest';
 import {
   tierraDeclarada, separacionDePostes, renglonesDeCierre, renglonesDeMuro,
   renglonesDeRed, renglonDeTierraSinMuro, armarLista,
+  renglonesDeCamellon, implementoDelPaso, BASE_TEXTO,
   FACTOR_DISPONIBLE_AH590, VARILLAS_POR_CLARO, TABLA_CIERRE_382,
   CHECKLIST_EFH5, ENTERRADO_ARRIOSTRE_M,
 } from '../../../lib/materiales';
 import type { ResultadoMuro, BalanceTierra, PartidasMuro } from '../../../lib/cutfill';
 import type { RedAguaResumen } from '../../../lib/hidraulica';
 import type { MetricasPoligono } from '../../../lib/geometria';
+import type { CamellonResumen, SalidaResumen } from '../../../lib/camellon';
+import {
+  PASO_BBF_M, PASO_BBM_ILCA_M, PASO_MANUAL_MIN_M, PASO_MANUAL_MAX_M,
+} from '../../../lib/camellon';
 
 const PIE = 0.3048;
 
@@ -305,5 +310,176 @@ describe('la lista completa', () => {
     const l = armarLista({});
     expect(l.renglones).toHaveLength(0);
     expect(l.checklist).toHaveLength(8);
+  });
+});
+
+// ─── Los renglones del camellón ──────────────────────────────────────────────
+
+/**
+ * Las cantidades del caso de prueba son las de la vaguada al 3 % de
+ * `camellon.test.ts`: 12 ha con paso de 1,5 m dan 80.004 m de surco y de 10 a
+ * 30 jornadas de yunta. Acá no se recalculan —el resumen ya los trae— y lo que
+ * se prueba es que la lista los lea sin tocarlos.
+ */
+function salida(over: Partial<SalidaResumen> = {}): SalidaResumen {
+  return {
+    cual: 'cauce', largo_m: 972, pendiente_pct: 3, area_ha: 12,
+    caudal_m3s: 1.365, lluvia_mm: 95, cn: 89, tc_min: 30.1,
+    forma: 'parabolica', ancho_m: 6.68, anchoTotal_m: 6.68,
+    profundidad_m: 0.3, profundidadTotal_m: 0.3, velocidad_ms: 1.03,
+    taludOrilla: 5.64, excavacion_m3: 1283, empastado_m2: 6495,
+    cobertura: 'Mezcla de gramíneas', claseCapacidad: 'C', claseEstabilidad: 'D',
+    sueloAguanta: true, pastoAguanta: true,
+    esfuerzoEfectivo_pa: 2.39, esfuerzoAdmisible_pa: 2.39, avisos: [],
+    ...over,
+  };
+}
+
+function camellon(over: Partial<CamellonResumen> = {}): CamellonResumen {
+  return {
+    pendienteTerreno_pct: 3, superficie_ha: 12, paso_m: PASO_BBF_M,
+    grado_pct: 0.6,
+    banda: { min_pct: 0.4, max_pct: 0.8, vacia: false, nota: 'nota de la banda' },
+    guia: { largo_m: 540, grado_medido_pct: 0.6, corte: 'sin_dato' },
+    anchoUnidad_m: 390, camellones: 260, surco_m: 80004,
+    jornadasYunta: { min: 10, max: 30 },
+    salidaDesague: salida({ cual: 'desague', largo_m: 1064, excavacion_m3: 1331, empastado_m2: 6653 }),
+    salidaCauce: salida(),
+    trazable: true, avisos: [], fuentes: ['ICRISAT'],
+    ...over,
+  };
+}
+
+describe('renglonesDeCamellon', () => {
+  it('son cinco renglones: el surco, la yunta, las dos excavaciones y el empastado', () => {
+    const rs = renglonesDeCamellon(camellon());
+    expect(rs).toHaveLength(5);
+    expect(rs.every(r => r.rubro === 'Camellón')).toBe(true);
+    expect(rs.map(r => r.unidad)).toEqual(['m', 'jornadas', 'm³', 'm³', 'm²']);
+  });
+
+  it('el surco sale con los metros del motor, sin recalcular', () => {
+    const r = renglonesDeCamellon(camellon())[0]!;
+    expect(r.cantidad).toBe(80004);
+    expect(r.base).toBe('largo_trazado');
+    expect(BASE_TEXTO['largo_trazado']).toMatch(/largo trazado/);
+    expect(r.calidad).toMatch(/0,6 %/);
+    expect(r.calidad).toMatch(/0,4 a 0,8 %/);
+    expect(r.calidad).toMatch(/se replantea con nivel/);
+    expect(r.advertencia).toBeUndefined();
+  });
+
+  /**
+   * La yunta toma el TECHO del rango publicado, y el rango entero queda escrito
+   * en el renglón. Es la decisión que el motor no puede tomar: la fuente da de
+   * 0,4 a 1,2 ha por jornada «depending on the number of passes ... and the
+   * condition of the working oxen», así que un solo número es una elección, y
+   * la que corresponde en una lista de materiales es la que no deja la obra
+   * corta.
+   */
+  it('la yunta toma el techo del rango y declara el rango', () => {
+    const r = renglonesDeCamellon(camellon())[1]!;
+    expect(r.cantidad).toBe(30);
+    expect(r.deDonde).toMatch(/0,4 a 1,2 ha/);
+    expect(r.deDonde).toMatch(/10 a 30 jornadas/);
+    expect(r.calidad).toMatch(/ICRISAT/);
+    expect(r.advertencia).toBeUndefined();
+  });
+
+  it('cada implemento publicado tiene su paso, y cualquier otro paso no tiene implemento', () => {
+    expect(implementoDelPaso(PASO_BBF_M)).toMatch(/ICRISAT/);
+    expect(implementoDelPaso(PASO_BBM_ILCA_M)).toMatch(/broadbed maker/i);
+    expect(implementoDelPaso(PASO_MANUAL_MIN_M)).toMatch(/a mano|Inewari/);
+    expect(implementoDelPaso((PASO_MANUAL_MIN_M + PASO_MANUAL_MAX_M) / 2)).not.toBeNull();
+    expect(implementoDelPaso(2.5)).toBeNull();
+  });
+
+  it('con un paso que ningún implemento traza, la yunta sale sin calidad declarada y con el motivo', () => {
+    const r = renglonesDeCamellon(camellon({ paso_m: 2.5 }))[1]!;
+    expect(r.calidad).toBeNull();
+    expect(r.advertencia).toMatch(/Ningún implemento publicado/);
+  });
+
+  it('sin superficie el surco declara la ausencia en vez de inventar una cantidad', () => {
+    const rs = renglonesDeCamellon(camellon({ superficie_ha: null, surco_m: null, jornadasYunta: null }));
+    const r = rs[0]!;
+    expect(r.cantidad).toBe(0);
+    expect(r.calidad).toBeNull();
+    expect(r.advertencia).toMatch(/Falta la superficie/);
+    // Y sin cantidades no hay renglón de yunta: no se supone la mano de obra.
+    expect(rs.some(x => x.unidad === 'jornadas')).toBe(false);
+  });
+
+  it('y con la banda vacía el motivo es otro: no hay surco que trazar', () => {
+    const r = renglonesDeCamellon(camellon({
+      grado_pct: null, surco_m: null,
+      banda: { min_pct: 0.4, max_pct: 0.1, vacia: true, nota: 'vacía' },
+      pendienteTerreno_pct: 0.5,
+    }))[0]!;
+    expect(r.advertencia).toMatch(/no se puede hacer acá/);
+  });
+
+  it('la excavación es la del motor y declara la sección como calidad', () => {
+    const rs = renglonesDeCamellon(camellon());
+    const desague = rs.find(r => r.concepto.includes('desagüe'))!;
+    const cauce = rs.find(r => r.concepto.includes('cauce empastado'))!;
+    expect(desague.cantidad).toBe(1331);
+    expect(cauce.cantidad).toBe(1283);
+    expect(cauce.base).toBe('banco_excavado');
+    expect(cauce.calidad).toMatch(/6,68 m de ancho/);
+    expect(cauce.calidad).toMatch(/talud de orilla 5,64:1/);
+    expect(cauce.deDonde).toMatch(/10 años y 24 h/);
+  });
+
+  it('si el suelo no aguanta el esfuerzo, el renglón lo dice: la sección está pero la obra es otra', () => {
+    const rs = renglonesDeCamellon(camellon({
+      salidaDesague: null,
+      salidaCauce: salida({ sueloAguanta: false, esfuerzoEfectivo_pa: 5, esfuerzoAdmisible_pa: 2.39 }),
+    }));
+    const cauce = rs.find(r => r.unidad === 'm³')!;
+    expect(cauce.advertencia).toMatch(/revestimiento o estructuras de caída/);
+  });
+
+  it('el empastado suma las dos salidas y pide el tapiz con el que se calculó', () => {
+    const rs = renglonesDeCamellon(camellon());
+    const emp = rs.find(r => r.unidad === 'm²')!;
+    expect(emp.cantidad).toBe(6495 + 6653);
+    expect(emp.base).toBe('superficie');
+    expect(emp.calidad).toMatch(/Mezcla de gramíneas/);
+    expect(emp.calidad).toMatch(/clase D/);           // el pobre, que decidió el ancho
+    expect(emp.calidad).toMatch(/clase C/);           // el denso, que decidió la profundidad
+    expect(emp.calidad).toMatch(/parte del cálculo/);
+    expect(emp.deDonde).toMatch(/ANTES/);
+  });
+
+  it('con una sola salida el empastado nombra sólo esa', () => {
+    const rs = renglonesDeCamellon(camellon({ salidaDesague: null }));
+    const emp = rs.find(r => r.unidad === 'm²')!;
+    expect(emp.concepto).toMatch(/cauce de salida/);
+    expect(emp.cantidad).toBe(6495);
+  });
+
+  it('sin ninguna sección quedan el surco y la yunta, y nada más', () => {
+    const rs = renglonesDeCamellon(camellon({ salidaDesague: null, salidaCauce: null }));
+    expect(rs).toHaveLength(2);
+    expect(rs.map(r => r.unidad)).toEqual(['m', 'jornadas']);
+  });
+});
+
+describe('armarLista con el camellón', () => {
+  it('lo mete en su propio rubro', () => {
+    const l = armarLista({ camellon: camellon() });
+    expect(l.renglones).toHaveLength(5);
+    expect(l.porRubro.map(g => g.rubro)).toEqual(['Camellón']);
+  });
+
+  it('y si las dos salidas están trazadas sin sección, la lista lo advierte', () => {
+    const l = armarLista({ camellon: camellon({ salidaDesague: null, salidaCauce: null }) });
+    expect(l.advertencias.join(' ')).toMatch(/sin las dos salidas/);
+  });
+
+  it('con las dos salidas dimensionadas no hay esa advertencia', () => {
+    const l = armarLista({ camellon: camellon() });
+    expect(l.advertencias.join(' ')).not.toMatch(/sin las dos salidas/);
   });
 });

@@ -2,11 +2,13 @@ import { describe, it, expect } from 'vitest';
 import {
   bandaCamellon, trazarLineaGuia, gradoDelOffset, anchoUnidadDeDrenaje,
   trazarDesague, trazarCauce, cantidadesCamellon, metrosDeSurcoPorHa,
-  avisosCamellon, trazarCamellon,
+  avisosCamellon, trazarCamellon, dimensionarSalida, resumenCamellon,
+  cnDelLoteCamellon, COBERTURA_LOTE_CAMELLON,
   PASO_BBF_M, CAMELLON_ANCHO_M, SURCO_ANCHO_M, GRADO_CONSTRUIDO_PCT,
   PENDIENTE_MIN_PARA_GRADO_PCT, PENDIENTE_MIN_PARA_BANDA_COMPLETA_PCT,
   PENDIENTE_VERTISOL_MAX_PCT, LLUVIA_ASEGURADA_MM,
 } from '@/lib/camellon';
+import type { EntradaCamellon } from '@/lib/camellon';
 import type { GrillaElevacion } from '@/lib/grillaElevacion';
 
 /**
@@ -310,5 +312,145 @@ describe('trazarCamellon', () => {
     expect(r.guia).toBeNull();
     expect(r.banda.vacia).toBe(true);
     expect(r.avisos.map((a) => a.id)).toContain('camellon_banda_vacia');
+  });
+});
+
+// ─── Las dos salidas, dimensionadas ──────────────────────────────────────────
+
+/**
+ * La entrada completa del caso de prueba: la vaguada al 3 %, 12 ha, suelo D
+ * arcilloso y una tormenta de 10 años y 24 h de 95 mm.
+ *
+ * Es la misma vaguada del caso de arriba, con los tres datos que hacían falta
+ * para que el desagüe y el cauce dejaran de salir sin sección.
+ */
+const ENTRADA_CON_SECCION: EntradaCamellon = {
+  pendienteTerreno_pct: 3, grupoHidro: 'D', lluviaAnual_mm: 900,
+  sueloExpansivo: true, superficie_ha: 12,
+  lluvia10a24h_mm: 95, textura: 'arcilloso',
+};
+
+const idsDe = (a: ReadonlyArray<{ id: string }>) => a.map((x) => x.id);
+
+describe('dimensionarSalida', () => {
+  const trazo = { puntos: [], largo_m: 500, desnivel_m: 10, pendiente_pct: 2, acumulacion: 100 };
+
+  it('sin la lámina de la tormenta no devuelve una sección: devuelve nada', () => {
+    expect(dimensionarSalida(trazo, 10, { cn: 80, erodibilidad: 'erodible' })).toBeNull();
+  });
+
+  it('sin el número de curva tampoco', () => {
+    expect(dimensionarSalida(trazo, 10, { lluvia10a24h_mm: 95, erodibilidad: 'erodible' })).toBeNull();
+  });
+
+  it('sin la textura del suelo tampoco: el esfuerzo admisible sale de ahí', () => {
+    expect(dimensionarSalida(trazo, 10, { lluvia10a24h_mm: 95, cn: 80 })).toBeNull();
+  });
+
+  it('con los tres datos devuelve caudal y sección', () => {
+    const s = dimensionarSalida(trazo, 10, {
+      lluvia10a24h_mm: 95, cn: 80, erodibilidad: 'erodible',
+    });
+    expect(s).not.toBeNull();
+    expect(s!.caudal.caudal_m3s).toBeGreaterThan(0);
+    expect(s!.seccion.anchoTotal_m).toBeGreaterThan(0);
+    expect(s!.seccion.profundidadTotal_m).toBeGreaterThan(0);
+  });
+
+  it('y un trazo sin pendiente no se dimensiona', () => {
+    expect(dimensionarSalida({ ...trazo, pendiente_pct: 0 }, 10, {
+      lluvia10a24h_mm: 95, cn: 80, erodibilidad: 'erodible',
+    })).toBeNull();
+  });
+
+  it('el CN del lote del camellón es el de cultivo en línea, no el de pastura', () => {
+    expect(COBERTURA_LOTE_CAMELLON).toBe('cultivo_bueno');
+    expect(cnDelLoteCamellon('D')).toBe(89);
+    expect(cnDelLoteCamellon('A')).toBe(67);
+    expect(cnDelLoteCamellon(null)).toBeNull();
+  });
+});
+
+describe('trazarCamellon con los datos de la sección', () => {
+  it('dimensiona las dos salidas y lo dice en un aviso', () => {
+    const r = trazarCamellon(valle(3), ENTRADA_CON_SECCION);
+    expect(r.salidaDesague).not.toBeNull();
+    expect(r.salidaCauce).not.toBeNull();
+    expect(idsDe(r.avisos)).toContain('camellon_cauce_dimensionado');
+    expect(idsDe(r.avisos)).not.toContain('camellon_salidas_sin_seccion');
+  });
+
+  it('sin la tormenta las traza igual pero avisa que no tienen sección', () => {
+    const r = trazarCamellon(valle(3), { ...ENTRADA_CON_SECCION, lluvia10a24h_mm: null });
+    expect(r.cauce).not.toBeNull();            // por dónde va sigue resuelto
+    expect(r.salidaCauce).toBeNull();          // cuánto mide, no
+    expect(idsDe(r.avisos)).toContain('camellon_salidas_sin_seccion');
+  });
+
+  /**
+   * El área del desagüe de parcela está acotada por el lote, y el tope es el
+   * punto del test.
+   *
+   * `anchoUnidadDeDrenaje` devuelve hasta dónde se pueden correr los camellones
+   * antes de que la deriva saque el surco de la banda: es un límite de diseño.
+   * En esta vaguada ese límite da 390 m de ancho por 540 m de guía, o sea 21 ha
+   * —casi el doble del lote— y sin el tope el desagüe se dimensionaba para un
+   * área que no existe.
+   */
+  it('al desagüe no le llega más agua que la que cae en el lote', () => {
+    const r = trazarCamellon(valle(3), ENTRADA_CON_SECCION);
+    const rect = (r.unidad!.ancho_m * r.guia!.largo_m) / 10_000;
+    expect(rect).toBeGreaterThan(12);                        // el límite de diseño excede el lote
+    expect(r.salidaDesague!.caudal.area_ha).toBeLessThanOrEqual(12);
+  });
+
+  it('y con el lote más grande que la unidad de drenaje, el desagüe junta la unidad y el cauce el lote', () => {
+    const r = trazarCamellon(valle(3), { ...ENTRADA_CON_SECCION, superficie_ha: 400 });
+    expect(r.salidaDesague!.caudal.area_ha).toBeLessThan(r.salidaCauce!.caudal.area_ha);
+    expect(r.salidaCauce!.caudal.area_ha).toBe(400);
+  });
+});
+
+describe('resumenCamellon', () => {
+  it('multiplica la sección por el largo del trazo, en metros cúbicos y metros cuadrados', () => {
+    const r = trazarCamellon(valle(3), ENTRADA_CON_SECCION);
+    const res = resumenCamellon(ENTRADA_CON_SECCION, r);
+    const s = res.salidaCauce!;
+    const sec = r.salidaCauce!.seccion;
+    expect(s.excavacion_m3).toBe(Math.round(sec.areaExcavacion_m2 * r.cauce!.largo_m));
+    expect(s.empastado_m2).toBe(Math.round(sec.anchoTotal_m * r.cauce!.largo_m));
+    // Y el orden de magnitud: un cauce de un kilómetro con poco más de un metro
+    // cuadrado de sección mueve del orden de mil metros cúbicos, no cien ni cien mil.
+    expect(s.excavacion_m3).toBeGreaterThan(500);
+    expect(s.excavacion_m3).toBeLessThan(5000);
+  });
+
+  it('trae las cantidades del camellón y las tres fuentes', () => {
+    const r = trazarCamellon(valle(3), ENTRADA_CON_SECCION);
+    const res = resumenCamellon(ENTRADA_CON_SECCION, r);
+    expect(res.surco_m).toBe(80004);
+    expect(res.jornadasYunta).toEqual({ min: 10, max: 30 });
+    expect(res.paso_m).toBe(PASO_BBF_M);
+    expect(res.grado_pct).toBe(GRADO_CONSTRUIDO_PCT);
+    expect(res.fuentes.length).toBe(3);
+    expect(res.trazable).toBe(true);
+  });
+
+  it('y un camellón que no se pudo trazar también se resume, con el motivo adentro', () => {
+    const e: EntradaCamellon = { pendienteTerreno_pct: 0.5, grupoHidro: 'D', superficie_ha: 5 };
+    const res = resumenCamellon(e, trazarCamellon(plano(0.5), e));
+    expect(res.trazable).toBe(false);
+    expect(res.banda.vacia).toBe(true);
+    expect(res.surco_m).toBeNull();
+    expect(res.salidaCauce).toBeNull();
+    expect(idsDe(res.avisos)).toContain('camellon_banda_vacia');
+  });
+
+  it('el tapiz con el que se diseñó viaja con la sección: es lo que se compra', () => {
+    const r = trazarCamellon(valle(3), ENTRADA_CON_SECCION);
+    const s = resumenCamellon(ENTRADA_CON_SECCION, r).salidaCauce!;
+    expect(s.cobertura.length).toBeGreaterThan(3);
+    expect(s.claseEstabilidad).toBe('D');     // el pobre decide el ancho
+    expect(s.claseCapacidad).toBe('C');       // el denso decide la profundidad
   });
 });
