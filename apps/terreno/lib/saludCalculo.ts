@@ -30,6 +30,7 @@ import {
 import type { FuenteRelieve } from './grillaElevacion';
 import type { GrupoHidro } from './cuenca';
 import type { SueloExpansivo } from './sueloExpansivo';
+import type { FlujoLaminar, ObraQueIntercepta } from './biomaTipos';
 import {
   DERIVA_MAX_FRACCION_PENDIENTE, DERIVA_MIN_DRENAJE_PCT,
 } from './keylineGeometria';
@@ -654,5 +655,63 @@ export function avisoKeylineExpansivo(e: EntradaKeylineSalud): AvisoCalculo | nu
       + 'no una medición: ensayos de arado Yeomans sobre vertisol no se '
       + 'encontraron publicados, así que el beneficio de pasarlo no se puede '
       + 'dar por hecho ni descartar. ' + x.cautela,
+  };
+}
+
+
+// ─── Paisajes donde interceptar la lámina es el error ─────────────────────────
+
+/** Cómo se nombra cada obra en el aviso. */
+const NOMBRE_OBRA: Record<ObraQueIntercepta, string> = {
+  swales:   'la zanja de infiltración a nivel',
+  keyline:  'el patrón de líneas clave',
+  camellon: 'el camellón con surco a pendiente',
+  curvas:   'el trazado por curvas de nivel',
+};
+
+/**
+ * El aviso que faltaba: la ficha de la ecorregión dice que acá no hay que
+ * cortar el escurrimiento laminar, y la herramienta no lo sabía.
+ *
+ * Es la misma clase de hallazgo que el suelo expansivo —una herramienta
+ * puntuando bien lo que el mecanismo medido dice que está mal— y es más grave,
+ * porque no cambia el número: cambia el signo. Un swale en una planicie árida de
+ * hardpan con vegetación en bandas no retiene menos agua de la calculada; le
+ * saca el agua al monte de abajo, que es lo que el relevamiento del Pilbara
+ * registró en el sistema Jurrawarinna.
+ *
+ * Por qué es un aviso y no un bloqueo: el campo lo declara la ficha de la
+ * **ecorregión**, que son millones de hectáreas, y el mecanismo vive en un
+ * paisaje de esa ecorregión —una planicie de hardpan, no una quebrada del mismo
+ * polígono—. Quien está parado en el lugar puede ver que no es ese paisaje.
+ * Decidir por él sería el error simétrico.
+ *
+ * Devuelve `null` cuando la ficha no declara el campo, que es la enorme mayoría
+ * de las fichas, y cuando lo declara para otras obras que la que se está
+ * dibujando.
+ *
+ * Fuente del mecanismo general: Tongway (1994), parches fértiles. Las citas
+ * concretas viajan en cada ficha, que es donde se pueden leer contra el papel.
+ */
+export function avisoFlujoLaminar(e: {
+  flujoLaminar?: FlujoLaminar | null;
+  obra: ObraQueIntercepta;
+}): AvisoCalculo | null {
+  const f = e.flujoLaminar;
+  if (!f || !f.obras.includes(e.obra)) return null;
+  return {
+    id: 'flujo_laminar',
+    nivel: 'alerta',
+    titulo: `Acá ${NOMBRE_OBRA[e.obra]} puede ser exactamente el error`,
+    detalle:
+      'En este paisaje el objetivo correcto no es interceptar el escurrimiento: '
+      + 'es no interrumpirlo. ' + f.mecanismo + ' ' + f.cita + ' '
+      + (f.enCambio ? f.enCambio + ' ' : '')
+      + 'Lo dice el relevamiento oficial de la región, no acequia: ' + f.fuente
+      + ' La geometría que la app calcula está bien calculada; lo que está en '
+      + 'discusión es si la obra corresponde. Y esto vale para el paisaje que el '
+      + 'relevamiento describe —una planicie de lámina con vegetación en bandas—, '
+      + 'no para cualquier punto de la ecorregión: si estás en una quebrada o en '
+      + 'un pie de sierra del mismo polígono, el mecanismo es otro.',
   };
 }

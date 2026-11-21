@@ -15,7 +15,8 @@ import { ValidacionPatronBloque } from './ValidacionPatronBloque';
 import { PlanillaBloque } from './PlanillaBloque';
 import { AvisoSueloObra } from './AvisoSueloObra';
 import { CamellonBloque } from './CamellonBloque';
-import { avisoKeylineExpansivo } from '@/lib/saludCalculo';
+import { avisoKeylineExpansivo, avisoFlujoLaminar } from '@/lib/saludCalculo';
+import type { FlujoLaminar } from '@/lib/biomaTipos';
 import type { SueloExpansivo } from '@/lib/sueloExpansivo';
 import type { ClaseUSDA } from '@/lib/textura';
 import type { CamellonResumen, ResultadoCamellon } from '@/lib/camellon';
@@ -89,6 +90,12 @@ interface Props {
    * desagüe y el cauce salen trazados pero sin sección.
    */
   textura?:     ClaseUSDA | null;
+  /**
+   * El paisaje donde interceptar el escurrimiento laminar es el error, si la
+   * ficha de la ecorregión lo declara. Se lee ANTES de dibujar: no cambia
+   * ningún número de la obra, cambia si la obra corresponde.
+   */
+  flujoLaminar?: FlujoLaminar | null;
   onAplicarGuias: (res: ResultadoKeyline) => void;
   /** Salida opcional: colocar también las guías como caminos transitables. */
   onAplicarComoCaminos?: (res: ResultadoKeyline) => void;
@@ -101,7 +108,7 @@ interface Props {
   onInputs?: (i: KeylineInputs) => void;
 }
 
-export function KeylinePanel({ mojones, datosShader, parcelas, grupoHidro = null, lluvia10a24h_mm = null, expansivo = null, textura = null, onAplicarGuias, onAplicarComoCaminos, onAplicarPatron, onCamellon, onAplicarCamellon, inicial, onInputs }: Props) {
+export function KeylinePanel({ mojones, datosShader, parcelas, grupoHidro = null, lluvia10a24h_mm = null, expansivo = null, textura = null, flujoLaminar = null, onAplicarGuias, onAplicarComoCaminos, onAplicarPatron, onCamellon, onAplicarCamellon, inicial, onInputs }: Props) {
   const [cargando, setCargando] = useState(false);
   const [error,    setError]    = useState<string | null>(null);
   const [res,      setRes]      = useState<ResultadoKeyline | null>(inicial?.res ?? null);
@@ -144,6 +151,11 @@ export function KeylinePanel({ mojones, datosShader, parcelas, grupoHidro = null
       banda: patron && patronAlDia ? patron.banda : null,
     }),
     [expansivo, patron, patronAlDia],
+  );
+
+  const avisoLamina = useMemo(
+    () => avisoFlujoLaminar({ flujoLaminar, obra: 'keyline' }),
+    [flujoLaminar],
   );
 
   useEffect(() => {
@@ -235,7 +247,9 @@ export function KeylinePanel({ mojones, datosShader, parcelas, grupoHidro = null
 
   return (
     <div className="space-y-4">
-      {/* El suelo antes de la geometría: decide si esto retiene o drena. */}
+      {/* El paisaje antes del suelo, y el suelo antes de la geometría: el
+          primero decide si la obra corresponde, el segundo si retiene o drena. */}
+      {avisoLamina && <AvisoSueloObra aviso={avisoLamina} />}
       {avisoExpansivo && <AvisoSueloObra aviso={avisoExpansivo} />}
 
       {/* ── Keyline real desde topografía ── */}
@@ -475,6 +489,7 @@ export function KeylinePanel({ mojones, datosShader, parcelas, grupoHidro = null
           // traer CEC, o la celda puede promediar—, y decirle al motor que no
           // lo es le haría imprimir un aviso que nadie midió.
           sueloExpansivo={expansivo != null ? true : null}
+          flujoLaminar={flujoLaminar}
           onResumen={onCamellon}
           onAplicar={onAplicarCamellon}
         />

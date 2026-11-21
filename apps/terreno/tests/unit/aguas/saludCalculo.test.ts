@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import {
-  confianzaCuenca, confianzaRepresa, confianzaErosion,
+  confianzaCuenca, confianzaRepresa, confianzaErosion, avisoFlujoLaminar,
   type EntradaCuencaSalud, type EntradaRepresaSalud, type EntradaErosionSalud,
 } from '@/lib/saludCalculo';
+import { BIOMAS_REGIONALES_AUSTRALASIA } from '@/lib/biomasRegionalesAustralasia';
+import type { FlujoLaminar } from '@/lib/biomaTipos';
 import { armarConfianza, type AvisoCalculo } from '@/lib/hidrologiaPredio';
 
 const ids = (c: { avisos: AvisoCalculo[] }) => c.avisos.map(a => a.id);
@@ -243,5 +245,80 @@ describe('confianzaErosion', () => {
     const c = confianzaErosion({ ...EROSION_OK, area_ha: 4, fuenteDem: 'glo30' });
     expect(nivelDe(c, 'dem_grueso')).toBe('alerta');
     expect(c.nivel).toBe('baja');
+  });
+});
+
+
+// ─── El paisaje donde interceptar la lámina es el error ──────────────────────
+
+/**
+ * El caso resuelto no es un número: es un relevamiento que registra el
+ * resultado de haber hecho la obra. En la planicie de hardpan del sistema
+ * Jurrawarinna el escurrimiento laminar fue encauzado y lo que siguió fue
+ * muerte de mulga por falta de agua y erosión. Es la única clase de prueba que
+ * admite un aviso de este tipo: la fuente dice qué pasó cuando se hizo.
+ */
+describe('avisoFlujoLaminar', () => {
+  const PILBARA = BIOMAS_REGIONALES_AUSTRALASIA['pilbara_matorral']!;
+  const MULGA = BIOMAS_REGIONALES_AUSTRALASIA['mulga_australia_occidental']!;
+
+  it('sin ficha que lo declare no dice nada, que es la mayoría de los casos', () => {
+    expect(avisoFlujoLaminar({ obra: 'swales' })).toBeNull();
+    expect(avisoFlujoLaminar({ flujoLaminar: null, obra: 'swales' })).toBeNull();
+  });
+
+  it('las dos fichas del relevamiento australiano lo declaran, con cita y fuente', () => {
+    for (const f of [PILBARA.flujoLaminar, MULGA.flujoLaminar]) {
+      expect(f).toBeDefined();
+      expect(f!.cita.length).toBeGreaterThan(40);
+      expect(f!.fuente).toMatch(/Technical Bulletin/);
+      expect(f!.obras.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('el Pilbara avisa sobre las cuatro obras que interceptan la lámina', () => {
+    const f = PILBARA.flujoLaminar!;
+    for (const obra of (['swales', 'keyline', 'camellon', 'curvas'] as const)) {
+      const a = avisoFlujoLaminar({ flujoLaminar: f, obra });
+      expect(a).not.toBeNull();
+      expect(a!.id).toBe('flujo_laminar');
+      expect(a!.nivel).toBe('alerta');
+    }
+  });
+
+  it('y el aviso trae el mecanismo, la cita, la fuente y el límite de su alcance', () => {
+    const a = avisoFlujoLaminar({ flujoLaminar: PILBARA.flujoLaminar, obra: 'swales' })!;
+    expect(a.titulo).toMatch(/zanja de infiltración a nivel/);
+    expect(a.detalle).toMatch(/no es interceptar el escurrimiento/);
+    expect(a.detalle).toMatch(/Jurrawarinna/);
+    expect(a.detalle).toMatch(/water starvation/);
+    expect(a.detalle).toMatch(/Technical Bulletin 92/);
+    // El límite del alcance, que es lo que lo vuelve un aviso y no un bloqueo.
+    expect(a.detalle).toMatch(/no para cualquier punto de la ecorregión/);
+  });
+
+  it('cada obra se nombra por su nombre: el aviso no dice «la obra»', () => {
+    const f = PILBARA.flujoLaminar!;
+    expect(avisoFlujoLaminar({ flujoLaminar: f, obra: 'keyline' })!.titulo).toMatch(/líneas clave/);
+    expect(avisoFlujoLaminar({ flujoLaminar: f, obra: 'camellon' })!.titulo).toMatch(/camellón/);
+    expect(avisoFlujoLaminar({ flujoLaminar: f, obra: 'curvas' })!.titulo).toMatch(/curvas de nivel/);
+  });
+
+  it('una ficha que declara el mecanismo para una sola obra no avisa sobre las otras', () => {
+    const solo: FlujoLaminar = {
+      mecanismo: 'm', cita: 'c', fuente: 'f', obras: ['swales'], enCambio: null,
+    };
+    expect(avisoFlujoLaminar({ flujoLaminar: solo, obra: 'swales' })).not.toBeNull();
+    expect(avisoFlujoLaminar({ flujoLaminar: solo, obra: 'keyline' })).toBeNull();
+  });
+
+  it('y sin «en cambio» el aviso sale igual: la fuente no siempre dice qué hacer', () => {
+    const sinAlternativa: FlujoLaminar = {
+      mecanismo: 'la lámina se retiene en montículos', cita: 'cita', fuente: 'Technical Bulletin X',
+      obras: ['swales'], enCambio: null,
+    };
+    const a = avisoFlujoLaminar({ flujoLaminar: sinAlternativa, obra: 'swales' })!;
+    expect(a.detalle).toMatch(/montículos/);
+    expect(a.detalle).not.toMatch(/undefined|null/);
   });
 });

@@ -3460,7 +3460,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
           )}
           {tab === 'keyline' && (
             <div className="px-4 py-4">
-              <KeylinePanel mojones={mojones} datosShader={datosShader} parcelas={poligonosCutFill} grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null} lluvia10a24h_mm={datosExtremos?.tormenta.recurrencias.find(r => r.periodo_retorno === 10)?.mm ?? null} expansivo={datosSuelo?.expansivo ?? null} textura={claseTexturaUSDA(datosSuelo?.arcilla ?? NaN, datosSuelo?.arena ?? NaN, datosSuelo?.limo ?? NaN)} onAplicarGuias={handleAplicarKeyline} onAplicarComoCaminos={handleKeylineComoCaminos} onAplicarPatron={handleAplicarPatron} onCamellon={setCamellonResumen} onAplicarCamellon={handleAplicarCamellon} inicial={panelInputs['keyline'] as KeylineInputs ?? null} onInputs={usarInputs('keyline')} />
+              <KeylinePanel mojones={mojones} datosShader={datosShader} parcelas={poligonosCutFill} grupoHidro={datosSuelo?.grupo_hidro?.grupo ?? null} lluvia10a24h_mm={datosExtremos?.tormenta.recurrencias.find(r => r.periodo_retorno === 10)?.mm ?? null} expansivo={datosSuelo?.expansivo ?? null} flujoLaminar={fichaBioma?.flujoLaminar ?? null} textura={claseTexturaUSDA(datosSuelo?.arcilla ?? NaN, datosSuelo?.arena ?? NaN, datosSuelo?.limo ?? NaN)} onAplicarGuias={handleAplicarKeyline} onAplicarComoCaminos={handleKeylineComoCaminos} onAplicarPatron={handleAplicarPatron} onCamellon={setCamellonResumen} onAplicarCamellon={handleAplicarCamellon} inicial={panelInputs['keyline'] as KeylineInputs ?? null} onInputs={usarInputs('keyline')} />
             </div>
           )}
           {tab === 'caminos' && (
@@ -3507,6 +3507,7 @@ export function MapaTerrenoApp({ userName, plan, sinTope = false }: Props) {
                 analisis={analisisSwales}
                 hidro={hidroPredio}
                 expansivo={datosSuelo?.expansivo ?? null}
+                flujoLaminar={fichaBioma?.flujoLaminar ?? null}
                 fuenteRelieve={grillaActiva?.fuente ?? null}
                 pasoFuenteRelieveM={grillaActiva?.paso_fuente_m ?? null}
                 onPeriodoRetorno={setPeriodoRetorno}

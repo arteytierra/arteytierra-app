@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Loader2, Info, TriangleAlert, Check, Rows3 } from 'lucide-react';
 import * as turf from '@turf/turf';
 import { recortarGrillaA, type GrillaElevacion } from '@/lib/grillaElevacion';
@@ -13,6 +13,9 @@ import {
 import type { PoligonoCutFill } from './CutFillPanel';
 import type { GrupoHidro } from '@/lib/cuenca';
 import type { ClaseUSDA } from '@/lib/textura';
+import type { FlujoLaminar } from '@/lib/biomaTipos';
+import { avisoFlujoLaminar } from '@/lib/saludCalculo';
+import { AvisoSueloObra } from './AvisoSueloObra';
 
 /**
  * El camellón ancho con surco a pendiente, dentro del panel de líneas clave.
@@ -43,6 +46,12 @@ interface Props {
   textura:          ClaseUSDA | null;
   /** true cuando el diagnóstico de suelo expansivo dio positivo; `null` = sin dato. */
   sueloExpansivo:   boolean | null;
+  /**
+   * El paisaje donde interceptar el escurrimiento laminar es el error, si la
+   * ficha de la ecorregión lo declara. Se lee ANTES de dibujar: no cambia
+   * ningún número de la obra, cambia si la obra corresponde.
+   */
+  flujoLaminar?: FlujoLaminar | null;
   onResumen?:       (r: CamellonResumen | null) => void;
   onAplicar?:       (r: ResultadoCamellon) => void;
 }
@@ -97,13 +106,23 @@ function SalidaBloque({ s }: { s: SalidaResumen }) {
 
 export function CamellonBloque({
   parcelas, parcelaId, obtenerGrilla, grupoHidro, lluvia10a24h_mm, textura,
-  sueloExpansivo, onResumen, onAplicar,
+  sueloExpansivo, flujoLaminar = null, onResumen, onAplicar,
 }: Props) {
   const [cargando, setCargando] = useState(false);
   const [error,    setError]    = useState<string | null>(null);
   const [res,      setRes]      = useState<ResultadoCamellon | null>(null);
   const [resumen,  setResumen]  = useState<CamellonResumen | null>(null);
   const [aplicado, setAplicado] = useState(false);
+
+  /**
+   * El camellón también concentra la lámina: es un surco a pendiente que junta
+   * el agua de una faja y la lleva a un cauce. En el paisaje que el aviso
+   * describe eso es el mecanismo del daño, no su remedio.
+   */
+  const avisoLamina = useMemo(
+    () => avisoFlujoLaminar({ flujoLaminar, obra: 'camellon' }),
+    [flujoLaminar],
+  );
 
   const trazar = useCallback(async () => {
     const parcela = parcelas.find(p => p.id === parcelaId);
@@ -154,6 +173,7 @@ export function CamellonBloque({
         parcela y un cauce de salida. En un vertisol el problema no es retener agua, es sacarla sin
         romper nada, y un surco al 0,2 % no drena: encharca.
       </p>
+      {avisoLamina && <div className="mb-2"><AvisoSueloObra aviso={avisoLamina} /></div>}
       <button
         onClick={trazar}
         disabled={cargando || !parcelaId}

@@ -9,7 +9,8 @@ import type {
 import type { Recomendacion } from '@/lib/criterios';
 import type { HidrologiaPredio } from '@/lib/hidrologiaPredio';
 import type { SueloExpansivo } from '@/lib/sueloExpansivo';
-import { avisoSwalesExpansivo } from '@/lib/saludCalculo';
+import { avisoSwalesExpansivo, avisoFlujoLaminar } from '@/lib/saludCalculo';
+import type { FlujoLaminar } from '@/lib/biomaTipos';
 import { PERIODOS_RETORNO } from '@/lib/hidrologiaPredio';
 import { planillaDeSwale } from '@/lib/planilla';
 import type { FuenteRelieve } from '@/lib/grillaElevacion';
@@ -45,6 +46,12 @@ interface Props {
    * a pendiente que saca el agua. Ver `avisoSwalesExpansivo`.
    */
   expansivo?:  SueloExpansivo | null;
+  /**
+   * El paisaje donde interceptar el escurrimiento laminar es el error, si la
+   * ficha de la ecorregión lo declara. Se lee ANTES de dibujar: no cambia
+   * ningún número de la obra, cambia si la obra corresponde.
+   */
+  flujoLaminar?: FlujoLaminar | null;
   onPeriodoRetorno: (T: number) => void;
   onGenerar:   (areas: AreaSwales[], intervalos: Record<string, number>, opts: OpcionesGlobales) => void;
   onColocar:   () => void;
@@ -67,7 +74,7 @@ export interface SwalesInputs {
 
 export function SwalesPanel({
   grillaLista, multi, hidro, analisis, fuenteRelieve = null, pasoFuenteRelieveM = null,
-  expansivo = null,
+  expansivo = null, flujoLaminar = null,
   onPeriodoRetorno, onGenerar, onColocar, onIrATopo, onIrAClima, onIrASuelo,
   inicial, onInputs,
 }: Props) {
@@ -114,6 +121,13 @@ export function SwalesPanel({
   const avisoExpansivo = useMemo(
     () => avisoSwalesExpansivo({ expansivo, ksat_mm_h: hidro.ksat_mm_h }),
     [expansivo, hidro.ksat_mm_h],
+  );
+
+  // Y el aviso del paisaje, que va todavía más arriba: el de suelo expansivo
+  // discute cómo se comporta la zanja, este discute si va la zanja.
+  const avisoLamina = useMemo(
+    () => avisoFlujoLaminar({ flujoLaminar, obra: 'swales' }),
+    [flujoLaminar],
   );
 
   const precipEfectiva = manual ? precipMm : Math.round(hidro.precip_mm);
@@ -183,6 +197,7 @@ export function SwalesPanel({
         </div>
       )}
 
+      {avisoLamina && <AvisoSueloObra aviso={avisoLamina} />}
       {avisoExpansivo && <AvisoSueloObra aviso={avisoExpansivo} />}
 
       {/* ── Tormenta de diseño ─────────────────────────────────────────────── */}

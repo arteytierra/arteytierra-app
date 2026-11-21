@@ -35,6 +35,46 @@ export interface ModificadorAptitud {
   razon: string;
 }
 
+/**
+ * Las obras de acequia que interceptan o concentran el escurrimiento.
+ *
+ * Son las que el aviso de flujo laminar desaconseja, y están nombradas una por
+ * una a propósito: no es «todas las obras de agua». Una represa de cauce o un
+ * tanque de techo no tocan la lámina; una zanja a nivel, un surco a pendiente o
+ * una línea clave sí, porque su mecanismo ES interceptarla.
+ */
+export type ObraQueIntercepta = 'swales' | 'keyline' | 'camellon' | 'curvas';
+
+/**
+ * Paisaje donde el escurrimiento laminar no hay que interceptarlo.
+ *
+ * Es el caso que invierte la premisa de media familia de herramientas de
+ * acequia. En una planicie árida con vegetación en bandas o en bosquetes el
+ * agua y los nutrientes no viajan hasta un punto bajo: se retienen en montículos
+ * de planta y en focos chicos de drenaje —el parche fértil de Tongway— y la
+ * planta hace el montículo que retiene el agua que alimenta la planta.
+ * Concentrar la lámina en un canal desarma ese circuito, y lo medido no es más
+ * agua abajo: es menos.
+ *
+ * **No se infiere.** El campo lo declara la ficha de la ecorregión con su cita,
+ * y por eso vive acá y no en una heurística de clima y pendiente: «planicie
+ * árida y plana» describe también paisajes donde la zanja a nivel es la obra
+ * correcta. Lo que habilita el aviso es que haya un relevamiento publicado que
+ * registre el mecanismo en ESE paisaje.
+ */
+export interface FlujoLaminar {
+  /** Qué hace el agua hoy y qué pasa si se la corta, en una frase que se imprime. */
+  mecanismo: string;
+  /** La cita publicada, textual donde se pueda. */
+  cita: string;
+  /** El relevamiento de donde sale, con la página si la tiene. */
+  fuente: string;
+  /** Las obras de acequia que este paisaje desaconseja. */
+  obras: readonly ObraQueIntercepta[];
+  /** Qué hacer en su lugar, cuando la fuente lo dice. `null` si no lo dice. */
+  enCambio: string | null;
+}
+
 export interface BiomaFicha {
   id: string;
   nombre: string;
@@ -57,6 +97,13 @@ export interface BiomaFicha {
   cultivos?: string[];
   /** Correcciones a la aptitud de uso del suelo que impone el ecosistema. */
   aptitud?: ModificadorAptitud[];
+  /**
+   * Declarado sólo donde un relevamiento publicado registra que interrumpir el
+   * escurrimiento laminar degradó el paisaje. Lo lee `avisoFlujoLaminar` y lo
+   * muestran los paneles de swales, líneas clave y camellón **antes** de que se
+   * dibuje la obra.
+   */
+  flujoLaminar?: FlujoLaminar;
   /**
    * Prácticas documentadas en el territorio, fechadas y sin dueño declarado.
    *
