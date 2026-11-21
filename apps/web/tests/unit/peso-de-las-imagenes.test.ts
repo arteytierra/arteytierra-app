@@ -76,7 +76,11 @@ const SIN_USAR_A_PROPOSITO: Record<string, string> = {
  *
  * Nada que se publique entra acá. Esta lista no es la puerta de atrás para
  * subir una foto pesada: para eso está `SIN_USAR_A_PROPOSITO`, que sí pasa por
- * el peso y el lado.
+ * el peso y el lado. Hay un test abajo que lo verifica.
+ *
+ * Las entradas pueden no existir: estos dos archivos **no están en git**, así
+ * que sólo aparecen en el checkout donde Jonatan los dejó. La lista filtra por
+ * nombre, y un nombre que no está en el disco simplemente no filtra nada.
  */
 const NO_SON_IMAGENES_DE_LA_WEB: Record<string, string> = {
   '/img/proyectos/alihuen/IMG_20240302_113305 (1).jpg': 'original de cámara, archivo de obra',
@@ -247,15 +251,21 @@ describe('nada se queda en public/img sin que lo use alguien', () => {
     expect(fantasmas, `ya no están en public/:\n  ${fantasmas.join('\n  ')}`).toEqual([]);
   });
 
-  it('lo que no es imagen de la web sigue estando, y nadie lo nombra', () => {
-    const idas = Object.keys(NO_SON_IMAGENES_DE_LA_WEB).filter((web) => {
-      try {
-        statSync(enDisco(web));
-        return false;
-      } catch {
-        return true;
-      }
-    });
-    expect(idas, `ya no están en public/:\n  ${idas.join('\n  ')}`).toEqual([]);
+  it('lo que no es imagen de la web tampoco lo nombra nadie', () => {
+    // A propósito NO se comprueba que estén en el disco. Los dos archivos de
+    // esa lista son material de obra sin commitear: existen en el checkout de
+    // Jonatan y en ningún otro. Un test que exigiera encontrarlos dejaría la
+    // compuerta roja en todos los worktrees menos uno —pasó el 21/11/2026, lo
+    // vio la sesión WEBS—. La lista sólo dice «si aparecen, no los midas».
+    const usadas = new Set<string>();
+    const RUTA = /["'`](\/img\/[A-Za-z0-9_./()-]+\.[A-Za-z0-9]+)["'`]/g;
+    for (const archivo of ['app', 'components', 'lib'].flatMap((c) => fuentes(join(RAIZ, c)))) {
+      for (const [, ruta] of readFileSync(archivo, 'utf8').matchAll(RUTA)) usadas.add(ruta!);
+    }
+    const publicadas = Object.keys(NO_SON_IMAGENES_DE_LA_WEB).filter((web) => usadas.has(web));
+    expect(
+      publicadas,
+      `una página las nombra, así que sí son imágenes de la web y tienen que cumplir peso y lado:\n  ${publicadas.join('\n  ')}`,
+    ).toEqual([]);
   });
 });
