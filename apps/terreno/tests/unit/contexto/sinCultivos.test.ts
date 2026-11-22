@@ -22,7 +22,7 @@ import { SIN_CULTIVOS } from '@/lib/sinCultivos';
 import { fichaPorId } from '@/lib/contexto';
 import { bloqueEcorregion } from '@/lib/especies';
 import { cultivosDeFicha, CULTIVOS_KC } from '@/lib/calendario';
-import type { MesDato } from '@/lib/clima';
+import { MESES, type MesDato } from '@/lib/clima';
 
 /** Ids de las fichas regionales que no declaran cultivos. */
 const sinLista = Object.entries(BIOMAS_REGIONALES)
@@ -118,7 +118,8 @@ describe('la razón llega hasta donde se imprime', () => {
     expect(fichaPorId('pinar_toba')!.sinCultivos).toBeUndefined();
   });
 
-  const meses: MesDato[] = Array.from({ length: 12 }, () => ({
+  const meses: MesDato[] = Array.from({ length: 12 }, (_, i) => ({
+    mes: MESES[i] ?? '', viento_ms: 2,
     tmean_c: 26, tmin_c: 22, tmax_c: 31, precip_mm: 120, etp_mm: 130, balance_mm: -10,
   }));
 
