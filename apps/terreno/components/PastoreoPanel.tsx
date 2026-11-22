@@ -23,6 +23,10 @@ import {
   type TipoPastura, type Manejo, type TemporadaManejo,
 } from '@/lib/manejos';
 import { bandaUso, noPastoreable } from '@/lib/modulacion';
+import {
+  forrajePorCobertura, CLASES_WC, type ItemCobertura,
+} from '@/lib/cobertura';
+import { forrajeDeCobertura } from '@/lib/produccion';
 import { subdividirPotreros, type PotrerosLayout } from '@/lib/potreros';
 import type { DatosClima } from '@/lib/clima';
 import type { DatosSuelo } from '@/lib/suelos';
@@ -59,7 +63,26 @@ export function PastoreoPanel({
   parcelas = [], onCaminosAcceso, cobertura = null, inicial, onInputs,
   datosSuelo = null, onIrASuelo,
 }: Props) {
-  const forrajeSugerido = datosClima ? forrajePorLluvia(datosClima.precip_anual_mm) : 3000;
+  /**
+   * La sugerencia de forraje, que acá siempre fue editable y nunca un dato.
+   *
+   * Lo que cambió el 22/11/2026 es de dónde sale el valor que se sugiere: si la
+   * cobertura del predio está cargada, del **piso de la banda medida** de las
+   * clases pastoreables —cortes de pasto publicados de sitios con la misma
+   * clase de ESA WorldCover—; si no, de la escalera por lluvia anual, que no
+   * tiene fuente. El campo sigue editable y el usuario sigue mandando.
+   */
+  const forrajeDelPredio = useMemo(() => {
+    if (!cobertura || cobertura.length === 0) return null;
+    const items: ItemCobertura[] = cobertura
+      .map(c => ({ clase: CLASES_WC[c.valor], pct: c.pct }))
+      .filter((it): it is ItemCobertura => it.clase !== undefined);
+    const banda = forrajePorCobertura(items);
+    return banda ? forrajeDeCobertura(banda) : null;
+  }, [cobertura]);
+  const forrajeSugerido = forrajeDelPredio
+    ? forrajeDelPredio.ef_kg_ha
+    : datosClima ? forrajePorLluvia(datosClima.precip_anual_mm) : 3000;
   // El uso admisible sale de la banda de lluvia del predio (etapa A), no del
   // 50 % de «take half, leave half», que su propia fuente limita al pastizal
   // húmedo. Es el mismo número que usa la receptividad: una sola fuente.

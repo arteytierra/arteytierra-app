@@ -10,6 +10,7 @@ import { MESES } from './clima';
 import { CULTIVOS_KC, type CultivoKc } from './calendario';
 import { bandaUso } from './modulacion';
 import { contrastarForraje, type ContrasteForraje } from './miamiModel';
+import type { ForrajeDeCobertura } from './cobertura';
 
 export { CULTIVOS_KC, type CultivoKc };
 
@@ -198,6 +199,25 @@ export interface PerfilRodeo {
 
 /**
  * Producción forrajera natural estimada por precipitación (kg MS/ha/año).
+ *
+ * ## ⚠ Desde el 22/11/2026 esta función ya no DECIDE la carga
+ *
+ * Es el cambio que el resto de este comentario venía pidiendo. La cifra de
+ * forraje de `calcularReceptividad` entra **por parámetro**, con su origen
+ * declarado (`ForrajeDelPredio`), y la ruta buena es
+ * `forrajeDeCobertura(forrajePorCobertura(items))`: la banda de los sitios
+ * medidos que tienen la misma clase de cobertura que el predio, tomando el
+ * **piso** de esa banda porque en una carga animal equivocarse para arriba es
+ * sobrecargar el campo. Los dos paneles que mostraban el número —Producción y
+ * Pastoreo— pasan esa banda cuando la cobertura está cargada.
+ *
+ * Esta escalera queda como **último recurso**, para el predio sin cobertura
+ * todavía y para el proyecto guardado antes, y el resultado lo dice con esa
+ * palabra: `forraje.origen === 'escalera'` y `forraje.fuente === null`. Lo que
+ * se arregló no es el número —sigue siendo el mismo— sino que ya no se imprime
+ * como si tuviera respaldo.
+ *
+ * Lo que sigue abajo describe por qué no alcanza, y sigue valiendo entero.
  *
  * **Sigue sin fuente, y ahora se sabe cuánto se equivoca.** Las primeras tres
  * mediciones publicadas están en `forrajeMedido.ts`, con su método, su rango de
@@ -480,6 +500,103 @@ export function prodForrajera(precip_mm: number): number {
   return 7000;
 }
 
+
+// ─── De dónde sale el kilo de forraje ────────────────────────────────────────
+
+/**
+ * Las dos rutas por las que acequia puede saber cuánto produce un campo, en
+ * orden de calidad.
+ *
+ * `cobertura_medida` sale de `forrajePorCobertura` en `lib/cobertura.ts`: la
+ * banda de los sitios **medidos** que declararon la misma clase de ESA
+ * WorldCover que tiene el predio, ponderada por el porcentaje de cada clase.
+ * Atrás tiene `FORRAJE_MEDIDO`, que son cortes de pasto publicados con sitio,
+ * año y método.
+ *
+ * `escalera` es `prodForrajera`: cinco escalones por lluvia anual **sin ninguna
+ * fuente**. Se queda como último recurso y no como respuesta, y el resultado lo
+ * dice con esa palabra.
+ */
+export type OrigenForraje = 'cobertura_medida' | 'escalera';
+
+export interface ForrajeDelPredio {
+  /** El valor con el que se calcula la carga, kg MS/ha/año. */
+  ef_kg_ha:   number;
+  /** La banda, cuando el origen la tiene. `null` en la escalera, que da un punto. */
+  min_kg_ha:  number | null;
+  max_kg_ha:  number | null;
+  origen:     OrigenForraje;
+  /** Qué respalda el número. **`null` en la escalera, y eso es el punto.** */
+  fuente:     string | null;
+  /** % del predio sobre el que se midió, cuando el origen lo sabe. */
+  pct_con_fuente: number | null;
+  nota:       string;
+}
+
+/** Las dos mediciones que miden cuánto se equivoca la escalera, para citarlas. */
+export const ESCALERA_SE_EQUIVOCA = {
+  altoEn:   'hasta 11 veces alto en el altiplano de Puno',
+  bajoEn:   '2,3 veces bajo en Dakota del Norte',
+  fuente:   'lib/forrajeMedido.ts, veintisiete sitios medidos en cinco continentes',
+} as const;
+
+/**
+ * El forraje por la escalera, declarado como lo que es.
+ *
+ * Existe para que `calcularReceptividad` pueda seguir contestando cuando no hay
+ * cobertura cargada —un predio recién dibujado, un proyecto viejo— sin que el
+ * número se presente como si tuviera fuente.
+ */
+export function forrajeDeLaEscalera(precip_anual_mm: number): ForrajeDelPredio {
+  return {
+    ef_kg_ha: prodForrajera(precip_anual_mm),
+    min_kg_ha: null,
+    max_kg_ha: null,
+    origen: 'escalera',
+    fuente: null,
+    pct_con_fuente: null,
+    nota: 'Sale de una escalera de cinco escalones por lluvia anual que no tiene '
+      + `fuente, y las mediciones la contradicen en las dos direcciones: ${ESCALERA_SE_EQUIVOCA.altoEn} `
+      + `y ${ESCALERA_SE_EQUIVOCA.bajoEn}. Cargá la cobertura del predio y la cifra pasa a salir `
+      + 'de cortes de pasto publicados de sitios con la misma clase de cobertura.',
+  };
+}
+
+/**
+ * El forraje desde la banda medida de la cobertura del predio.
+ *
+ * **Toma el extremo BAJO de la banda, y es una decisión de diseño, no un
+ * descuido.** La banda es ancha porque la clase de cobertura sola no determina
+ * el forraje —entre los sitios medidos de una misma clase queda un factor que la
+ * lluvia y el dosel explicarían y que todavía no está resuelto—, así que hay que
+ * elegir un punto adentro de ella. Para una carga animal el error no es
+ * simétrico: sobreestimar el forraje es sobrecargar el campo, y el propio
+ * archivo de mediciones dice que el año en que el modelo falla para arriba es
+ * justamente el año en que alguien decide la carga y el agua de la represa. El
+ * techo viaja en `max_kg_ha` para que la pantalla pueda mostrarlo.
+ *
+ * Devuelve `null` si la banda no tiene piso útil, que es lo que corresponde:
+ * `forrajePorCobertura` ya devuelve `null` cuando ninguna clase pastoreable del
+ * predio tiene medición.
+ */
+export function forrajeDeCobertura(f: ForrajeDeCobertura): ForrajeDelPredio | null {
+  if (!(f.kg_ms_ha_anio_min > 0)) return null;
+  return {
+    ef_kg_ha: f.kg_ms_ha_anio_min,
+    min_kg_ha: f.kg_ms_ha_anio_min,
+    max_kg_ha: f.kg_ms_ha_anio_max,
+    origen: 'cobertura_medida',
+    fuente: `${f.sitios} ${f.sitios === 1 ? 'sitio medido' : 'sitios medidos'} con la misma clase de `
+      + 'cobertura (ESA WorldCover), de `lib/forrajeMedido.ts`',
+    pct_con_fuente: f.pct_con_fuente,
+    nota: `La banda medida de esta cobertura va de ${f.kg_ms_ha_anio_min.toLocaleString('es-AR')} a `
+      + `${f.kg_ms_ha_anio_max.toLocaleString('es-AR')} kg MS/ha·año sobre el `
+      + `${f.pct_con_fuente} % del predio. La carga se calcula con el extremo BAJO: adentro de la `
+      + 'banda falta resolver un factor que la clase de cobertura no ve, y en una carga animal '
+      + 'equivocarse para arriba es sobrecargar el campo.',
+  };
+}
+
 /**
  * Los ajustes de paisaje que el predio le pone a la receptividad.
  *
@@ -508,6 +625,12 @@ export interface AjustesPaisaje {
 
 export interface ResultadoReceptividad {
   ef_kg_ha:         number;   // forraje producido, kg MS/ha/año
+  /**
+   * De dónde salió ese kilo. Se agregó el 22/11/2026 y es el campo que importa:
+   * hasta entonces el resultado devolvía `ef_kg_ha` sin decir que venía de una
+   * escalera sin fuente, así que la pantalla no tenía con qué avisarlo.
+   */
+  forraje:          ForrajeDelPredio;
   carga_ev:         number;   // carga en equivalentes vaca, con forraje natural
   /** El piso del rango: forraje grosero, que pide más kilos por EV. */
   carga_ev_min:     number;
@@ -569,8 +692,19 @@ export function calcularReceptividad(
   perfil: PerfilRodeo,
   em_mcal_kg: number = EM_FORRAJE.natural,
   paisaje?: AjustesPaisaje,
+  forraje?: ForrajeDelPredio | null,
 ): ResultadoReceptividad {
-  const ef_kg_ha = prodForrajera(precip_anual_mm);
+  /**
+   * La cifra de forraje entra por parámetro y la escalera queda de respaldo.
+   *
+   * Es el cambio del 22/11/2026 y es chico de leer y grande de consecuencias:
+   * `prodForrajera` **decidía** cuántos animales entran en un campo, con cinco
+   * escalones por lluvia anual y ninguna fuente. Ahora decide quien llama, con
+   * lo que tenga medido, y la escalera sólo contesta cuando no hay nada mejor
+   * —y el resultado lo dice—.
+   */
+  const forrajeDelPredio = forraje ?? forrajeDeLaEscalera(precip_anual_mm);
+  const ef_kg_ha = forrajeDelPredio.ef_kg_ha;
   const banda = bandaUso(precip_anual_mm, paisaje?.deAnuales ?? false);
 
   // Las dos cosas que el paisaje le hace a la cuenta, y son distintas: una resta
@@ -611,6 +745,7 @@ export function calcularReceptividad(
 
   return {
     ef_kg_ha,
+    forraje: forrajeDelPredio,
     carga_ev,
     carga_ev_min,
     carga_ev_max,

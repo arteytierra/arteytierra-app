@@ -4,8 +4,11 @@ import { useState, useMemo } from 'react';
 import { Cloud, Droplets, Wheat } from 'lucide-react';
 import {
   CULTIVOS_KC, calcularBalanceProductivo,
-  calcularReceptividad, EV_MCAL_EM_DIA,
+  calcularReceptividad, forrajeDeCobertura, EV_MCAL_EM_DIA,
 } from '@/lib/produccion';
+import {
+  forrajePorCobertura, CLASES_WC, type ItemCobertura,
+} from '@/lib/cobertura';
 import type { DatosClima } from '@/lib/clima';
 import { MESES } from '@/lib/clima';
 import type { Mojon } from '@/lib/types';
@@ -98,15 +101,33 @@ export function ProduccionPanel({ datosClima, mojones, areaHa, onIrAClima, rodeo
     });
   }, [areaHa, areaCult, noPast, distPend, aguadas, aguaEn]);
 
+  /**
+   * El forraje medido de la cobertura del predio, que es lo que reemplaza a la
+   * escalera por lluvia anual.
+   *
+   * La banda sale de los sitios con la misma clase de ESA WorldCover que tiene
+   * el predio —cortes de pasto publicados— y se recalcula al mostrarla, no se
+   * guarda: así un proyecto guardado antes también la recibe. Sin cobertura
+   * cargada queda `null` y la receptividad cae a la escalera, avisando.
+   */
+  const forrajeMedido = useMemo(() => {
+    if (!cobertura || cobertura.length === 0) return null;
+    const items: ItemCobertura[] = cobertura
+      .map(c => ({ clase: CLASES_WC[c.valor], pct: c.pct }))
+      .filter((it): it is ItemCobertura => it.clase !== undefined);
+    const banda = forrajePorCobertura(items);
+    return banda ? forrajeDeCobertura(banda) : null;
+  }, [cobertura]);
+
   const ganaderia = useMemo(
     () => datosClima
       ? calcularReceptividad(areaHa || areaCult, datosClima.precip_anual_mm, perfil, undefined, {
           ha_pastoreables: superficie.ha_pastoreables,
           factor_distribucion: superficie.factor,
           temp_media_c: datosClima.tmean_anual_c,
-        })
+        }, forrajeMedido)
       : null,
-    [datosClima, areaHa, areaCult, perfil, superficie],
+    [datosClima, areaHa, areaCult, perfil, superficie, forrajeMedido],
   );
 
   const modul = useMemo(() => modulacion({
@@ -235,7 +256,14 @@ export function ProduccionPanel({ datosClima, mojones, areaHa, onIrAClima, rodeo
       {tab === 'ganaderia' && ganaderia && (
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-2">
-            <Chip label="Prod. forrajera" value={`${ganaderia.ef_kg_ha.toLocaleString('es-AR')} kg/ha`} sub="kg MS/ha/año estimado" color="neutro" />
+            <Chip
+              label="Prod. forrajera"
+              value={`${ganaderia.ef_kg_ha.toLocaleString('es-AR')} kg/ha`}
+              sub={ganaderia.forraje.origen === 'cobertura_medida'
+                ? `kg MS/ha·año — piso de la banda medida, techo ${ganaderia.forraje.max_kg_ha!.toLocaleString('es-AR')}`
+                : 'kg MS/ha·año — escalera por lluvia, sin fuente'}
+              color={ganaderia.forraje.origen === 'cobertura_medida' ? 'neutro' : 'amarillo'}
+            />
             <Chip label="Aguanta el pasto" value={`${ganaderia.carga_ev.toLocaleString('es-AR')} EV`} sub={`${ganaderia.carga_ev_min}–${ganaderia.carga_ev_max} según la calidad del forraje`} color={ganaderia.carga_ev > 0 ? 'verde' : 'rojo'} />
             <Chip label="Rodeo del predio" value={`${evTotal(rodeo).toLocaleString('es-AR')} EV`} sub={`${cabezasTotal(rodeo)} cabezas · ${rodeo.origen === 'receptividad' ? 'de la receptividad' : 'cargado a mano'}`} color="neutro" />
             <Chip label="Agua necesaria" value={`${aguaHacienda_l_dia(rodeo, mesCaluroso?.t).toLocaleString('es-AR')} L/día`}
@@ -274,6 +302,20 @@ export function ProduccionPanel({ datosClima, mojones, areaHa, onIrAClima, rodeo
               test de una sola dirección —puede desmentir, no confirmar—, así que
               cuando el número entra, el aviso lo dice con esas palabras y no se
               presenta como un visto bueno. Ver `lib/miamiModel.ts`. */}
+          {/* De dónde salió el kilo de forraje. Va antes del contraste del Miami
+              Model porque esto dice qué se está contrastando. */}
+          <p className={`text-[10px] leading-relaxed rounded-lg px-2 py-1.5 ${
+            ganaderia.forraje.origen === 'cobertura_medida'
+              ? 'bg-moss-50 border border-moss-200 text-ink-800'
+              : 'bg-sun-300/20 border border-sun-300 text-clay-800'
+          }`}>
+            <b>{ganaderia.forraje.origen === 'cobertura_medida'
+              ? 'De dónde sale este número: cortes de pasto medidos.'
+              : 'De dónde sale este número: de una escalera sin fuente.'}</b>{' '}
+            {ganaderia.forraje.nota}
+            {ganaderia.forraje.fuente && <> Fuente: {ganaderia.forraje.fuente}.</>}
+          </p>
+
           {ganaderia.contraste && (
             <div className={`text-[9px] leading-relaxed rounded-lg px-2.5 py-1.5 ${
               ganaderia.contraste.veredicto === 'imposible' ? 'bg-clay-100 text-clay-800'

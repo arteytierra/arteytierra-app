@@ -9,10 +9,15 @@ import {
   calcularReceptividad,
   consumoEV_kgMS_dia,
   nivelErosion,
+  forrajeDeCobertura,
+  forrajeDeLaEscalera,
   EM_FORRAJE,
   EV_MCAL_EM_DIA,
   CULTIVOS_KC,
 } from '@/lib/produccion';
+import {
+  bandaDeClase, forrajePorCobertura, CLASES_WC, type ItemCobertura,
+} from '@/lib/cobertura';
 import type { MesDato } from '@/lib/clima';
 
 function doceMeses(precip_mm: number, etp_mm: number): MesDato[] {
@@ -217,5 +222,116 @@ describe('el uso admisible ya no es 0,50 para todo el planeta', () => {
     expect(perenne.uso_admisible).toBe(0.40);
     expect(anuales.uso_admisible).toBe(0.55);
     expect(anuales.carga_ev).toBeGreaterThan(perenne.carga_ev);
+  });
+});
+
+// ─── De dónde sale el kilo de forraje ────────────────────────────────────────
+
+/**
+ * El cambio del 22/11/2026: `prodForrajera` —cinco escalones por lluvia anual y
+ * ninguna fuente— dejó de **decidir** cuántos animales entran en un campo.
+ *
+ * El caso que lo prueba no es inventado: es el predio todo pastizal, cuya banda
+ * medida sale de los sitios de `FORRAJE_MEDIDO` con clase 30 de ESA WorldCover.
+ * La banda y la escalera se cruzan en un factor grande, y esa diferencia es la
+ * que antes se imprimía sin que nadie pudiera verla.
+ */
+describe('el origen del forraje', () => {
+  const bovino = { ev_por_cabeza: 1, agua_l_dia: 50 };
+
+  /** Un predio de una sola clase de cobertura, para que la banda sea la de la clase. */
+  const predioDe = (clase: number, pct = 100): ItemCobertura[] => [
+    { clase: CLASES_WC[clase]!, pct },
+  ];
+
+  it('sin cobertura cargada contesta la escalera, y lo dice con esa palabra', () => {
+    const r = calcularReceptividad(100, 800, bovino);
+    expect(r.ef_kg_ha).toBe(5000);                  // el escalón de 700 a 900 mm
+    expect(r.forraje.origen).toBe('escalera');
+    // Lo que importa del campo: la escalera no tiene con qué respaldarse.
+    expect(r.forraje.fuente).toBeNull();
+    expect(r.forraje.min_kg_ha).toBeNull();
+    expect(r.forraje.max_kg_ha).toBeNull();
+    expect(r.forraje.nota).toMatch(/no tiene\s+fuente/);
+    // Y las dos mediciones que la contradicen van en el texto, con dirección.
+    expect(r.forraje.nota).toMatch(/altiplano/);
+    expect(r.forraje.nota).toMatch(/Dakota/);
+  });
+
+  it('la escalera suelta devuelve lo mismo que adentro de la receptividad', () => {
+    for (const mm of [200, 400, 600, 800, 1200]) {
+      expect(forrajeDeLaEscalera(mm).ef_kg_ha)
+        .toBe(calcularReceptividad(1, mm, bovino).ef_kg_ha);
+    }
+  });
+
+  it('con la cobertura cargada el número sale de los sitios medidos', () => {
+    const banda = forrajePorCobertura(predioDe(30))!;
+    const f = forrajeDeCobertura(banda)!;
+    expect(f.origen).toBe('cobertura_medida');
+    expect(f.fuente).toMatch(/sitios? medidos?/);
+    expect(f.pct_con_fuente).toBe(100);
+    // La banda viaja entera y el valor de cálculo es su PISO.
+    expect(f.min_kg_ha).toBe(banda.kg_ms_ha_anio_min);
+    expect(f.max_kg_ha).toBe(banda.kg_ms_ha_anio_max);
+    expect(f.ef_kg_ha).toBe(f.min_kg_ha);
+    expect(f.max_kg_ha!).toBeGreaterThan(f.min_kg_ha!);
+  });
+
+  /**
+   * El piso y no el medio, y la razón está escrita en el motor: en una carga
+   * animal el error no es simétrico. Sobreestimar el forraje es sobrecargar el
+   * campo, y el año en que el modelo falla para arriba es justamente el año en
+   * que alguien decide la carga y el agua de la represa.
+   */
+  it('la carga se calcula con el piso de la banda, no con el medio ni con el techo', () => {
+    const banda = forrajePorCobertura(predioDe(30))!;
+    const f = forrajeDeCobertura(banda)!;
+    const r = calcularReceptividad(100, 800, bovino, undefined, undefined, f);
+    expect(r.ef_kg_ha).toBe(banda.kg_ms_ha_anio_min);
+    const medio = (banda.kg_ms_ha_anio_min + banda.kg_ms_ha_anio_max) / 2;
+    expect(r.ef_kg_ha).toBeLessThan(medio);
+  });
+
+  it('y entonces la escalera ya no decide la carga: el número cambia', () => {
+    const banda = forrajePorCobertura(predioDe(30))!;
+    const f = forrajeDeCobertura(banda)!;
+    const conEscalera = calcularReceptividad(100, 800, bovino);
+    const conMedido   = calcularReceptividad(100, 800, bovino, undefined, undefined, f);
+    expect(conMedido.ef_kg_ha).not.toBe(conEscalera.ef_kg_ha);
+    // En pastizal el piso medido está muy abajo del escalón de 800 mm, así que
+    // la carga baja. Es la dirección que importa: la escalera sobrecargaba.
+    expect(conMedido.carga_ev).toBeLessThan(conEscalera.carga_ev);
+    expect(conMedido.forraje.origen).toBe('cobertura_medida');
+  });
+
+  it('la cobertura sin ninguna clase pastoreable medida no inventa una banda', () => {
+    // Manglar: clase 95, pastoreable que no es, y sin medición.
+    expect(forrajePorCobertura(predioDe(95))).toBeNull();
+  });
+
+  it('una banda sin piso útil no se convierte en forraje', () => {
+    const banda = forrajePorCobertura(predioDe(30))!;
+    expect(forrajeDeCobertura({ ...banda, kg_ms_ha_anio_min: 0 })).toBeNull();
+  });
+
+  it('la banda de la clase 30 es la de los sitios medidos, no una tabla', () => {
+    // El puente con `cobertura.ts`: si entra una medición nueva, las dos se
+    // mueven juntas. Un número fijo acá volvería a congelar la banda.
+    const deClase = bandaDeClase(30)!;
+    const delPredio = forrajePorCobertura(predioDe(30))!;
+    expect(delPredio.kg_ms_ha_anio_min).toBe(deClase.kg_ms_ha_anio_min);
+    expect(delPredio.kg_ms_ha_anio_max).toBe(deClase.kg_ms_ha_anio_max);
+    expect(delPredio.sitios).toBe(deClase.sitios);
+  });
+
+  it('el resto de la cadena sigue colgando del mismo número', () => {
+    const banda = forrajePorCobertura(predioDe(30))!;
+    const f = forrajeDeCobertura(banda)!;
+    const r = calcularReceptividad(100, 800, bovino, undefined, undefined, f);
+    // Agua y potreros salen de la carga, así que cambian con ella.
+    expect(r.agua_l_dia).toBe(r.carga_animales * 50);
+    expect(r.carga_ev_min).toBeLessThan(r.carga_ev);
+    expect(r.carga_ev).toBeLessThan(r.carga_ev_max);
   });
 });
