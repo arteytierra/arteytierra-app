@@ -59,6 +59,10 @@ hacer algo.
 
 ## 3. Trámite A — Depósito en custodia en la DNDA
 
+**Estado al 22/11/2026: expediente iniciado y pago hecho.**
+`EX-2026-112886704- -APN-DNDA#MJ`. Falta que el sobre con el pendrive llegue a
+la DNDA, y hay 60 días hábiles para eso.
+
 Protege el **código fuente** con fecha cierta del Estado. Dura 3 años,
 renovable por 3 más dentro de los 30 días **posteriores** al vencimiento. Si
 no se renueva, se destruye (Decreto 972/2024).
@@ -205,6 +209,47 @@ le llega el sobre, y por eso van **por fuera**, pegadas o engrapadas al sobre
 cerrado, nunca adentro. Si van adentro, el sobre llega sin identificación y no
 se puede vincular al expediente.
 
+**Confirmado el 22/11/2026 a las 02:29.** El expediente es:
+
+```
+EX-2026-112886704- -APN-DNDA#MJ
+```
+
+(El doble guion y el espacio son parte del número tal como lo estampa GDE; así
+va escrito en todas partes.) TAD devolvió cinco PDF, guardados en
+`C:\Arte y Tierra\Acequia\registro de marca\deposito de obra inedita de software`
+y renombrados por para qué sirve cada uno:
+
+| Archivo | Qué es | Qué se hace con él |
+|---|---|---|
+| `1-CARATULA-EXPEDIENTE…` | Carátula del expediente, `PV-2026-112886705` | Se imprime y va **por fuera** del sobre |
+| `2-CARATULA-VARIABLE…` | Carátula variable, `RE-2026-112886706`: la que repite todos los datos cargados de la obra y del autor | Se imprime y va **por fuera** del sobre |
+| `3-CONDICIONES-plazo…` | Condiciones del trámite, `RE-2026-112886587`. **Es una intimación con plazo**, no un formalismo | Se lee y se archiva. Ver el plazo abajo |
+| `4-COMPROBANTE-DE-PAGO…` | Comprobante del arancel, `DOCFI-2026-112886590` | Se archiva. Ya está dentro del expediente |
+| `5-PASE-INTERNO…` | Providencia de pase a la oficina de Obras Inéditas, `PV-2026-112886707` | Nada: es movimiento interno de la DNDA |
+
+Las dos carátulas son los archivos 1 y 2. El 1 es la hoja de cabecera del
+expediente; el 2 es la que lleva el título, el documento de referencia y tus
+datos.
+
+**El plazo real son 60 días hábiles administrativos.** El archivo 3 lo dice
+expresamente, por los artículos 1.º y 2.º de la Disposición D.N.D.A. N.º 1/2018:
+desde notificada esa medida —el 22 de noviembre de 2026— tenés sesenta días
+hábiles para **entregar el ejemplar de la obra**. Si no llega, el artículo 3.º
+habilita a mandar el expediente a guarda temporal **sin otorgar el registro**, y
+el arancel pagado se pierde con él. Sesenta hábiles, con el 8 de diciembre,
+Navidad, Año Nuevo y carnaval en el medio, caen alrededor de **fines de febrero
+de 2027**; no conviene calcularlo al día: el sobre se despacha ahora y el plazo
+deja de ser un problema.
+
+**Un detalle que quedó en la carátula variable.** El PDF `2-CARATULA-VARIABLE`
+sigue trayendo «Tercer nombre: Jonatan» y «Segundo apellido: Palma» —el
+autocompletado de Chrome—, y la descripción breve se cortó a mitad de palabra
+(«Lo anoto tambi»). No invalida nada: el nombre legal sale de la carátula de
+expediente y del CUIT, que están correctos (PALMA, JONATAN GABRIEL, DU
+33.402.098), y la descripción no es un dato registral. Pero si en algún momento
+la DNDA te manda una tarea de subsanación por TAD, es ahí donde se corrige.
+
 **5. Armá el sobre**
 Sobre de **papel madera, tamaño A4 como mínimo**. Adentro: el pendrive y la
 hoja de la declaración de autoría firmada de puño y letra —antes de cerrar,
@@ -220,6 +265,7 @@ autores, el/los coordinadores y/o los titulares». O sea dos cosas:
 ```
 acequia  (v1.1)
 Jonatan Gabriel Palma
+EX-2026-112886704- -APN-DNDA#MJ
 ```
 
 **El título de la obra es «acequia», no «Arte y Tierra».** Arte y Tierra es el
@@ -270,19 +316,22 @@ Y por fuera, además, las **dos carátulas** del paso 4.
 Si hay un error te mandan una tarea de subsanación por TAD. Si no, te dan la
 **constancia de depósito en custodia**, también por TAD. Guardala.
 
-**8. Anotá el vencimiento**
-Tres años desde el depósito. La renovación es dentro de los **30 días
-posteriores** al vencimiento, ni antes ni después. Poné la alarma el día que
-recibas la constancia: si se pasa el plazo, lo depositado se destruye.
+**8. Anotá las dos fechas**
+Una es el plazo de entrega: 60 días hábiles desde el 22/11/2026 para que el
+sobre esté en la DNDA. La otra son los tres años desde el depósito: la
+renovación es dentro de los **30 días posteriores** al vencimiento, ni antes ni
+después. Poné esa alarma el día que recibas la constancia; si se pasa el plazo,
+lo depositado se destruye.
 
 ### Para llevar en la mano
 
 - [ ] Comprobante de la transferencia de $1.400 (PDF o foto)
 - [ ] Pendrive con los **cuatro** archivos de `_legal/deposito/v1.1/`
 - [ ] La declaración impresa, con lugar, fecha y firma de puño y letra
-- [ ] Las dos carátulas de TAD impresas (las genera TAD en el paso 4)
-- [ ] Sobre de papel madera A4, cerrado, firmado cruzando el cierre, con «acequia (v1.1)» y «Jonatan Gabriel Palma» escritos por fuera
+- [ ] Las dos carátulas impresas: los archivos `1-CARATULA-EXPEDIENTE` y `2-CARATULA-VARIABLE`
+- [ ] Sobre de papel madera A4, cerrado, firmado cruzando el cierre, con «acequia (v1.1)», «Jonatan Gabriel Palma» y el número de expediente escritos por fuera
 - [ ] Las dos carátulas **por fuera** del sobre, no adentro
+- [ ] Despachado con seguimiento **antes de fines de febrero de 2027** (60 días hábiles desde el 22/11/2026)
 
 ### Lo que este depósito sí y no hace
 
@@ -394,6 +443,7 @@ sesiones. Decime y lo encaro con cuidado.
 - [Art. 6(c) y Anexo III de las Directrices de Patentabilidad del INPI (OMPI)](https://wipo.int/ip-development/en/agenda/flexibilities/details.jsp?id=8778)
 - [Depósito en custodia de obra inédita software — ficha oficial del trámite, releída el 21/11/2026](https://www.argentina.gob.ar/servicio/deposito-en-custodia-de-obra-inedita-software)
 - [Receptorías en el interior del país — DNDA, releída el 21/11/2026](https://www.argentina.gob.ar/justicia/derechodeautor/receptorias)
+- Disposición D.N.D.A. N.º 1/2018, arts. 1.º a 4.º — citada en las condiciones del trámite (`RE-2026-112886587`, 22/11/2026): plazo de 60 días hábiles para entregar el ejemplar, y guarda temporal sin registro si no llega
 - [Depósito en custodia de obra inédita de software — DNDA](https://www.argentina.gob.ar/registrar-la-autoria-de-un-software-inedito)
 - [Registrar software puesto en conocimiento público — DNDA](https://www.argentina.gob.ar/registrar-la-autoria-de-un-software-inedito-0)
 - [Resolución INPI 75/2026 — creación de la UMAPI](https://abogados.com.ar/la-unidad-de-medida-arancelaria-de-la-propiedad-industrial-umapi-resolucion-inpi-752026/38789)

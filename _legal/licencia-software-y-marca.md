@@ -34,7 +34,7 @@ Completar antes de firmar. Los dejo marcados en el contrato como `[…]`:
 | Denominación social, CUIT y sede de la S.A.S. | resolución de inscripción de la IPJ |
 | Fecha y número de inscripción de la sociedad | ídem |
 | ~~Número de acta / registro de la marca y clases~~ | ✔ completado con los dos títulos del INPI (ver Anexo II) |
-| Número de expediente de la DNDA | constancia del depósito de obra |
+| ~~Número de expediente de la DNDA~~ | ✔ EX-2026-112886704- -APN-DNDA#MJ, del 22/11/2026 |
 | Fecha de la reunión del socio único que aprueba el contrato | la ponés vos |
 
 ---
@@ -63,8 +63,9 @@ intelectual sobre el programa de computación denominado **«acequia»**, una
 aplicación web de análisis de territorio y diseño regenerativo, comprensivo de
 su código fuente y objeto, su arquitectura, sus motores de cálculo, sus bases de
 datos, su interfaz, su documentación y todo material conexo (en adelante, el
-**«SOFTWARE»**), obra registrada ante la Dirección Nacional del Derecho de Autor
-bajo expediente N.º […].
+**«SOFTWARE»**), obra cuyo depósito en custodia se encuentra en trámite ante la
+Dirección Nacional del Derecho de Autor bajo expediente
+N.º EX-2026-112886704- -APN-DNDA#MJ, iniciado el 22 de noviembre de 2026.
 
 **II.** El LICENCIANTE es asimismo titular del cien por ciento (100 %) de los
 registros de la marca **«acequia»** ante el Instituto Nacional de la Propiedad
@@ -305,8 +306,10 @@ diseño regenerativo. Comprende el código fuente y objeto de las aplicaciones y
 paquetes del repositorio, sus motores de cálculo, su modelo de datos, su
 interfaz, sus bases de conocimiento propias y su documentación técnica.
 
-Registro en la Dirección Nacional del Derecho de Autor: expediente N.º […],
-de fecha […]. Versión depositada: […].
+Depósito en custodia ante la Dirección Nacional del Derecho de Autor: expediente
+N.º EX-2026-112886704- -APN-DNDA#MJ, iniciado el 22 de noviembre de 2026,
+con documento de referencia registral ACEQUIA-V1.1-4A28534. Versión
+depositada: v1.1 (commit 4a28534, 21 de noviembre de 2026).
 
 ### Anexo II — Identificación de la MARCA
 
@@ -381,7 +384,7 @@ de la IPJ).
 
 1. ~~Pasame el número de acta/registro de la marca y las clases concedidas.~~
    ✔ Hecho: los dos registros están en el Anexo II y en el antecedente II.
-   **Falta el expediente de la DNDA** para cerrar el Anexo I.
+   El expediente de la DNDA ya está en el Anexo I: EX-2026-112886704- -APN-DNDA#MJ.
 2. Cuando la S.A.S. esté inscripta, completo los datos de la sociedad.
 3. **Que lo lea un abogado** antes de firmar. Pedile que mire especialmente la
    cláusula 7 y la 11; el resto es estándar.
