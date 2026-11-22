@@ -44,7 +44,7 @@ const CONIFERA = 'resolve_bosque_coniferas_tropical';
 /** Las nueve que se abstuvieron porque HWSD y SoilGrids discrepaban por más de
  *  5 puntos, más la décima que se abstuvo al montar. Abstenerse es heredar. */
 const SIN_MODIFICADOR = [
-  'java_oriental_bali_bajo', 'pinar_toba', 'pinar_luzon', 'luzon_montano',
+  'java_oriental_bali_bajo', 'pinar_sumatra', 'pinar_luzon', 'luzon_montano',
   'mindanao_visayas_oriental', 'negros_panay', 'mindoro', 'valle_brahmaputra',
   'ghats_sur_montano', 'sri_lanka_zona_seca',
 ];
@@ -214,7 +214,7 @@ describe('las dos fichas de coníferas tropicales', () => {
     // relevamiento no tenía el valor global de este bioma. Heredar acá es lo
     // correcto: el bioma de coníferas tropicales trae un +15 forestal ligado al
     // manejo de combustible que ninguna de las dos fichas podía proponer.
-    for (const id of ['pinar_toba', 'pinar_luzon']) {
+    for (const id of ['pinar_sumatra', 'pinar_luzon']) {
       expect(delta(efectiva(id, CONIFERA), 'huerta'), id).toBe(-10);
       expect(delta(efectiva(id, CONIFERA), 'forestal'), id).toBe(15);
     }
@@ -282,7 +282,7 @@ describe('las aluviales que son negativas por otra causa que la del bioma', () =
 
 describe('las nueve abstenciones heredan el bioma sin tocarlo', () => {
   it('las ocho de bosque tropical húmedo siguen en −25', () => {
-    const humedas = SIN_MODIFICADOR.filter((id) => id !== 'sri_lanka_zona_seca' && id !== 'pinar_toba' && id !== 'pinar_luzon');
+    const humedas = SIN_MODIFICADOR.filter((id) => id !== 'sri_lanka_zona_seca' && id !== 'pinar_sumatra' && id !== 'pinar_luzon');
     expect(humedas).toHaveLength(7);
     for (const id of humedas) {
       expect(delta(efectiva(id, HUMEDO), 'huerta'), id).toBe(-25);

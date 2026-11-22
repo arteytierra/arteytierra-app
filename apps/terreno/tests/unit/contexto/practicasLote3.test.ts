@@ -20,12 +20,13 @@ import { fichaPorId } from '@/lib/contexto';
 describe('las mudanzas del tercer lote', () => {
   it('la aldea de Horsik está sobre la caldera del Toba y es montano, no pinar', () => {
     // Siete puntos alrededor de Horsik (2,6365 / 98,9157) dan 279, y Parapat y
-    // Balige también. El 305 —la ficha que se llama `pinar_toba`— es el pinar de
+    // Balige también. El 305 —la ficha que hasta el 22/11/2026 se llamaba
+    // `pinar_toba`, y de ahí el enredo— es el pinar de
     // Kerinci, 400 km al sur. Es el segundo lote consecutivo en que esta ficha se
     // propone y no corresponde, así que sigue en cero.
     expect(fichaDeEcorregion(279)).toBe('sumatra_montano');
-    expect(fichaDeEcorregion(305)).toBe('pinar_toba');
-    expect(PRACTICAS_POR_FICHA['pinar_toba']).toBeUndefined();
+    expect(fichaDeEcorregion(305)).toBe('pinar_sumatra');
+    expect(PRACTICAS_POR_FICHA['pinar_sumatra']).toBeUndefined();
     const toba = practicasDeFicha('sumatra_montano').find((p) => /Horsik|caldera del Toba/.test(p.practica + p.periodo))!;
     expect(toba).toBeTruthy();
   });

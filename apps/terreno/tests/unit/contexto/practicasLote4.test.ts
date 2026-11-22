@@ -44,14 +44,14 @@ describe('los polígonos que decidieron el lote', () => {
   });
 
   it('Semerap y Jujun son la punta del valle de Kerinci que NO es el pinar', () => {
-    // Tercer lote consecutivo en que `pinar_toba` se propone y no corresponde, y
+    // Tercer lote consecutivo en que esta ficha se propone y no corresponde, y
     // esta vez el encargo no tuvo la culpa: el 305 sí es el pinar de Kerinci
     // —Siulak, en el extremo noroeste del valle, da 305— pero Semerap y Jujun
     // están en el extremo sureste, sobre el lago, y dan 279. Es la otra punta del
     // mismo valle.
     expect(fichaDeEcorregion(279)).toBe('sumatra_montano');
-    expect(fichaDeEcorregion(305)).toBe('pinar_toba');
-    expect(PRACTICAS_POR_FICHA['pinar_toba']).toBeUndefined();
+    expect(fichaDeEcorregion(305)).toBe('pinar_sumatra');
+    expect(PRACTICAS_POR_FICHA['pinar_sumatra']).toBeUndefined();
     const pelak = practicasDeFicha('sumatra_montano').filter((p) => /[Pp]elak|Jujun/.test(p.practica + p.periodo));
     expect(pelak).toHaveLength(2);
   });
@@ -282,7 +282,7 @@ describe('las fuentes y los totales del lote', () => {
     const ids = [
       'chao_phraya_deciduo', 'decan_central_hardwickia', 'decan_norte_sal',
       'decan_sur_elefantes', 'ghats_sur_deciduo', 'luzon_montano', 'negros_panay',
-      'pantanos_sumatra', 'pantanos_tonle_sap', 'pinar_toba', 'sri_lanka_montano',
+      'pantanos_sumatra', 'pantanos_tonle_sap', 'pinar_sumatra', 'sri_lanka_montano',
     ];
     expect(ids).toHaveLength(11);
     for (const id of ids) {

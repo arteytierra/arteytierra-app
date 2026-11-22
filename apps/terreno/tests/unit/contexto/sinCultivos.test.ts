@@ -115,7 +115,7 @@ describe('la razón llega hasta donde se imprime', () => {
     expect(f.sinCultivos?.motivo).toBe('no_corresponde');
     expect(f.sinCultivos?.detalle).toMatch(/intermareal/);
     // Y no la inyecta donde la ficha sí trae lista.
-    expect(fichaPorId('pinar_toba')!.sinCultivos).toBeUndefined();
+    expect(fichaPorId('pinar_sumatra')!.sinCultivos).toBeUndefined();
   });
 
   const meses: MesDato[] = Array.from({ length: 12 }, (_, i) => ({
@@ -153,7 +153,7 @@ describe('la razón llega hasta donde se imprime', () => {
   });
 
   it('y donde la ficha sí tiene lista no aparece ningún cartel', () => {
-    const f = fichaPorId('pinar_toba')!;
+    const f = fichaPorId('pinar_sumatra')!;
     const r = cultivosDeFicha(f.cultivos, f.sinCultivos);
     expect(r.origen).toBe('ficha');
     expect(r.aviso).toBeNull();

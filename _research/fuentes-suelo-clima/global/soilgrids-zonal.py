@@ -20,6 +20,26 @@ Las dos decisiones de metodo estan explicadas en
    los andosoles y baja los ferralsoles a un cuarto: sin recorte el numero no
    sirve.
 
+Dos limites que aparecieron al correrlo sobre los diez poligonos del backlog y
+que el script ya maneja:
+
+3. **La geometria se pide simplificada.** El FeatureServer corta la respuesta
+   alrededor de los 8 MB y devuelve JSON partido al medio, sin avisarlo por
+   `exceededTransferLimit`: el miombo seco y el matorral del Decan no entran
+   enteros. Con `maxAllowableOffset` el servidor simplifica antes de
+   serializar, y 0,004 grados -unos 450 m, dos pixeles del raster- deja el
+   borde con un error de un par de pixeles sobre poligonos de millones de
+   hectareas. De paso acelera el recorte, que es O(vertices) por pixel.
+
+4. **El raster se submuestrea cuando no cabe.** El bbox del miombo seco pide
+   118 Mpx por capa, o sea unos 3.700 Mpx entre las 31. Arriba de TOPE_MPX se
+   pide con `SCALESIZE`, y eso **esta verificado que no interpola**: pedido el
+   mismo cuadrado nativo y reducido a la mitad, los dos devuelven el mismo
+   conjunto de valores -{0, 10, 17}, no aparece ningun 11..16- y las
+   fracciones coinciden a 0,1 punto (87,4 % contra 87,5 %). Un bilineal sobre
+   datos categoricos habria promediado codigos de leyenda y producido clases
+   que no existen. El reporte dice siempre a que resolucion efectiva se midio.
+
 Requiere curl y Pillow. No requiere GDAL ni rasterio.
 
 Licencias: RESOLVE Ecoregions 2017 (Dinerstein et al. 2017) CC BY 4.0;
@@ -43,6 +63,13 @@ WCS = ('https://maps.isric.org/mapserv?map=/map/wrb.map&SERVICE=WCS'
        '&SUBSETTINGCRS=http://www.opengis.net/def/crs/EPSG/0/4326'
        '&OUTPUTCRS=http://www.opengis.net/def/crs/EPSG/0/4326')
 UA = 'acequia-verificacion/1.0'
+
+# Simplificacion de la geometria: ~450 m, dos pixeles del raster.
+OFFSET_GEOM = 0.004
+# Tope de pixeles por capa. Arriba de esto se pide con SCALESIZE.
+TOPE_MPX = 6.0
+# Grados por pixel de la grilla nativa del WCS de SoilGrids.
+PX_NATIVO = 0.002083
 
 GRUPOS = [
     'Acrisols', 'Albeluvisols', 'Alisols', 'Andosols', 'Arenosols', 'Calcisols',
@@ -78,9 +105,17 @@ def bajar(url, destino, timeout='180'):
 def geometria(eco_id, carpeta):
     dest = os.path.join(carpeta, 'eco_%s.geojson' % eco_id)
     url = ('%s?f=geojson&where=ECO_ID%%3D%s&outFields=ECO_ID,ECO_NAME'
-           '&returnGeometry=true&outSR=4326' % (RESOLVE, eco_id))
-    cod = bajar(url, dest, '90')
-    d = json.load(io.open(dest, encoding='utf-8'))
+           '&returnGeometry=true&outSR=4326&maxAllowableOffset=%s'
+           % (RESOLVE, eco_id, OFFSET_GEOM))
+    cod = bajar(url, dest, '180')
+    try:
+        d = json.load(io.open(dest, encoding='utf-8'))
+    except ValueError:
+        # Pasa cuando la respuesta se corto por tamanio: JSON partido al medio.
+        raise SystemExit(
+            'RESOLVE devolvio JSON invalido para el ECO_ID %s (%d bytes, HTTP '
+            '%s). Subi OFFSET_GEOM y borra %s.'
+            % (eco_id, os.path.getsize(dest), cod, dest))
     fs = d.get('features') or []
     if not fs:
         raise SystemExit('RESOLVE no devolvio el ECO_ID %s (HTTP %s)' % (eco_id, cod))
@@ -155,10 +190,25 @@ def main(eco_id, carpeta):
     print('ECO_ID %s  %s' % (eco_id, nombre))
     print('bbox lon %.3f..%.3f  lat %.3f..%.3f' % (x0b, x1b, y0b, y1b), flush=True)
 
+    # Cuanto raster pide el bbox a resolucion nativa, y si hay que reducirlo.
+    wn = int((x1b - x0b) / PX_NATIVO)
+    hn = int((y1b - y0b) / PX_NATIVO)
+    mpx = wn * hn / 1e6
+    escala = ''
+    nota_escala = 'resolucion nativa (%.0f m)' % (PX_NATIVO * 111320)
+    if mpx > TOPE_MPX:
+        f = (TOPE_MPX / mpx) ** 0.5
+        we, he = max(1, int(wn * f)), max(1, int(hn * f))
+        escala = '&SCALESIZE=x(%d),y(%d)&INTERPOLATION=NEAREST' % (we, he)
+        nota_escala = ('submuestreado a %dx%d desde %dx%d (%.0f m de pixel); '
+                       'nearest verificado, ver el .md'
+                       % (we, he, wn, hn, (x1b - x0b) / we * 111320))
+    print('%s  [%s]' % (nombre, nota_escala), flush=True)
+
     for cov in ['MostProbable'] + GRUPOS:
         dest = os.path.join(carpeta, cov + '.tif')
-        url = '%s&COVERAGEID=%s&SUBSET=X(%.6f,%.6f)&SUBSET=Y(%.6f,%.6f)' % (
-            WCS, cov, x0b, x1b, y0b, y1b)
+        url = ('%s&COVERAGEID=%s&SUBSET=X(%.6f,%.6f)&SUBSET=Y(%.6f,%.6f)%s'
+               % (WCS, cov, x0b, x1b, y0b, y1b, escala))
         cod = bajar(url, dest)
         if cod not in ('200', 'cache'):
             raise SystemExit('SoilGrids devolvio %s en la capa %s' % (cod, cov))
@@ -203,6 +253,7 @@ def main(eco_id, carpeta):
     w = out.append
     w('=== ECO_ID %s - %s ===' % (eco_id, nombre))
     w('raster %dx%d  pixel %.6f x %.6f grados' % (W, H, dx, dy))
+    w('%s' % nota_escala)
     w('pixeles dentro del poligono: %d   con dato: %d'
       % (len(idx), len(validos)))
     w('')

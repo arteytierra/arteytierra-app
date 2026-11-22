@@ -348,7 +348,7 @@ describe('lista blanca de ecorregiones', () => {
       [278, 'sumatra_bajo'],
       [279, 'sumatra_montano'],
       [277, 'pantanos_sumatra'],
-      [305, 'pinar_toba'],
+      [305, 'pinar_sumatra'],
       [289, 'java_occidental_bajo'],
       [230, 'java_oriental_bali_bajo'],
       [229, 'java_bali_montano'], [288, 'java_bali_montano'],

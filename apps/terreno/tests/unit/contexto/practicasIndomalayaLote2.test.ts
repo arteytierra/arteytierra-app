@@ -55,15 +55,15 @@ describe('las mudanzas del lote: el ECO_ID manda sobre el nombre', () => {
 
   it('la aldea de Air Terjun es montano, aunque el centroide del distrito sea el pinar', () => {
     // Siulak tiene el límite por el medio: el centroide del distrito da 305
-    // —cuya ficha se llama `pinar_toba`— y la aldea donde la fuente trabajó da
+    // —cuya ficha se llama `pinar_sumatra`— y la aldea donde la fuente trabajó da
     // 279. Dos kilómetros cambian la ficha, así que vale la aldea.
     expect(fichaDeEcorregion(279)).toBe('sumatra_montano');
-    expect(fichaDeEcorregion(305)).toBe('pinar_toba');
+    expect(fichaDeEcorregion(305)).toBe('pinar_sumatra');
     expect(practicasDeFicha('sumatra_montano').some((p) => /HKm/.test(p.practica))).toBe(true);
-    // El lote 3 volvió a proponer `pinar_toba`, esta vez para el café de la aldea
+    // El lote 3 volvió a proponer esta ficha, esta vez para el café de la aldea
     // de Horsik, sobre la orilla del lago. Horsik da 279 en siete puntos, así que
     // la ficha que se llama como el lago sigue sin una sola práctica.
-    expect(PRACTICAS_POR_FICHA['pinar_toba']).toBeUndefined();
+    expect(PRACTICAS_POR_FICHA['pinar_sumatra']).toBeUndefined();
   });
 
   it('los huertos flotantes entran por Gopalganj, que es el pantano y no el manglar', () => {

@@ -174,6 +174,52 @@ candidatas indonesias, SUKARMAN y SUPRAYOGO, y no están leídas con esta
 pregunta en la mano. Eso es el próximo paso y es trabajo de fuente, no de
 código.
 
+## El otro uso del polígono: verificar el nombre de una ficha
+
+La geometría de RESOLVE no sirve sólo para recortar un raster. Sirve para
+preguntarle a una ficha si su nombre describe su territorio, y el 22/11/2026
+eso resolvió un pendiente que llevaba cuatro lotes abiertos.
+
+La ficha del ECO_ID 305 se llamaba `pinar_toba`. Cuatro entregas consecutivas
+del encargo de prácticas propusieron para ella prácticas de las orillas del lago
+Toba, y las cuatro veces la respuesta fue repetir la advertencia en el encargo
+siguiente —«`pinar_toba` no es el lago Toba», tres y cuatro veces, con las
+palabras cada vez más grandes—. A la cuarta quedó claro que el problema no
+estaba en el encargo.
+
+Medido contra el polígono, que son cinco parches, con el área por shoelace
+corregida por la latitud media de cada uno:
+
+| Parche (centro) | km² | % | Distancia al lago Toba |
+|---|---|---|---|
+| 96,93 E 4,38 N — Aceh | 896 | 32,5 % | 286 km |
+| 101,27 E 2,07 **S** — Barisan, cerca del Kerinci | 780 | 28,3 % | 587 km |
+| 96,26 E 5,04 N — Aceh | 635 | 23,1 % | 391 km |
+| 98,89 E 2,78 N | 250 | 9,1 % | 22 km |
+| 99,16 E 2,17 N | 192 | 7,0 % | 63 km |
+
+Total 2.754 km², contra los ~2.800 km² que la ficha declara: coinciden al 1,6 %,
+así que la medición del área también queda contrastada.
+
+- **16 %** a menos de 120 km del lago que le daba el nombre.
+- **56 % en Aceh**, a 286 y 391 km.
+- **28 % al sur del ecuador** — el parche de los únicos rodales naturales de
+  *Pinus merkusii* al sur del ecuador, que la ficha ya mencionaba sin ubicarlo.
+
+La ficha pasó a `pinar_sumatra`. **Y la corrección que circulaba también estaba
+mal**: lo que los encargos y los comentarios del código repitieron cuatro veces
+fue «el 305 es el pinar de Kerinci», y Kerinci es el 28 %, no el grueso. Aceh
+primero.
+
+Esto además arregló una búsqueda de fuentes que estaba apuntada al lugar
+equivocado. El campo `suelos` de la ficha decía que para resolver su
+discrepancia de suelos haría falta «la cartografía de BBSDLP de Sumatra Utara»
+—la provincia del lago, que cubre el 16 %—. Con el reparto medido, la que hace
+falta primero es la de Aceh.
+
+**La moraleja operativa:** cuando una ficha atrae el error dos veces, medir el
+polígono sale más barato que volver a advertirlo en el encargo.
+
 ## La mitad que falta: HWSD v2
 
 No hay servicio WCS ni WMS de HWSD v2 en ISRIC —`hwsd2.map`, `hwsd.map` y

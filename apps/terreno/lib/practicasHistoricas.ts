@@ -58,7 +58,9 @@ import type { PracticaHistorica } from './biomaTipos';
  *   los cinco sitios de encuesta que el artículo publica con coordenada dan los
  *   cinco 271. Va a `ghats_sur_montano`, que pasa de una entrada a dos. El 270
  *   sigue en cero.
- * - **La cuarta es el cuarto fracaso seguido de `pinar_toba`, y esta vez el
+ * - **La cuarta es el cuarto fracaso seguido de `pinar_sumatra` —que hasta el
+ *   22/11/2026 se llamaba `pinar_toba`, y ahí estaba la mitad del problema—, y
+ *   esta vez el
  *   encargo tuvo la mitad de la culpa.** El encargo dijo "Siulak y las laderas
  *   del Gunung Kerinci": Siulak da 305, pero las laderas no. Las tres aldeas de
  *   Kayu Aro Barat donde la entrega fue a buscar —Sungai Asam, Kampung Baru y
@@ -166,7 +168,22 @@ import type { PracticaHistorica } from './biomaTipos';
  * pekarangan de Cigaluga, el kaingin de Daraitan y el álamo de Rasulpur-Jattan.
  * Tres de ellas cayeron en la ficha que la entrega propuso.
  *
- * Y una corrección a lo que decía el estado anterior: `pinar_toba` volvió a
+ * ## 22/11/2026 — el nombre se arregló, que era lo que había que hacer
+ *
+ * Cuatro lotes seguidos propusieron prácticas del lago Toba para el ECO_ID 305,
+ * y la respuesta las cuatro veces fue repetir la advertencia en el encargo. A la
+ * cuarta quedó claro que el problema no era el encargo: era que la ficha se
+ * llamaba `pinar_toba` y el 305 no es el lago. Pasó a `pinar_sumatra`.
+ *
+ * Y de paso se corrigió la corrección. Lo que estos comentarios y los encargos
+ * repitieron cuatro veces fue «el 305 es el pinar de Kerinci», y eso también
+ * nombra el parche equivocado. Medido contra el polígono: la ecorregión son
+ * cinco parches, el 56 % de la superficie está en **Aceh** —896 y 635 km², a 286
+ * y 391 km del lago—, el 28 % es el parche austral de Barisan cerca del Kerinci
+ * y sólo el 16 % está a menos de 120 km del Toba. Ni el lago ni Kerinci: Aceh
+ * primero.
+ *
+ * Y una corrección a lo que decía el estado anterior: `pinar_sumatra` volvió a
  * fallar por tercer lote seguido, pero esta vez el encargo no tuvo la culpa. El
  * 305 es el pinar de Kerinci, y está medido: Siulak, en el extremo noroeste del
  * valle, da 305. Semerap y Jujun, que es donde fue la entrega, están en el
@@ -187,6 +204,7 @@ import type { PracticaHistorica } from './biomaTipos';
  * este lote nombró aldea y distrito en lugar de región, y así el polígono se
  * resuelve de una. Las cinco que se movieron lo hicieron por nombres de ficha
  * que invitan al error, y `pinar_toba` volvió a ser el peor: el café de la aldea
+ * —ése era su nombre entonces; ver abajo por qué dejó de llamarse así—
  * de Horsik, sobre la caldera del lago Toba, cae en `sumatra_montano`, porque el
  * 305 es el pinar de Kerinci y no la orilla del lago que lo nombra. Es el segundo
  * lote consecutivo en que esa ficha se propone y no corresponde.
@@ -5635,7 +5653,7 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
   // ── Sumatra ─────────────────────────────────────────────────────────────────
   // El montano se verificó dos veces porque el límite pasa por el medio: el
   // centroide del distrito de Siulak da 305 —el pinar, cuya ficha se llama
-  // `pinar_toba`— y la aldea de Air Terjun, que es donde la fuente trabajó, da
+  // `pinar_sumatra`— y la aldea de Air Terjun, que es donde la fuente trabajó, da
   // 279. Un punto a dos kilómetros cambia la ficha, así que acá vale la aldea y
   // no el distrito.
   sumatra_bajo: [

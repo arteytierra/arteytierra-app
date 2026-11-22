@@ -32,11 +32,11 @@
     "289": "java_occidental_bajo",
     "301": "sri_lanka_zona_seca",
     "303": "pinar_luzon",
-    "305": "pinar_toba"
+    "305": "pinar_sumatra"
   },
   "sin_modificador": {
     "java_oriental_bali_bajo": [230],
-    "pinar_toba": [305],
+    "pinar_sumatra": [305],
     "pinar_luzon": [303],
     "luzon_montano": [240],
     "mindanao_visayas_oriental": [247],

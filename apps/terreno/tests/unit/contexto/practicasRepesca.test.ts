@@ -15,7 +15,8 @@ import { fichaPorId } from '@/lib/contexto';
  *     defoliadores de Wayanad llegó para el 270 y los cinco sitios de encuesta
  *     que el artículo publica con coordenada dan los cinco 271;
  *   - una no entra: la caña de Kayu Aro Barat es el cuarto fracaso seguido de
- *     `pinar_toba`, y acá el encargo tuvo la mitad de la culpa.
+ *     `pinar_sumatra` —que entonces se llamaba `pinar_toba`—, y acá el encargo
+ *     tuvo la mitad de la culpa.
  *
  * Estos tests fijan los tres veredictos de polígono, el mecanismo de cada entrada
  * y —la que más importa— la frontera entre lo que el trabajo de Wayanad midió y
@@ -48,16 +49,16 @@ describe('los polígonos de la repesca', () => {
   });
 
   it('el pinar de Kerinci es el filo oeste del valle, y las laderas del volcán no', () => {
-    // Cuarto lote consecutivo en que `pinar_toba` se propone y no corresponde, y
+    // Cuarto lote consecutivo en que esta ficha se propone y no corresponde, y
     // la mitad de la culpa es del encargo, que dijo «Siulak y las laderas del
     // Gunung Kerinci». Siulak (1,9626 S / 101,3125 E) da 305; las tres aldeas de
     // Kayu Aro Barat donde fue la entrega —Sungai Asam (1,8317 S / 101,2775 E),
     // Kampung Baru (1,8128/101,2766) y Giri Mulyo (1,7708/101,2615)— dan 279 las
     // tres, igual que la cumbre y que Sungai Penuh. El polígono del 305 tiene
     // cinco partes y sólo una está en Kerinci.
-    expect(fichaDeEcorregion(305)).toBe('pinar_toba');
+    expect(fichaDeEcorregion(305)).toBe('pinar_sumatra');
     expect(fichaDeEcorregion(279)).toBe('sumatra_montano');
-    expect(PRACTICAS_POR_FICHA['pinar_toba']).toBeUndefined();
+    expect(PRACTICAS_POR_FICHA['pinar_sumatra']).toBeUndefined();
     // Y el 279 no la necesita: ya tiene cuatro entradas, una más que el piso.
     expect(practicasDeFicha('sumatra_montano').length).toBeGreaterThanOrEqual(3);
   });
@@ -131,7 +132,7 @@ describe('las fuentes y los totales de la repesca', () => {
     const ids = [
       'chao_phraya_deciduo', 'decan_central_hardwickia', 'decan_norte_sal',
       'decan_sur_elefantes', 'ghats_sur_deciduo', 'luzon_montano', 'negros_panay',
-      'pantanos_sumatra', 'pantanos_tonle_sap', 'pinar_toba', 'sri_lanka_montano',
+      'pantanos_sumatra', 'pantanos_tonle_sap', 'pinar_sumatra', 'sri_lanka_montano',
     ];
     expect(ids).toHaveLength(11);
     for (const id of ids) {

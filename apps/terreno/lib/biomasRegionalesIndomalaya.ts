@@ -979,15 +979,15 @@ export const BIOMAS_REGIONALES_INDOMALAYA: Record<string, BiomaFicha> = {
   },
 
   // ID · ECO_ID 305 · bioma 3 (coníferas tropicales) · confianza baja · sin modificador
-  pinar_toba: {
-    id: 'pinar_toba',
-    nombre: 'Pinares tropicales de Toba',
+  pinar_sumatra: {
+    id: 'pinar_sumatra',
+    nombre: 'Pinares tropicales de Sumatra',
     emoji: '🌲',
     color: '#4E6E3A',
-    resumen: 'Pinares de Pinus merkusii en el norte de Sumatra, alrededor del lago Toba y sobre Barisan: unos 2.800 km². Son los únicos rodales naturales de esta especie al sur del ecuador. Ocupan los sectores más secos de la cordillera, sobre todo las laderas del este, a la sombra de lluvia, y se queman con frecuencia por causas naturales y humanas.',
-    vegetacion: 'Pinar de Pinus merkusii en mosaico con selva montana. La lista de especies es corta a propósito: la ficha de WWF sólo nombra al pino como flora.',
+    resumen: 'Pinares de Pinus merkusii repartidos en cinco parches sobre la cordillera de Barisan, unos 2.800 km² en total, y conviene saber dónde están porque el nombre viejo de esta ficha mandaba al lugar equivocado: medido contra el polígono, el 56 % de la superficie está en Aceh —dos parches de 896 y 635 km², a 286 y 391 km del lago Toba—, el 28 % al sur del ecuador en Barisan cerca del Kerinci, y sólo el 16 % a menos de 120 km del lago. El parche austral es el de los únicos rodales naturales de esta especie al sur del ecuador. Ocupan los sectores más secos de la cordillera, sobre todo las laderas del este, a la sombra de lluvia, y se queman con frecuencia por causas naturales y humanas.',
+    vegetacion: 'Pinar de Pinus merkusii en mosaico con selva montana. La lista de especies es corta a propósito: la ficha de WWF sólo nombra al pino como flora, y completarla con especies de las ecorregiones vecinas sería inventar.',
     fauna: 'Doce aves casi endémicas, entre ellas el pavón bronceado (Polyplectron chalcurum), el minivet de la Sonda (Pericrocotus miniatus) y el niltava de Sumatra (Niltava sumatrana). No tiene mamíferos endémicos ni casi endémicos.',
-    suelos: 'Las fuentes no concuerdan y no se encontró ninguna regional abierta que nombre el suelo de los pinares de Toba. HWSD v2 da Umbrisols ácricos 49 %, Cambisols dístricos 17 %, Acrisols 16 % y Andosols 10 %, o sea 66 % con limitante severa; SoilGrids da Andosols 54 %, Ferralsols 26 % y Cambisols 17 %, o sea 26 %. Diez puntos de diferencia es más de lo que la regla admite, así que esta ficha no corrige el modificador del bioma. Haría falta la cartografía de BBSDLP de Sumatra Utara o un estudio de perfiles sobre la toba del Toba.',
+    suelos: 'Las fuentes no concuerdan y no se encontró ninguna regional abierta que nombre el suelo de estos pinares. HWSD v2 da Umbrisols ácricos 49 %, Cambisols dístricos 17 %, Acrisols 16 % y Andosols 10 %, o sea 66 % con limitante severa; SoilGrids da Andosols 54 %, Ferralsols 26 % y Cambisols 17 %, o sea 26 %. Cuarenta puntos de diferencia es mucho más de lo que la regla admite, así que esta ficha no corrige el modificador del bioma. Y la cartografía que haría falta no es la que decía acá hasta el 22/11/2026: el campo pedía la de BBSDLP de Sumatra Utara, que es la provincia del lago y cubre apenas el 16 % de la ecorregión. Con el reparto medido, la que hace falta primero es la de Aceh, que cubre el 56 %, y después la de Jambi y Sumatra Occidental por el parche austral.',
     saberes: [],
     especies: [
       'Pino de Sumatra o tusam (Pinus merkusii)',

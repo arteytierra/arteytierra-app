@@ -204,7 +204,12 @@ export const ECO_ID_INDOMALAYA: Record<number, string> = {
   279: 'sumatra_montano',            // Sumatran montane rain forests
   277: 'pantanos_sumatra',           // Sumatran freshwater swamp forests
   280: 'pantanos_turba_sumatra',    // Sumatran peat swamp forests — la turba, no el agua dulce
-  305: 'pinar_toba',                 // Sumatran tropical pine forests
+  // El id decia `pinar_toba` y el 305 no es el lago: el 56 % de su superficie
+  // esta en Aceh, a 286 y 391 km, el 28 % al sur del ecuador en Barisan cerca
+  // del Kerinci, y solo el 16 % a menos de 120 km del lago. Medido contra el
+  // poligono el 22/11/2026. El nombre viejo atrajo practicas del Toba en cuatro
+  // lotes seguidos; ver la ficha.
+  305: 'pinar_sumatra',              // Sumatran tropical pine forests
   289: 'java_occidental_bajo',       // Western Java rain forests
   230: 'java_oriental_bali_bajo',    // Eastern Java-Bali rain forests
   288: 'java_bali_montano',          // Western Java montane rain forests

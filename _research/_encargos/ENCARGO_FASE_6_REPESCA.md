@@ -161,9 +161,17 @@ que buscarla, y es la mitad angosta de un polígono que el nombre de nuestra fic
 no refleja. Buscar por el nombre de la ficha ya falló tres veces seguidas en uno
 de los dos casos.
 
-### 4.1 · `pinar_toba` — el ECO_ID 305, que es **Kerinci** y no el lago Toba
+### 4.1 · `pinar_sumatra` — el ECO_ID 305, que es **Aceh** antes que Kerinci, y nunca el lago Toba
 
-`pinar_toba` se llama así por el pino, no por el lago. **El ECO_ID 305 es el pinar
+La ficha **pasó a llamarse `pinar_sumatra` el 22/11/2026**, justamente porque el
+nombre viejo mandó cuatro lotes seguidos a buscar al lago. Y la corrección que
+circulaba —«es el pinar de Kerinci»— tampoco era del todo cierta: medido contra
+el polígono, la ecorregión son cinco parches, el **56 % está en Aceh** (896 y
+635 km², a 286 y 391 km del lago), el 28 % es el parche austral de Barisan cerca
+del Kerinci y sólo el 16 % está a menos de 120 km del Toba. Si vas a buscar una
+práctica para esta ficha, **Aceh primero**.
+
+El nombre viejo venía del pino, no del lago. **El ECO_ID 305 es el pinar
 de Kerinci, 400 km al sur del lago Toba.** Van **tres lotes consecutivos** en que
 esta ficha se propone con una práctica que cae en otra parte:
 
@@ -287,7 +295,8 @@ de registrar lo que se hizo.
 
 ## 6. Lo que **no** hay que mandar
 
-- **Nada del lago Toba para `pinar_toba`.** Tercera vez.
+- **Nada del lago Toba para `pinar_sumatra`.** Tercera vez que se aclara, y la
+  cuarta vez la ficha se renombró para que dejara de hacer falta.
 - **El *pelak* de Semerap y de Jujun**, que ya está montado dos veces en
   `sumatra_montano`.
 - **El *vayal* de los kurichiya**, montado en `ghats_sur_montano`.

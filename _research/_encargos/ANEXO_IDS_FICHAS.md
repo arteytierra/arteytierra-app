@@ -340,7 +340,7 @@ _`lib/biomasRegionalesIndomalaya.ts`_
 - `sumatra_bajo` — Selvas bajas de Sumatra ✓ *(ya tiene práctica cargada)*
 - `sumatra_montano` — Selvas montanas de Barisan ✓ *(ya tiene práctica cargada)*
 - `pantanos_sumatra` — Pantanos de agua dulce de Sumatra
-- `pinar_toba` — Pinares tropicales de Toba
+- `pinar_sumatra` — Pinares tropicales de Sumatra *(se llamaba `pinar_toba` hasta el 22/11/2026; el 305 **no es el lago**: 56 % en Aceh, 28 % en Barisan cerca del Kerinci, 16 % a menos de 120 km del Toba)*
 - `java_occidental_bajo` — Selvas bajas de Java occidental
 - `java_oriental_bali_bajo` — Bosques bajos estacionales de Java oriental y Bali ✓ *(ya tiene práctica cargada)*
 - `java_bali_montano` — Selvas montanas volcánicas de Java y Bali ✓ *(ya tiene práctica cargada)*
