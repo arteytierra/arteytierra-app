@@ -175,6 +175,27 @@ archivo que no se versiona justamente porque lleva tus datos personales:
 nombre completo, CUIL, nacionalidad, estado civil, correo, teléfono,
 domicilio y porcentaje de titularidad —100 %—. Copialos de ahí y no los
 tipees de memoria: tienen que coincidir con la hoja que firmás.
+
+**«Documento de referencia» es un campo libre y es importante.** El
+formulario lo pide arriba de todo y avisa: «Dato para identificación
+registral. Debe utilizar el mismo número tanto para el depósito como para la
+renovación». Lo elegís vos. El valor declarado es:
+
+```
+ACEQUIA-V1.1-4A28534
+```
+
+Está anotado en el punto 2 de la declaración y en el `LEEME-SOPORTE`, así que
+dentro de tres años sale del pendrive y no de la memoria. Si al renovar ponés
+otro, el sistema no vincula la renovación con este depósito.
+
+**Dos trampas del formulario**, vistas en la carga del 22/11/2026: Chrome
+autocompleta «Tercer nombre» y «Segundo apellido» duplicando los otros
+campos. Los dos tienen que quedar **vacíos** — primer nombre Jonatan, segundo
+nombre Gabriel, primer apellido Palma, nada más—. Y el título va en
+minúscula, `acequia`, como en la declaración y como está concedida la marca.
+Lo que cargues acá tiene que coincidir con la hoja que firmás.
+
 El sistema te devuelve un **número de Expediente Electrónico** y **dos
 carátulas** en PDF: la **carátula de expediente** y la **carátula variable**.
 Son dos hojas que genera el propio TAD con el número de expediente, tus datos
