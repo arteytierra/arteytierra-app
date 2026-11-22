@@ -23,6 +23,7 @@
  * Los números son de rango agronómico publicado y sirven para ordenar y
  * descartar, no para programar una siembra: eso se hace con el criterio local.
  */
+import type { SinCultivos } from './biomaTipos';
 import type { MesDato } from './clima';
 import { MESES } from './clima';
 import { calcularHorasFrio } from './horasFrio';
@@ -951,8 +952,17 @@ export function evaluarEspecie(esp: Especie, meses: MesDato[]): EvaluacionEspeci
 // ─── El bloque que se muestra: qué plantar acá ───────────────────────────────
 
 export interface BloqueEcorregion {
-  /** De dónde salió la lista: la ficha del ecosistema o el clima solo. */
-  origen: 'ficha' | 'koppen';
+  /**
+   * De dónde salió la lista, y es lo primero que hay que poder leer.
+   *
+   * `ficha` es la lista curada de la ecorregión. `koppen` es el catálogo por
+   * clase climática, más grueso, para la ecorregión que todavía no la tiene.
+   * Los otros dos son el caso que faltaba: la ficha **declara** que no lleva
+   * lista, y entonces el catálogo climático se sigue ofreciendo —el predio
+   * puede estar en el borde del polígono— pero deja de presentarse como si acá
+   * fuera cuestión de tiempo. Ver `SinCultivos` en `lib/biomaTipos.ts`.
+   */
+  origen: 'ficha' | 'koppen' | 'koppen_no_corresponde' | 'koppen_otro_uso';
   /** Todas las evaluadas, ordenadas por rol y con las viables primero. */
   evaluadas: EvaluacionEspecie[];
   /** Agrupadas por rol, ya ordenadas, para armar el diseño de un vistazo. */
@@ -1002,11 +1012,20 @@ export const TOPE_TAMBIEN_POR_CLIMA = 12;
  * el clima banca y la ficha no nombra. La lista de la ficha dejó de ser una
  * lista cerrada, porque el borde de un polígono de RESOLVE no es el borde de un
  * sistema productivo: ver el comentario de ese campo.
+ *
+ * Y la caída al clima dejó de tener un solo motivo. Hasta el 22/11/2026 toda
+ * ficha sin lista recibía el mismo aviso —«la ecorregión todavía no tiene su
+ * lista curada… verificá con quien cultive en tu zona»—, que en un manglar o
+ * en el Rub al-Jali es falso en el sentido más tranquilizador: ahí no es que
+ * falte curar, es que la pregunta agrícola no corresponde, y no hay a quién
+ * preguntarle porque nadie cultiva. Si la ficha declara `sinCultivos`, el aviso
+ * lo dice con las palabras de la ficha. Ver `SinCultivos`.
  */
 export function bloqueEcorregion(
   meses: MesDato[],
   koppenCodigo: string,
   idsFicha?: string[],
+  sinCultivos?: SinCultivos | null,
 ): BloqueEcorregion | null {
   const deFicha = idsFicha?.length ? resolverEspecies(idsFicha) : [];
   const lista = deFicha.length ? deFicha : especiesDeKoppen(koppenCodigo);
@@ -1038,11 +1057,28 @@ export function bloqueEcorregion(
       ).slice(0, TOPE_TAMBIEN_POR_CLIMA)
     : [];
 
+  // El aviso de la caída al clima, que es distinto según por qué se cayó. El
+  // texto de `sin_curar` es el original y sigue siendo el correcto para ese
+  // caso: ahí sí hay a quién preguntarle.
+  const avisoDeLaCaida = (): string => {
+    if (!sinCultivos || sinCultivos.motivo === 'sin_curar') {
+      return 'La ecorregión todavía no tiene su lista de cultivos curada: estas especies salen del catálogo por clase climática, que es más grueso. Verificá con quien cultive en tu zona.';
+    }
+    const cabeza = sinCultivos.motivo === 'otro_uso'
+      ? `En esta ecorregión el sistema productivo documentado es ${sinCultivos.uso ?? 'otro'}, no la agricultura de cultivos.`
+      : 'En esta ecorregión el uso agrícola no es la pregunta, y por eso la ficha no lleva lista de cultivos.';
+    return `${cabeza} ${sinCultivos.detalle} Lo que sigue sale del catálogo por clase climática —el clima solo— y se muestra porque el borde de un polígono no es el borde de un sistema productivo: si tu predio está en el sector que sí se trabaja, acá tenés de dónde arrancar.`;
+  };
+
+  const origen: BloqueEcorregion['origen'] = deFicha.length
+    ? 'ficha'
+    : sinCultivos && sinCultivos.motivo !== 'sin_curar'
+      ? (sinCultivos.motivo === 'otro_uso' ? 'koppen_otro_uso' : 'koppen_no_corresponde')
+      : 'koppen';
+
   return {
-    origen: deFicha.length ? 'ficha' : 'koppen',
+    origen,
     evaluadas, porRol, viables, tambienPorClima,
-    aviso: deFicha.length
-      ? null
-      : 'La ecorregión todavía no tiene su lista de cultivos curada: estas especies salen del catálogo por clase climática, que es más grueso. Verificá con quien cultive en tu zona.',
+    aviso: deFicha.length ? null : avisoDeLaCaida(),
   };
 }

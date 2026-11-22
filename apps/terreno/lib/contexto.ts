@@ -24,6 +24,7 @@ import { BIOMAS_REGIONALES } from './biomasRegionales';
 import { BIOMAS_GLOBALES } from './biomasGlobales';
 import type { BiomaFicha, Fuente, ModificadorAptitud, SaberCultural } from './biomaTipos';
 import { practicasDeFicha } from './practicasHistoricas';
+import { sinCultivosDeFicha } from './sinCultivos';
 import { ANALOGOS_KOPPEN, EQUIVALENTES, type Analogo } from './analogos';
 
 export type { BiomaFicha, Fuente, SaberCultural };
@@ -550,7 +551,18 @@ export function fichaPorId(id: string): BiomaFicha | null {
   // único embudo por el que pasan las tres vías de resolución —ficha regional,
   // bioma global y heurística Köppen—, así que alcanza con decorarlo una vez.
   const practicas = practicasDeFicha(id);
-  return practicas.length ? { ...ficha, practicas } : ficha;
+
+  // Y la razon de que no lleve lista de cultivos, por lo mismo: los catalogos
+  // son generados y esto es una capa editorial escrita a mano. Ver
+  // lib/sinCultivos.ts, que ademas es el inventario de lo que falta curar.
+  const sinCultivos = ficha.cultivos?.length ? undefined : sinCultivosDeFicha(id);
+
+  if (!practicas.length && !sinCultivos) return ficha;
+  return {
+    ...ficha,
+    ...(practicas.length ? { practicas } : {}),
+    ...(sinCultivos ? { sinCultivos } : {}),
+  };
 }
 
 // ─── Resolución en tres niveles ───────────────────────────────────────────────

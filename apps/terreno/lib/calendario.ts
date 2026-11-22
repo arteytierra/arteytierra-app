@@ -5,7 +5,7 @@
  */
 import type { DatosClima, MesDato } from './clima';
 import { MESES } from './clima';
-import type { BiomaFicha } from './biomaTipos';
+import type { BiomaFicha, SinCultivos } from './biomaTipos';
 import { bloqueEcorregion, resolverEspecies, type BloqueEcorregion } from './especies';
 import { calcularHorasFrio, type HorasFrio } from './horasFrio';
 
@@ -74,6 +74,27 @@ export interface BalanceCultivoMes {
 }
 
 /**
+ * Los cultivos ofrecidos para el balance hídrico, con su procedencia.
+ *
+ * Devuelve las dos cosas juntas a propósito. La lista sola se podía consumir
+ * sin saber de dónde venía, y eso es justamente lo que pasó: el `<select>` del
+ * balance ofrecía «Soja (Kc 1,15)» y «Olivo (Kc 0,65)» en un manglar del
+ * Caribe sin un solo cartel, porque la caída a la genérica era silenciosa. Acá
+ * quien pide la lista recibe el origen en el mismo movimiento y no lo puede
+ * ignorar por descuido.
+ */
+export interface CultivosDelPredio {
+  lista: CultivoKc[];
+  /**
+   * `ficha` es la lista curada de la ecorregión. `generica` es `CULTIVOS_KC`,
+   * diez del Cono Sur, y entonces el aviso no es null.
+   */
+  origen: 'ficha' | 'generica';
+  /** Qué hay que leer antes de creerle al balance. Null cuando manda la ficha. */
+  aviso: string | null;
+}
+
+/**
  * Los cultivos ofrecidos para el balance hídrico en ESTE predio.
  *
  * `CULTIVOS_KC` es una lista fija de diez, y son diez del Cono Sur: soja,
@@ -84,14 +105,35 @@ export interface BalanceCultivoMes {
  * agua le falta a la soja en un predio donde nadie planta soja.
  *
  * Cuando la ficha trae cultivos, manda la ficha. Cuando no —ecorregión sin
- * curar, o clima sin ficha— se cae a la lista genérica, que para eso está.
+ * curar, ficha que declara que acá no se cultiva, o clima sin ficha— se cae a la
+ * lista genérica, que para eso está, **y el aviso lo dice**. La ficha que
+ * declara `sinCultivos` aporta su propio motivo: no es lo mismo «falta curar»
+ * que «acá la pregunta agrícola no corresponde», y hasta hoy las dos salían
+ * iguales, o sea calladas. Ver `SinCultivos` en `lib/biomaTipos.ts`.
  */
-export function cultivosDeFicha(idsFicha?: string[]): CultivoKc[] {
+export function cultivosDeFicha(
+  idsFicha?: string[],
+  sinCultivos?: SinCultivos | null,
+): CultivosDelPredio {
   const deFicha = idsFicha?.length ? resolverEspecies(idsFicha) : [];
-  if (deFicha.length === 0) return CULTIVOS_KC;
-  return deFicha
-    .map(e => ({ id: e.id, nombre: e.nombre, kc: e.kc }))
-    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+  if (deFicha.length > 0) {
+    return {
+      lista: deFicha
+        .map(e => ({ id: e.id, nombre: e.nombre, kc: e.kc }))
+        .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')),
+      origen: 'ficha',
+      aviso: null,
+    };
+  }
+
+  const generica = 'Estos diez cultivos no son los de tu ecorregión: son la lista genérica de acequia —soja, girasol, olivo, alfalfa y otros del Cono Sur— y el Kc con que se calcula el balance es el de esa lista.';
+  const porque = !sinCultivos || sinCultivos.motivo === 'sin_curar'
+    ? 'La ecorregión todavía no tiene su lista de cultivos curada.'
+    : sinCultivos.motivo === 'otro_uso'
+      ? `En esta ecorregión el sistema productivo documentado es ${sinCultivos.uso ?? 'otro'}, no la agricultura de cultivos. ${sinCultivos.detalle}`
+      : `En esta ecorregión el uso agrícola no es la pregunta. ${sinCultivos.detalle}`;
+
+  return { lista: CULTIVOS_KC, origen: 'generica', aviso: `${porque} ${generica}` };
 }
 
 export function calcularBalanceCultivo(meses: MesDato[], kc: number): BalanceCultivoMes[] {
@@ -350,7 +392,7 @@ export function calcularCalendario(datos: DatosClima, ficha?: BiomaFicha | null)
 
   const { meses: ms } = datos;
   const ecorregion = datos.koppen
-    ? bloqueEcorregion(datos.meses, datos.koppen.codigo, ficha?.cultivos)
+    ? bloqueEcorregion(datos.meses, datos.koppen.codigo, ficha?.cultivos, ficha?.sinCultivos)
     : null;
 
   return {

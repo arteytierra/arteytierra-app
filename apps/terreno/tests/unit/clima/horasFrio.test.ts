@@ -120,25 +120,72 @@ describe('el frío decide sobre el frutal caduco', () => {
 });
 
 describe('el balance hídrico sigue a la ecorregión', () => {
-  it('sin ficha se cae a la lista genérica', () => {
-    expect(cultivosDeFicha(undefined)).toBe(CULTIVOS_KC);
-    expect(cultivosDeFicha([])).toBe(CULTIVOS_KC);
+  it('sin ficha se cae a la lista genérica, y lo dice', () => {
+    for (const ids of [undefined, []]) {
+      const r = cultivosDeFicha(ids);
+      // Sigue siendo la misma lista, no una copia: identidad, no igualdad.
+      expect(r.lista).toBe(CULTIVOS_KC);
+      expect(r.origen).toBe('generica');
+      // Lo que faltaba hasta el 22/11/2026: la caída era silenciosa.
+      expect(r.aviso).toMatch(/no son los de tu ecorregión/);
+      expect(r.aviso).toMatch(/todavía no tiene su lista de cultivos curada/);
+    }
   });
 
-  it('con ficha manda la ficha, con el Kc del catálogo', () => {
-    const lista = cultivosDeFicha(['cafe', 'platano', 'yuca']);
-    expect(lista.map(c => c.id).sort()).toEqual(['cafe', 'platano', 'yuca']);
-    expect(lista.find(c => c.id === 'cafe')!.kc).toBe(ESPECIES_POR_ID['cafe']!.kc);
+  it('con ficha manda la ficha, con el Kc del catálogo y sin aviso', () => {
+    const r = cultivosDeFicha(['cafe', 'platano', 'yuca']);
+    expect(r.lista.map(c => c.id).sort()).toEqual(['cafe', 'platano', 'yuca']);
+    expect(r.lista.find(c => c.id === 'cafe')!.kc).toBe(ESPECIES_POR_ID['cafe']!.kc);
     // Y ya no ofrece soja en un cafetal.
-    expect(lista.some(c => c.id === 'soja')).toBe(false);
+    expect(r.lista.some(c => c.id === 'soja')).toBe(false);
+    expect(r.origen).toBe('ficha');
+    expect(r.aviso).toBeNull();
   });
 
   it('un id que no existe en el catálogo no rompe la lista', () => {
-    expect(cultivosDeFicha(['cafe', 'no_existe']).map(c => c.id)).toEqual(['cafe']);
+    expect(cultivosDeFicha(['cafe', 'no_existe']).lista.map(c => c.id)).toEqual(['cafe']);
   });
 
   it('una ficha con ids todos inválidos vuelve a la genérica', () => {
-    expect(cultivosDeFicha(['no_existe'])).toBe(CULTIVOS_KC);
+    expect(cultivosDeFicha(['no_existe']).lista).toBe(CULTIVOS_KC);
+  });
+
+  /**
+   * El caso que motivó todo esto. Un manglar, un arenal o el desierto polar no
+   * tienen lista de cultivos y nunca la van a tener, porque ahí la pregunta
+   * agrícola no corresponde. Hasta hoy el balance ofrecía soja y olivo igual, y
+   * el único aviso disponible decía que «todavía» faltaba curar: falso, y falso
+   * en el sentido tranquilizador.
+   */
+  it('la ficha que declara que acá no se cultiva no recibe el aviso de "falta curar"', () => {
+    const r = cultivosDeFicha(undefined, {
+      motivo: 'no_corresponde',
+      detalle: 'Es planicie de marea: lodo salino inundado dos veces por día.',
+      uso: null,
+    });
+    expect(r.lista).toBe(CULTIVOS_KC);
+    expect(r.origen).toBe('generica');
+    expect(r.aviso).toMatch(/el uso agrícola no es la pregunta/);
+    expect(r.aviso).toMatch(/planicie de marea/);
+    expect(r.aviso).not.toMatch(/todavía/);
+  });
+
+  it('y la que tiene otro uso documentado lo nombra en vez de hablar de cultivos', () => {
+    const r = cultivosDeFicha(undefined, {
+      motivo: 'otro_uso',
+      detalle: 'El 58 % de lo relevado son 44 estaciones ganaderas.',
+      uso: 'pastoril extensivo',
+    });
+    expect(r.aviso).toMatch(/pastoril extensivo/);
+    expect(r.aviso).toMatch(/no la agricultura de cultivos/);
+    expect(r.aviso).not.toMatch(/todavía/);
+  });
+
+  it('el motivo sin_curar sí mantiene el aviso original: ahí falta y nada más', () => {
+    const r = cultivosDeFicha(undefined, {
+      motivo: 'sin_curar', detalle: 'Hay agricultura plena y falta la lista.', uso: null,
+    });
+    expect(r.aviso).toMatch(/todavía no tiene su lista de cultivos curada/);
   });
 });
 

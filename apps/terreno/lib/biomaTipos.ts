@@ -75,6 +75,62 @@ export interface FlujoLaminar {
   enCambio: string | null;
 }
 
+/**
+ * Por qué esta ficha no lleva lista de cultivos.
+ *
+ * El campo `cultivos` es opcional, y la ausencia tenía una sola lectura: «la
+ * ecorregión todavía no está curada». De ahí salían dos cosas que el usuario no
+ * podía discutir. En el bloque «en esta ecorregión» se le ofrecía el catálogo
+ * por clase Köppen con el aviso de que faltaba curar; y en el balance hídrico
+ * del calendario se le ofrecía `CULTIVOS_KC`, que son diez del Cono Sur —soja,
+ * girasol, olivo, alfalfa— sin ningún cartel. En un manglar del Caribe, en el
+ * Rub al-Jali o en el desierto polar del Alto Ártico eso es exactamente el
+ * número plausible y equivocado del que habla `lib/README.md`: la app
+ * preguntaba cuánta agua le falta al olivo en la planicie de marea.
+ *
+ * Lo que vuelve el error evitable es que la propia ficha ya lo sabía por otra
+ * vía: casi todas estas ecorregiones declaran en `aptitud` deltas de −30 a −40
+ * en huerta, frutales, pasturas y forestal, y +25 o +30 en reserva. La aptitud
+ * decía «acá no se produce» mientras el calendario ofrecía tomate. Este campo
+ * es el que hace que los dos motores se hablen.
+ *
+ * **No se infiere de la aptitud**, y es a propósito. Un delta muy negativo
+ * significa «este uso rinde mal acá», que no es lo mismo que «la pregunta
+ * agrícola no corresponde acá»: el Decán sur tiene −10 en huerta y agricultura
+ * plena, y Galápagos tiene −15 porque la zona alta produce y lo que limita es
+ * la bioseguridad. Por eso el motivo lo declara la ficha, con la evidencia que
+ * ya tiene escrita en `suelos`, en `resumen` o en las razones de `aptitud`.
+ *
+ * Y lo que **no** hace es sacarle la herramienta al usuario. El borde de un
+ * polígono de RESOLVE no es el borde de un sistema productivo —es el mismo
+ * motivo por el que existe `tambienPorClima`—, así que un predio puede caer en
+ * el polígono del manglar y estar en el albardón de al lado. La lista genérica
+ * se sigue ofreciendo; lo que cambia es que ahora dice de dónde salió.
+ */
+export type MotivoSinCultivos =
+  /** El uso agrícola no es la pregunta acá: planicie de marea, arenal móvil,
+   *  costra salina, desierto polar, turbera, afloramiento, isla santuario. */
+  | 'no_corresponde'
+  /** Hay sistema productivo documentado y no es de cultivos. El caso típico es
+   *  el pastoril extensivo: la lista que corresponde es de forraje. */
+  | 'otro_uso'
+  /** Falta la lista y nada más. Es el único motivo que el tiempo arregla, y el
+   *  aviso de «todavía no está curada» le sigue correspondiendo entero. */
+  | 'sin_curar';
+
+export interface SinCultivos {
+  motivo: MotivoSinCultivos;
+  /**
+   * Qué se hace acá en vez de cultivar, o por qué no se cultiva. Se imprime tal
+   * cual, así que va en una o dos oraciones y apoyado en lo que la ficha ya
+   * tiene citado. Sin detalle no hay declaración: un motivo suelto es otra vez
+   * una ausencia sin explicar.
+   */
+  detalle: string;
+  /** Sólo con `otro_uso`: el uso documentado, corto («pastoril extensivo»). */
+  uso: string | null;
+}
+
 export interface BiomaFicha {
   id: string;
   nombre: string;
@@ -95,6 +151,12 @@ export interface BiomaFicha {
    *  dentro del sistema. Opcional — la ficha que no lo declara cae al catálogo
    *  por clase Köppen, que es más grueso pero nunca deja la sección vacía. */
   cultivos?: string[];
+  /**
+   * Obligatorio cuando `cultivos` no viene. Es la razón de la ausencia, tipada,
+   * y la leen el bloque «en esta ecorregión» y el balance hídrico del
+   * calendario. Hay un test que lo exige: ver `tests/unit/contexto/`.
+   */
+  sinCultivos?: SinCultivos;
   /** Correcciones a la aptitud de uso del suelo que impone el ecosistema. */
   aptitud?: ModificadorAptitud[];
   /**

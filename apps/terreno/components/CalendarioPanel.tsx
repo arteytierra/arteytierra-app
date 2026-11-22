@@ -49,7 +49,16 @@ export function CalendarioPanel({ datosClima, onIrAClima, inicial, onInputs }: P
   // Los cultivos del balance salen de la ficha de la ecorregión cuando la hay.
   // El id guardado puede ser de otra ecorregión —el usuario movió el predio—,
   // así que se valida contra la lista vigente y no contra lo que quedó guardado.
-  const cultivos = useMemo(() => cultivosDeFicha(ficha?.cultivos), [ficha]);
+  //
+  // Viene con el origen pegado, y eso es lo que arregla el agujero: cuando no
+  // hay lista curada, el `<select>` ofrecía soja y olivo en un manglar sin
+  // decir que eran la lista genérica del Cono Sur. Ahora el motivo de la caída
+  // viaja en `aviso` y se imprime abajo de la tabla.
+  const cultivosPredio = useMemo(
+    () => cultivosDeFicha(ficha?.cultivos, ficha?.sinCultivos),
+    [ficha],
+  );
+  const cultivos = cultivosPredio.lista;
   const cultivo  = useMemo(
     () => cultivos.find(c => c.id === cultivoId) ?? cultivos[0]!,
     [cultivos, cultivoId],
@@ -453,6 +462,15 @@ export function CalendarioPanel({ datosClima, onIrAClima, inicial, onInputs }: P
               </select>
             </div>
             <div className="px-3 py-2 space-y-2">
+              {/* De dónde salieron los cultivos de ese selector. Va arriba de la
+                  tabla porque cambia cómo se lee cada número de abajo: con la
+                  lista genérica, el déficit es el de un cultivo que acá puede
+                  no plantarse. */}
+              {cultivosPredio.aviso && (
+                <p className="text-[10px] leading-relaxed rounded-lg px-2 py-1.5 bg-sun-300/20 border border-sun-300 text-clay-800">
+                  <b>De dónde salen estos cultivos.</b> {cultivosPredio.aviso}
+                </p>
+              )}
               <p className="text-[10px] text-ink-700/60">
                 ETc = ETP × Kc {cultivo.kc} —{' '}
                 <span className={mesesDeficit >= 6 ? 'text-clay-600 font-semibold' : mesesDeficit >= 3 ? 'text-sun-600 font-semibold' : 'text-moss-700 font-semibold'}>
