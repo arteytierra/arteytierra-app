@@ -80,8 +80,10 @@ invertido el resultado entero de este relevamiento.
 ### 2. Recorta al polígono, no al bbox
 
 El bbox de una ecorregión de cumbres volcánicas es casi todo territorio ajeno.
-El recorte es point-in-polygon por ray casting sobre el GeoJSON, con los
-agujeros descontados, en Python puro.
+El recorte es ray casting sobre el GeoJSON, en Python puro, por **scanline**:
+para cada fila de latitud del raster se calculan una sola vez los cruces de
+todos los anillos, y de ahí salen por paridad los intervalos de longitud que
+están adentro. Las columnas se despejan por aritmética; la fila no se recorre.
 
 **Cuánto cambia, medido en Java occidental:**
 
@@ -95,6 +97,42 @@ Los andosoles casi se duplican y los ferralsoles bajan a un cuarto, en la
 dirección que el paisaje predice: el polígono son los conos volcánicos y el
 bbox le agrega las llanuras lixiviadas de alrededor. **Sin el recorte el
 número no sirve.**
+
+#### Por qué scanline y no un test por píxel
+
+La primera versión probaba cada píxel contra cada vértice. Eso es
+O(píxeles × vértices), y en el miombo seco son 6 Mpx × 14.608 vértices: 87 mil
+millones de operaciones, horas de CPU. El scanline lo deja en
+O(filas × vértices), unos 35 millones en el mismo caso. La prueba de que la
+cuenta no cambió es el polígono 264, que ya estaba medido: vuelve a dar 67.718
+píxeles adentro y 92,4 % de Histosols, idéntico hasta el píxel, en 2,4 s.
+
+#### Y de paso arregló un error que nadie había visto
+
+El FeatureServer **no anida los agujeros**. Devuelve el MultiPolygon con cada
+anillo como una parte propia: un hoyo no viene adentro de su parche sino al
+lado, y lo único que lo delata es que gira al revés. La versión vieja tomaba
+`p[0]` como exterior y `p[1:]` como agujeros —el esquema de GeoJSON— y como
+`p[1:]` venía siempre vacío, **nunca descontaba un agujero**: contaba el hoyo
+como superficie de la ecorregión.
+
+El scanline es inmune por construcción, porque la paridad no necesita saber
+cuál anillo es cuál: un píxel adentro de un exterior y de un agujero cruza dos
+bordes y queda afuera, que es lo correcto. Vale mientras los parches de una
+ecorregión no se solapen entre sí, que es el caso.
+
+Cuánto importaba, revisando las geometrías de todos los polígonos corridos:
+
+| ECO_ID | Anillos invertidos | Bruto | Neto | Diferencia |
+|---|---|---|---|---|
+| 42 — miombo seco de Zambeze | 109 de 243 | 1.322.738 km² | 1.190.259 km² | **10 %** |
+| 221 | 1 de 29 | 67.653 km² | 67.446 km² | 0,3 % |
+| 423 — matorral interior de California | 1 de 11 | 164.283 km² | 71.308 km² | **130 %** |
+| 216, 229, 264, 288, 290, 294, 297, 298, 305, 315, 323 | ninguno | — | — | — |
+
+Los que ya estaban publicados —264, 323, 229, 288, 305— no tienen ningún anillo
+invertido, así que **sus números quedan como estaban**. El que sí cambiaba era
+el 42, y estaba sin correr.
 
 ## El resultado: Java occidental contra Java oriental y Bali
 
@@ -282,10 +320,9 @@ no vino: un polígono incompleto daría un zonal plausible y equivocado.
 
 De los diez polígonos que pedía el backlog quedan hechos **264** (acá) y, fuera
 de esa lista, **288** y **229**, que son los dos de Java. Faltan 290, 297, 298,
-323, 294, 315, 216, 42 y 221. A ~2 s por capa son unos dos minutos de descarga
-por polígono, y el recorte en Python puro tarda del orden de un minuto por cada
-300.000 píxeles adentro del polígono: el backlog zonal de SoilGrids entra en una
-tarde.
+323, 294, 315, 216, 42 y 221. La descarga es lo que tarda —de dos a doce minutos por
+polígono según el tamaño del bbox— y el análisis, con las capas ya en caché, son
+segundos: el 264 entero sale en 2,4 s.
 
 Dos de los que faltan, **297** (`decan_norte_sal`) y **298**
 (`decan_sur_elefantes`), son además dos de las tres fichas que `lib/sinCultivos.ts`

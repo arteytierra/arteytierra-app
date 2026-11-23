@@ -18,7 +18,12 @@ Las dos decisiones de metodo estan explicadas en
    reporta, en vez de recibir el grupo plausible.
 2. Se recorta al poligono y no al bbox. En Java occidental el recorte duplica
    los andosoles y baja los ferralsoles a un cuarto: sin recorte el numero no
-   sirve.
+   sirve. El recorte es por *scanline*: para cada fila de latitud se calculan
+   una sola vez los cruces de todos los anillos y de ahi salen, por paridad,
+   los intervalos de longitud que estan adentro. Probar cada pixel contra cada
+   vertice costaba 6 Mpx x 14.608 vertices en el miombo seco -87 mil millones
+   de operaciones, horas- y asi queda en O(filas x vertices), unos 35
+   millones.
 
 Dos limites que aparecieron al correrlo sobre los diez poligonos del backlog y
 que el script ya maneja:
@@ -29,7 +34,7 @@ que el script ya maneja:
    enteros. Con `maxAllowableOffset` el servidor simplifica antes de
    serializar, y 0,004 grados -unos 450 m, dos pixeles del raster- deja el
    borde con un error de un par de pixeles sobre poligonos de millones de
-   hectareas. De paso acelera el recorte, que es O(vertices) por pixel.
+   hectareas. De paso acelera el recorte, que es O(vertices) por fila.
 
 4. **El raster se submuestrea cuando no cabe.** El bbox del miombo seco pide
    118 Mpx por capa, o sea unos 3.700 Mpx entre las 31. Arriba de TOPE_MPX se
@@ -47,6 +52,7 @@ SoilGrids v2.0 (ISRIC) CC BY 4.0. Las dos permiten uso comercial.
 """
 import io
 import json
+import math
 import os
 import subprocess
 import sys
@@ -70,6 +76,10 @@ OFFSET_GEOM = 0.004
 TOPE_MPX = 6.0
 # Grados por pixel de la grilla nativa del WCS de SoilGrids.
 PX_NATIVO = 0.002083
+# Pixeles por valor que se usan para deducir el mapeo. Es un argmax contra 30
+# capas y salio unanime al 100 % en los cuatro poligonos corridos, asi que no
+# hace falta mas; subirlo solo cuesta tiempo.
+TOPE_MUESTRA = 4000
 
 GRUPOS = [
     'Acrisols', 'Albeluvisols', 'Alisols', 'Andosols', 'Arenosols', 'Calcisols',
@@ -137,36 +147,40 @@ def geometria(eco_id, carpeta):
     return d, nombre, (min(xs), max(xs), min(ys), max(ys))
 
 
-def anillos(geojson):
-    out = []
+def segmentos(geojson):
+    """Todos los anillos del MultiPolygon como lista plana de segmentos.
+
+    Exteriores y agujeros van juntos y la regla es la paridad (even-odd): un
+    pixel adentro de un exterior y de un agujero cruza dos bordes y queda
+    afuera, que es lo correcto. Vale porque los parches de una ecorregion no se
+    solapan entre si.
+    """
+    segs = []
     for f in geojson['features']:
         g = f['geometry']
         polys = (g['coordinates'] if g['type'] == 'MultiPolygon'
                  else [g['coordinates']])
         for p in polys:
-            out.append((p[0], p[1:]))
-    return out
+            for anillo in p:
+                n = len(anillo)
+                for i in range(n):
+                    x1, y1 = anillo[i][0], anillo[i][1]
+                    x2, y2 = anillo[(i + 1) % n][0], anillo[(i + 1) % n][1]
+                    if y1 != y2:
+                        segs.append((x1, y1, x2, y2))
+    return segs
 
 
-def en_anillo(x, y, anillo):
-    dentro = False
-    n = len(anillo)
-    j = n - 1
-    for i in range(n):
-        xi, yi = anillo[i][0], anillo[i][1]
-        xj, yj = anillo[j][0], anillo[j][1]
-        if (yi > y) != (yj > y):
-            if x < xi + (y - yi) * (xj - xi) / (yj - yi):
-                dentro = not dentro
-        j = i
-    return dentro
-
-
-def dentro(x, y, polis):
-    for ext, hoyos in polis:
-        if en_anillo(x, y, ext) and not any(en_anillo(x, y, h) for h in hoyos):
-            return True
-    return False
+def tramos(lat, segs):
+    """Intervalos [x_ini, x_fin] de longitud adentro del poligono, a esta lat."""
+    cruces = []
+    for x1, y1, x2, y2 in segs:
+        if (y1 > lat) != (y2 > lat):
+            cruces.append(x1 + (lat - y1) * (x2 - x1) / (y2 - y1))
+    if len(cruces) < 2:
+        return []
+    cruces.sort()
+    return [(cruces[i], cruces[i + 1]) for i in range(0, len(cruces) - 1, 2)]
 
 
 def geotransform(im):
@@ -217,35 +231,59 @@ def main(eco_id, carpeta):
     mp_im, mp = datos(os.path.join(carpeta, 'MostProbable.tif'))
     W, H = mp_im.size
     gx, gy, dx, dy = geotransform(mp_im)
-    polis = anillos(geo)
+    segs = segmentos(geo)
 
+    # Un pixel esta adentro si su centro cae en alguno de los tramos de su
+    # fila. Las columnas se despejan por aritmetica, sin recorrer la fila.
     idx = []
     for r in range(H):
         lat = gy - (r + 0.5) * dy
         base = r * W
-        for c in range(W):
-            if dentro(gx + (c + 0.5) * dx, lat, polis):
-                idx.append(base + c)
-    print('recorte listo: %d pixeles adentro' % len(idx), flush=True)
+        for xa, xb in tramos(lat, segs):
+            ca = max(0, int(math.ceil((xa - gx) / dx - 0.5)))
+            cb = min(W - 1, int(math.floor((xb - gx) / dx - 0.5)))
+            if cb >= ca:
+                idx.extend(range(base + ca, base + cb + 1))
+    print('recorte listo: %d pixeles adentro (%d segmentos)'
+          % (len(idx), len(segs)), flush=True)
 
-    validos = [i for i in idx if mp[i] > 0]
-    cuenta = Counter(mp[i] for i in validos)
+    # Las muestras por valor se arman en UNA pasada: filtrar `validos` por cada
+    # valor costaba 30 recorridos de millones de elementos.
+    cuenta = Counter()
+    muestras = {}
+    for i in idx:
+        v = mp[i]
+        if v <= 0:
+            continue
+        cuenta[v] += 1
+        m = muestras.setdefault(v, [])
+        if len(m) < TOPE_MUESTRA:
+            m.append(i)
+    total_validos = sum(cuenta.values())
+    if total_validos == 0:
+        raise SystemExit('ningun pixel con dato adentro del poligono')
 
-    probs = {}
+    # Las 30 capas NO se cargan juntas: a 6 Mpx serian unos 7 GB de listas de
+    # Python. Se lee una, se guarda su probabilidad solo en los indices
+    # muestreados, y se descarta.
+    plano = [i for v in sorted(muestras) for i in muestras[v]]
+    prob_en_muestra = {}
     for g in GRUPOS:
         im, d = datos(os.path.join(carpeta, g + '.tif'))
         if im.size != (W, H):
             raise SystemExit('%s no comparte la grilla con MostProbable' % g)
-        probs[g] = d
+        prob_en_muestra[g] = [d[i] for i in plano]
+        del d
 
+    pos = {i: k for k, i in enumerate(plano)}
     nombre_de, acuerdo = {}, {}
-    for v in cuenta:
-        muestra = [i for i in validos if mp[i] == v][:4000]
+    for v in sorted(muestras):
         gana = Counter()
-        for i in muestra:
-            gana[max(GRUPOS, key=lambda g: probs[g][i])] += 1
+        for i in muestras[v]:
+            k = pos[i]
+            gana[max(GRUPOS, key=lambda g: prob_en_muestra[g][k])] += 1
         top, n = gana.most_common(1)[0]
-        acuerdo[v] = n / len(muestra)
+        acuerdo[v] = n / len(muestras[v])
         # Sin unanimidad no se le pone nombre: el valor queda a la vista.
         nombre_de[v] = top if acuerdo[v] >= 0.999 else '??? (%s?)' % top
 
@@ -255,14 +293,14 @@ def main(eco_id, carpeta):
     w('raster %dx%d  pixel %.6f x %.6f grados' % (W, H, dx, dy))
     w('%s' % nota_escala)
     w('pixeles dentro del poligono: %d   con dato: %d'
-      % (len(idx), len(validos)))
+      % (len(idx), total_validos))
     w('')
     w('mapeo deducido valor -> grupo (unanimidad del argmax):')
     for v in sorted(cuenta):
         w('  %3d -> %-16s %.1f %%' % (v, nombre_de[v], acuerdo[v] * 100))
     w('')
     w('reparto de la superficie:')
-    tot = len(validos)
+    tot = total_validos
     for v, n in cuenta.most_common():
         w('  %-16s %5.1f %%  (%d px)' % (nombre_de[v], 100.0 * n / tot, n))
     w('')
