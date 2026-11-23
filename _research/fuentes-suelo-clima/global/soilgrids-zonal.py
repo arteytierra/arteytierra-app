@@ -56,6 +56,7 @@ import math
 import os
 import subprocess
 import sys
+import time
 from collections import Counter
 
 from PIL import Image
@@ -80,6 +81,14 @@ PX_NATIVO = 0.002083
 # capas y salio unanime al 100 % en los cuatro poligonos corridos, asi que no
 # hace falta mas; subirlo solo cuesta tiempo.
 TOPE_MUESTRA = 4000
+# El WCS de ISRIC sirve las capas desde COGs y de a ratos devuelve un tile
+# roto: HTTP 400 con `_TIFFPartialReadStripArray: Cannot read offset/size for
+# strile` o `ZIPDecode: Decoding error at scanline 0`. Es intermitente y no es
+# de la peticion -el 22/11/2026, MostProbable sobre el mismo cuadrado de la
+# pampa dio 400 tres veces y 200 cinco minutos despues-, asi que se reintenta
+# con espera creciente. Si despues de todas sigue fallando, el script corta:
+# una capa faltante da un reparto plausible y equivocado.
+ESPERAS = [5, 15, 40, 90, 180]
 
 GRUPOS = [
     'Acrisols', 'Albeluvisols', 'Alisols', 'Andosols', 'Arenosols', 'Calcisols',
@@ -103,13 +112,53 @@ LIXIVIADOS = {'Acrisols', 'Alisols', 'Ferralsols', 'Lixisols', 'Plinthosols',
 SALINOS_Y_TURBA = {'Histosols', 'Solonchaks', 'Solonetz'}
 
 
-def bajar(url, destino, timeout='180'):
+def es_tiff(path):
+    """Un TIFF arranca con II*\0 o MM\0*. El error del WCS arranca con `<`."""
+    try:
+        with open(path, 'rb') as f:
+            return f.read(4) in (b'II*\x00', b'MM\x00*')
+    except OSError:
+        return False
+
+
+def motivo(path):
+    """El texto de la excepcion OWS, que es lo que explica el 400."""
+    try:
+        t = io.open(path, encoding='utf-8', errors='replace').read()
+    except OSError:
+        return ''
+    i, j = t.find('<ows:ExceptionText>'), t.find('</ows:ExceptionText>')
+    return ' '.join(t[i + 19:j].split()) if 0 <= i < j else ''
+
+
+def bajar(url, destino, timeout='180', tiff=False, reintentos=None):
     if os.path.exists(destino) and os.path.getsize(destino) > 2000:
         return 'cache'
-    r = subprocess.run(
-        ['curl', '-s', '-A', UA, '--max-time', timeout, url, '-o', destino,
-         '-w', '%{http_code}'], capture_output=True, text=True)
-    return r.stdout.strip()
+    esperas = ESPERAS if reintentos is None else ESPERAS[:reintentos]
+    ultimo, por_que = '', ''
+    for intento in range(len(esperas) + 1):
+        r = subprocess.run(
+            ['curl', '-s', '-A', UA, '--max-time', timeout, url, '-o', destino,
+             '-w', '%{http_code}'], capture_output=True, text=True)
+        ultimo = r.stdout.strip()
+        # Un 200 que no es TIFF tampoco sirve: el servidor puede devolver la
+        # excepcion con codigo bueno, y guardarla como .tif seria peor que el
+        # error, porque la proxima corrida la tomaria de la cache.
+        if ultimo == '200' and (not tiff or es_tiff(destino)):
+            return ultimo
+        por_que = motivo(destino)
+        try:
+            os.remove(destino)
+        except OSError:
+            pass
+        if intento == len(esperas):
+            break
+        print('   reintento %d/%d (%s%s), espero %d s'
+              % (intento + 1, len(esperas), ultimo,
+                 '; ' + por_que[:60] if por_que else '', esperas[intento]),
+              flush=True)
+        time.sleep(esperas[intento])
+    return '%s%s' % (ultimo, ' | ' + por_que if por_que else '')
 
 
 def geometria(eco_id, carpeta):
@@ -223,9 +272,9 @@ def main(eco_id, carpeta):
         dest = os.path.join(carpeta, cov + '.tif')
         url = ('%s&COVERAGEID=%s&SUBSET=X(%.6f,%.6f)&SUBSET=Y(%.6f,%.6f)%s'
                % (WCS, cov, x0b, x1b, y0b, y1b, escala))
-        cod = bajar(url, dest)
+        cod = bajar(url, dest, tiff=True)
         if cod not in ('200', 'cache'):
-            raise SystemExit('SoilGrids devolvio %s en la capa %s' % (cod, cov))
+            raise SystemExit('SoilGrids no entrego la capa %s: %s' % (cov, cod))
     print('31 capas listas', flush=True)
 
     mp_im, mp = datos(os.path.join(carpeta, 'MostProbable.tif'))

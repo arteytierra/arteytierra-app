@@ -561,8 +561,16 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       'Manzanillo (Hippomane mancinella)',
       'Algodón de Darwin (Gossypium darwinii)',
     ],
+    // Cuatro, y sin vetiver. Todas las demás fichas lo llevan como especie de
+    // servicio para barreras vivas; acá no, porque es una gramínea introducida
+    // y esta misma ficha le pone −25 a los frutales porque las introducidas son
+    // las invasoras que más territorio ganan en las islas. Lo que sigue es lo
+    // medido por el levantamiento INEC-MAG-CGREG 2014, en hectáreas sembradas:
+    // café 723, maíz 105, otros bananos 98, yuca 74 y plátano 72, sobre una zona
+    // agrícola de 19.010 ha que es el 2,38 % del territorio insular.
+    cultivos: ['cafe', 'platano', 'yuca', 'maiz_tropical'],
     aptitud: [
-      { uso: 'huerta', delta: -15, razon: 'La zona alta húmeda produce, pero la baja es árida y de suelo discontinuo. Lo que decide no es la fertilidad sino el agua y la bioseguridad: en Galápagos cada insumo que entra puede traer una especie que no se va más.' },
+      { uso: 'huerta', delta: -15, razon: 'La zona alta húmeda produce, pero la baja es árida y de suelo discontinuo. Lo que decide no es la fertilidad sino el agua y la bioseguridad: en Galápagos cada insumo que entra puede traer una especie que no se va más. El MAG del Ecuador lo dice en los dos sentidos: las fuentes de agua dependen de las lluvias para recargar acuíferos, grietas, pozos y reservorios, y el exceso de rocas en el suelo impide la mecanización; pero la producción local de tomate riñón y de café llegó a ser suficiente como para que en julio de 2020 el Consejo de Gobierno resolviera restringir su ingreso a la provincia. Y las dos estaciones van al revés de lo que uno supondría: la lluviosa y fría es de junio a noviembre, que es cuando se hacen las hortalizas, y la seca y cálida de diciembre a mayo, la de los frutales de temporada. Es la garúa de la zona alta, que es donde está la agricultura.' },
       { uso: 'frutales', delta: -25, razon: 'La mora, la guayaba y otras frutales introducidas son hoy las invasoras que más territorio ganan en las islas.' },
       { uso: 'pasturas', delta: -25, razon: 'La ganadería de las zonas altas es la puerta de entrada de pasturas invasoras y la principal presión sobre la vegetación nativa.' },
       { uso: 'reserva', delta: 30, razon: 'Un archipiélago donde la mayor parte de lo que crece no crece en ningún otro lado.' },
@@ -571,6 +579,7 @@ export const BIOMAS_REGIONALES_SUDAMERICA: Record<string, BiomaFicha> = {
       { label: 'RESOLVE Ecoregions 2017 — catálogo y licencia CC BY 4.0', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
       { label: 'Dinerstein et al. 2017 — artículo', url: 'https://doi.org/10.1093/biosci/bix014' },
       { label: 'Parque Nacional Galápagos — áreas protegidas', url: 'https://galapagos.gob.ec/areas-protegidas/' },
+      { label: 'MAG-SIPA Ecuador 2021 — boletín zonal agrícola de Galápagos, marzo: superficie sembrada por cultivo del levantamiento INEC-MAG-CGREG 2014 contra el III Censo Agropecuario 2000, estaciones y restricción de ingreso de 2020', url: 'https://sipa.agricultura.gob.ec/boletines/territoriales/agricola-integral/2021/galapagos/boletin_zonal_galapagos_marzo_2021.pdf' },
     ],
   },
   // GF, GY, SR, VE · confianza alta

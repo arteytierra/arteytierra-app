@@ -226,14 +226,17 @@ describe('lo que no se afirma', () => {
     expect(ficha().fuentes.some((f) => f.url.includes('edepot.wur.nl'))).toBe(true);
   });
 
-  it('no da porcentajes de HWSD ni de SoilGrids, porque no se extrajeron', () => {
-    // Las otras 32 fichas del bloque traen el reparto de las dos bases. Esta no,
-    // y lo dice. Si alguien agrega porcentajes, tiene que agregar también la
-    // fuente a `fuentes`, y este test lo obliga a pasar por acá.
+  it('da el de SoilGrids, que se midió, y sigue sin dar el de HWSD', () => {
+    // Estuvo sin ningún porcentaje desde el 23/10/2026, y lo decía. El
+    // 22/11/2026 se corrió el zonal contra el polígono y dio 74,5 % de
+    // Vertisols, la fracción más alta de las tres fichas del Decán: la
+    // medición de campo del ICRISAT que ocupa el resto de este campo ahora
+    // tiene su superficie. HWSD v2 no tiene WCS en ISRIC y queda pendiente.
     const urls = ficha().fuentes.map((f) => f.url);
     expect(urls.some((u) => u.includes('harmonized-world-soil-database'))).toBe(false);
-    expect(urls.some((u) => u.includes('isric.org/soilgrids'))).toBe(false);
-    expect(ficha().suelos).toMatch(/no hay reparto de HWSD ni de SoilGrids/);
+    expect(urls.some((u) => u.includes('isric.org/soilgrids'))).toBe(true);
+    expect(ficha().suelos).toMatch(/74,5 %/);
+    expect(ficha().suelos).toMatch(/HWSD v2 sigue sin extraerse/);
   });
 
   it('las dos fuentes de las que sólo se leyó el resumen lo dicen en la etiqueta', () => {
@@ -267,21 +270,35 @@ describe('el Decán norte, ECO_ID 297', () => {
     expect(fichaDeEcorregion(297)).toBe(NORTE);
   });
 
-  it('el hallazgo del lote está escrito: acá no hay vertisol negro', () => {
-    // El encargo daba por hecho el regur del Decán central y esta ecorregión
-    // está afuera de la traza basáltica. Lo que hay son alfisoles rojos maduros
-    // en las tierras altas y perfiles gleyizados en los valles, medidos en
-    // catenas de Sambalpur, que es el distrito de Debrigarh, una de las cuatro
-    // áreas protegidas de la ecorregión.
+  /**
+   * El hallazgo del lote era mitad cierto, y el zonal lo mostró.
+   *
+   * El 04/11/2026 esta ficha escribió, contra el encargo que daba por hecho el
+   * regur del Decán central, que la ecorregión está afuera de la traza
+   * basáltica y que por eso el vertisol negro no se hereda. Lo primero sigue
+   * siendo cierto; lo segundo no. El 22/11/2026 el resumen zonal de SoilGrids
+   * contra el polígono dio **35,2 % de Vertisols**, y repartido por todo el
+   * polígono y no en una esquina.
+   *
+   * Lo que lo vuelve un defecto y no un matiz: `lib/sueloExpansivo.ts` infiere
+   * el suelo expansivo punto a punto de la arcilla y la CEC de SoilGrids, y
+   * marcaba «posible» en un tercio de esta ecorregión mientras la ficha decía
+   * que acá no hay. Dos partes del mismo programa contestándose distinto.
+   */
+  it('el zonal corrige el hallazgo del lote: vertisol hay, y es un tercio', () => {
     const s = fichaDe(NORTE).suelos;
+    expect(s).toMatch(/35,2 %/);
+    expect(s).toMatch(/42,4 %/);
+    // La corrección queda escrita como corrección, no borrada.
     expect(s).toMatch(/afuera de la traza basáltica/);
-    expect(s).toMatch(/no se hereda/);
+    expect(s).toMatch(/lo primero es cierto, lo segundo no/);
+    // Y el reparto por tercios, que es lo que impide leer el 35 % como local.
+    expect(s).toMatch(/por tercios de superficie/);
+    // El trabajo de catenas sigue entero, porque sigue siendo cierto.
     expect(s).toMatch(/Rhodustalfs/);
     expect(s).toMatch(/gleyización/);
     expect(s).toMatch(/Sambalpur/);
     expect(s).toMatch(/Debrigarh/);
-    // Y no se declara ningún porcentaje para el polígono, porque son catenas.
-    expect(s).toMatch(/no se declara ninguna distribución/);
   });
 
   it('los tres estados son los de hoy, y Jharkhand es el que faltaba', () => {
@@ -435,38 +452,58 @@ describe('el Decán sur, ECO_ID 298', () => {
 });
 
 describe('lo que las tres comparten, y lo que ninguna afirma', () => {
-  it('ninguna declara reparto de HWSD ni de SoilGrids, y las tres dicen por qué', () => {
+  /**
+   * Las tres tenían el mismo hueco y el 22/11/2026 se llenó la mitad. El
+   * resumen zonal de SoilGrids contra el polígono se corrió para las tres y da
+   * el vertisol en gradiente: 74,5 % en el centro, 43,1 % en el sur y 35,2 %
+   * en el norte. HWSD v2 sigue sin extraerse —no tiene WCS en ISRIC y hay que
+   * bajar el ráster global de FAO—, así que la comparación entre las dos
+   * bases, que es la que la regla del −25 pide, todavía no se puede hacer, y
+   * las tres lo dicen.
+   */
+  it('las tres declaran el zonal de SoilGrids y ninguna el de HWSD', () => {
+    const esperado: Record<string, string> = {
+      [DECAN]: '74,5 %', [NORTE]: '35,2 %', [SUR]: '43,1 %',
+    };
     for (const id of [DECAN, NORTE, SUR]) {
       const urls = fichaDe(id).fuentes.map((f) => f.url);
       expect(urls.some((u) => u.includes('harmonized-world-soil-database')), id).toBe(false);
-      expect(urls.some((u) => u.includes('isric.org/soilgrids')), id).toBe(false);
-      expect(fichaDe(id).suelos, id).toMatch(/(no|[Tt]ampoco) hay reparto de HWSD ni de SoilGrids/);
+      expect(urls.some((u) => u.includes('isric.org/soilgrids')), id).toBe(true);
+      expect(fichaDe(id).suelos, id).toContain(esperado[id]!);
+      expect(fichaDe(id).suelos, id).toMatch(/HWSD v2 sigue sin extraerse/);
     }
   });
 
-  it('el norte y el sur van sin cultivos, porque sus fuentes de cultivos no abren', () => {
-    // La entrega citaba el proyecto FOLUR de Odisha y el plan distrital de
-    // Tiruchirappalli. Ninguno de los dos resuelve desde esta máquina, ni con
-    // curl ni con navegador, así que no se citan y la lista no se monta: la
-    // ficha cae al catálogo por clase Köppen, que es más grueso y sí tiene
-    // fuente. El Decán central sí los trae.
+  it('el norte y el sur ya tienen su lista, y sale de estadística de distrito', () => {
+    // Estuvieron sin cultivos desde el 04/11/2026 porque las fuentes que citaba
+    // la entrega —FOLUR de Odisha, el plan distrital de Tiruchirappalli— no
+    // resolvían desde esta máquina. Lo que lo destrabó fue cambiar de host:
+    // `kvk.icar.gov.in` sigue sin resolver y los mismos planes de contingencia
+    // agrícola están publicados en `icar-crida.res.in`, que sí abre. Son área
+    // sembrada medida, con el regadío separado del secano.
     expect(fichaDe(DECAN).cultivos).toHaveLength(10);
-    expect(fichaDe(NORTE).cultivos).toBeUndefined();
-    expect(fichaDe(SUR).cultivos).toBeUndefined();
+    expect(fichaDe(NORTE).cultivos).toContain('arroz');
+    expect(fichaDe(SUR).cultivos).toContain('maiz_tropical');
+    for (const id of [NORTE, SUR]) {
+      for (const c of fichaDe(id).cultivos!) expect(ESPECIES_POR_ID[c], `${id} ${c}`).toBeDefined();
+      expect(fichaDe(id).fuentes.some((f) => f.url.includes('icar-crida.res.in')), id).toBe(true);
+    }
   });
 
   it('las fuentes son sólo las que se usaron: ninguna de relleno', () => {
     // La entrega traía HWSD y SoilGrids en `fuentes` de las dos fichas
     // diciendo en el mismo archivo que no se habían procesado, más un PDF con
     // etiqueta «DjVu Document» y el índice de EUDASM, que contesta 200 con un
-    // cuerpo que dice «Request Rejected».
+    // cuerpo que dice «Request Rejected». Eran cuatro cada una; ahora SoilGrids
+    // sí está procesado y entra, con Hengl y con los planes de distrito.
     for (const id of [NORTE, SUR]) {
-      expect(fichaDe(id).fuentes, id).toHaveLength(4);
       for (const f of fichaDe(id).fuentes) {
         expect(f.label.length, `${id} ${f.url}`).toBeGreaterThan(20);
         expect(f.url, id).not.toMatch(/eudasm|esdac\.jrc/i);
       }
     }
+    expect(fichaDe(NORTE).fuentes).toHaveLength(8);
+    expect(fichaDe(SUR).fuentes).toHaveLength(7);
   });
 
   it('no atribuyen saberes y traen ocho especies cada una, todas plantas', () => {

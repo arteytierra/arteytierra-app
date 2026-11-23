@@ -1,7 +1,7 @@
 /**
  * Por qué estas ecorregiones no llevan lista de cultivos.
  *
- * Son las 29 fichas regionales que no declaran `cultivos`, y hasta el
+ * Son las 26 fichas regionales que no declaran `cultivos`, y hasta el
  * 22/11/2026 la ausencia tenía una sola lectura en todo el programa: «todavía
  * no está curada». De ahí salían dos afirmaciones falsas en lugares distintos.
  * El bloque «en esta ecorregión» ofrecía el catálogo por clase Köppen con el
@@ -13,9 +13,10 @@
  * quien cultive ahí, donde no cultiva nadie.
  *
  * Lo que vuelve el error evitable es que las fichas ya lo sabían por otra vía:
- * veintidós de estas veintinueve declaran en `aptitud` deltas de −30 a −40 en
- * huerta, frutales, pasturas y forestal, y +25 o +30 en reserva. La aptitud
- * decía «acá no se produce» mientras el calendario ofrecía tomate.
+ * veintidós de las veintinueve que había al principio declaran en `aptitud`
+ * deltas de −30 a −40 en huerta, frutales, pasturas y forestal, y +25 o +30 en
+ * reserva. La aptitud decía «acá no se produce» mientras el calendario ofrecía
+ * tomate.
  *
  * ## Por qué vive acá y no en los catálogos
  *
@@ -27,16 +28,29 @@
  *
  * Tenerlas todas en un archivo tiene además una ventaja que la dispersión en
  * ocho catálogos no daba: **esta lista es el inventario del pendiente.** Las
- * tres entradas con motivo `sin_curar` son, literalmente, lo que falta curar, y
- * se leen de un vistazo en vez de salir de una consulta al catálogo entero.
+ * entradas con motivo `sin_curar` son, literalmente, lo que falta curar, y se
+ * leen de un vistazo en vez de salir de una consulta al catálogo entero.
+ *
+ * Nacieron tres y **hoy no queda ninguna**, el mismo día. Dos eran el Decán
+ * —norte y sur— y la tercera Galápagos, y las tres se curaron con estadística
+ * oficial de superficie sembrada: los planes de contingencia agrícola de
+ * distrito del ICAR-CRIDA para la India y el boletín zonal del MAG-SIPA para
+ * Ecuador. De dónde salió cada número, y cuáles cultivos quedaron afuera porque
+ * `lib/especies.ts` todavía no los tiene —el ragi y el urad entre ellos—, está
+ * en `_research/CULTIVOS_SIN_CURAR.md`.
+ *
+ * Que el motivo quede sin usar no quiere decir que sobre: una ecorregión nueva
+ * sin lista entra por ahí, y el test está escrito para que esa cuenta pueda
+ * bajar sola y no pueda subir sin que alguien lo decida.
  *
  * ## Cómo se escribe una entrada
  *
  * El motivo no se deduce de la aptitud ni del clima. Un delta muy negativo
  * dice «este uso rinde mal acá», que no es lo mismo que «la pregunta agrícola
- * no corresponde acá»: el Decán sur tiene −10 en huerta y agricultura plena, y
- * Galápagos tiene −15 porque la zona alta sí produce y lo que limita es la
- * bioseguridad. Las dos son `sin_curar` justamente por eso.
+ * no corresponde acá»: el Decán sur tenía −10 en huerta con agricultura plena,
+ * y Galápagos −15 porque la zona alta sí produce y lo que limita es la
+ * bioseguridad. Las dos entraron como `sin_curar` justamente por eso, y por eso
+ * las dos terminaron con lista curada en vez de con declaración.
  *
  * Y el `detalle` se apoya en lo que la ficha ya tiene escrito y citado en
  * `resumen`, en `suelos` o en las razones de su `aptitud`. No hay afirmación
@@ -47,8 +61,8 @@
  * polígono de RESOLVE no es el borde de un sistema productivo —es el mismo
  * motivo por el que existe `tambienPorClima`—, y varias de estas ecorregiones
  * tienen adentro, en una fracción chica de su superficie, el lugar donde sí se
- * cultiva: los oasis del desierto líbico, la pradera de ceniza de las
- * Aleutianas, la zona alta de Galápagos. La lista genérica se sigue ofreciendo;
+ * cultiva: los oasis del desierto líbico y la pradera de ceniza de las
+ * Aleutianas. La lista genérica se sigue ofreciendo;
  * lo que cambia es que ahora dice de dónde salió y el detalle nombra la
  * excepción cuando la ficha la tiene documentada.
  */
@@ -183,24 +197,12 @@ export const SIN_CULTIVOS: Record<string, SinCultivos> = {
     uso: 'pastoril extensivo',
   },
 
-  // ─── Falta la lista, y nada más (3) ─────────────────────────────────────────
-  // Éstas son el pendiente de verdad: hay agricultura documentada y la ficha
-  // todavía no declara cuál. El aviso de «falta curar» les corresponde entero.
-  decan_norte_sal: {
-    motivo: 'sin_curar',
-    detalle: 'Hay agricultura plena —la ficha le pone −10 en huerta, que es el número del bioma por la estacionalidad y no una limitante del lugar— y lo que falta es la lista de qué se cultiva en los valles de esta catena.',
-    uso: null,
-  },
-  decan_sur_elefantes: {
-    motivo: 'sin_curar',
-    detalle: 'Hay agricultura plena en los 900 a 1.500 mm de esta ecorregión y la ficha ya discute cómo se mueve la aptitud adentro de ella; lo que falta es la lista de cultivos. El conflicto con la población de elefante asiático más grande del mundo es parte de lo que esa lista va a tener que decir.',
-    uso: null,
-  },
-  galapagos_matorral_xerico: {
-    motivo: 'sin_curar',
-    detalle: 'La zona alta húmeda produce y la ficha lo dice: el −15 en huerta no sale de la fertilidad sino del agua y de la bioseguridad. Falta la lista, y va a tener que distinguir la zona agrícola de las islas habitadas del matorral árido bajo, que RESOLVE mete en un único ECO_ID xerófilo.',
-    uso: null,
-  },
+  // ─── Falta la lista, y nada más (0) ───────────────────────────────────────
+  // Acá estaban `decan_norte_sal`, `decan_sur_elefantes` y
+  // `galapagos_matorral_xerico`, que eran el pendiente de verdad: había
+  // agricultura documentada y la ficha no decía cuál. Las tres tienen su lista
+  // desde el 22/11/2026 y por eso salieron de acá. La sección queda, vacía,
+  // porque es donde entra la próxima.
 };
 
 /**

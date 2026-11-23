@@ -2,7 +2,8 @@
  * La compuerta de la ausencia declarada.
  *
  * El defecto que cierra: `cultivos` es opcional y la ausencia no se distinguía
- * de la falta de datos. Veintinueve fichas regionales no la traen, y hasta el
+ * de la falta de datos. Veintinueve fichas regionales no la traían —hoy son
+ * veintiséis—, y hasta el
  * 22/11/2026 las veintinueve recibían el mismo trato: el bloque «en esta
  * ecorregión» les ofrecía el catálogo por clase Köppen avisando que «todavía»
  * faltaba curar, y el balance hídrico del calendario les ofrecía los diez
@@ -74,16 +75,50 @@ describe('toda ficha sin cultivos declara por qué', () => {
    * El inventario. `sin_curar` es el único motivo que el tiempo arregla, así
    * que esta cuenta tiene que bajar y nunca subir: curar una ficha la baja sin
    * romper nada, y agregar una ecorregión nueva sin lista la sube y rompe.
+   *
+   * Nacieron tres el 22/11/2026 —Decán norte, Decán sur y Galápagos— y se
+   * curaron el mismo día con estadística oficial de superficie sembrada. Que
+   * esto sea `[]` no significa que el motivo sobre: significa que no hay
+   * ninguna esperando.
    */
-  it('las que sólo esperan la lista son tres y están nombradas', () => {
+  it('ya no queda ninguna esperando la lista', () => {
     const porCurar = Object.entries(SIN_CULTIVOS)
       .filter(([, d]) => d.motivo === 'sin_curar')
       .map(([id]) => id)
       .sort();
-    expect(porCurar).toEqual(
-      ['decan_norte_sal', 'decan_sur_elefantes', 'galapagos_matorral_xerico'],
-    );
-    expect(porCurar.length).toBeLessThanOrEqual(3);
+    expect(porCurar).toEqual([]);
+  });
+
+  /**
+   * La otra punta de la misma compuerta. Curar una ficha significa que la lista
+   * está en el catálogo y que la declaración se fue: si un montaje futuro
+   * regenera el catálogo y se lleva puesta la lista, la ficha volvería a caer
+   * en el aviso genérico sin que nadie lo note. Acá lo nota.
+   */
+  it('las tres que se curaron tienen lista, no declaración', () => {
+    const curadas: ReadonlyArray<readonly [string, string]> = [
+      ['decan_norte_sal', 'arroz'],
+      ['decan_sur_elefantes', 'maiz_tropical'],
+      ['galapagos_matorral_xerico', 'cafe'],
+    ];
+    for (const [id, cultivo] of curadas) {
+      const f = fichaPorId(id)!;
+      expect(f.cultivos, `${id} se quedó sin lista de cultivos`).toContain(cultivo);
+      expect(f.sinCultivos, `${id} ya no debería declarar motivo`).toBeUndefined();
+      expect(cultivosDeFicha(f.cultivos, f.sinCultivos).origen).toBe('ficha');
+    }
+  });
+
+  /**
+   * Y una decisión editorial que vale la pena amarrar. Todas las demás fichas
+   * llevan vetiver como especie de servicio para barreras vivas; Galápagos no,
+   * porque es una gramínea introducida y la misma ficha le pone −25 a los
+   * frutales porque las introducidas son las invasoras que más territorio ganan
+   * en las islas. Agregarlo sería contradecir en un campo lo que el otro avisa.
+   */
+  it('Galápagos no lleva vetiver, y es a propósito', () => {
+    expect(fichaPorId('galapagos_matorral_xerico')!.cultivos)
+      .not.toContain('vetiver');
   });
 
   it('y las demás no son un cajón de sastre: cada motivo tiene su caso', () => {
@@ -91,7 +126,8 @@ describe('toda ficha sin cultivos declara por qué', () => {
       (a, d) => { a[d.motivo] = (a[d.motivo] ?? 0) + 1; return a; }, {});
     expect(cuenta['no_corresponde']).toBeGreaterThanOrEqual(20);
     expect(cuenta['otro_uso']).toBe(2);          // Pilbara y mulga
-    expect(Object.keys(cuenta).sort()).toEqual(['no_corresponde', 'otro_uso', 'sin_curar']);
+    expect(cuenta['sin_curar']).toBeUndefined(); // se curaron las tres
+    expect(Object.keys(cuenta).sort()).toEqual(['no_corresponde', 'otro_uso']);
   });
 
   /**

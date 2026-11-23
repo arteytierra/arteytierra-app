@@ -140,20 +140,22 @@ describe('cobertura del catálogo de cultivos', () => {
     'manglares_amazon_orinoco_caribe_sur', 'golfo_persico_mangle', 'mar_rojo_mangle',
     'nefud_rub_al_khali', 'sahara_occidental_erg', 'sahara_oriental', 'chotts_sebkhas',
     'revillagigedo_ecosistemas_insulares', 'isla_malpelo_xerica', 'islas_desventuradas',
-    'galapagos_matorral_xerico', 'pantepui_guayana_alta',
+    'pantepui_guayana_alta',
     'campinaranas_aguas_negras', 'campos_rupestres',
     // Las dos de Australia Occidental: el catalogo de lib/especies.ts no tiene
     // ninguna especie que estos rangelands produzcan y la produccion es carne y
     // lana sobre pastura nativa. Sin el campo, la seccion cae al catalogo por
     // clase Koppen en vez de mostrar una lista inventada.
     'pilbara_matorral', 'mulga_australia_occidental',
-    // Las dos del Decán seco que entraron el 04/11/2026. Acá el motivo no es
-    // que no se cultive —se cultiva muchísimo— sino que las dos fuentes de
-    // cultivos que trajo la entrega, el proyecto FOLUR de Odisha y el plan
-    // distrital de Tiruchirappalli, no resuelven desde esta máquina ni con
-    // curl ni con navegador. No se cita lo que no se pudo leer, y sin lista la
-    // ficha cae al catálogo por clase Köppen, que sí tiene fuente.
-    'decan_norte_sal', 'decan_sur_elefantes',
+    // El Decán norte, el Decán sur y Galápagos estuvieron acá y salieron el
+    // 22/11/2026. El motivo por el que estaban no era que no se cultive —se
+    // cultiva muchísimo— sino que las fuentes que había a mano no abrían: el
+    // proyecto FOLUR de Odisha y el plan distrital de Tiruchirappalli no
+    // resolvían desde esta máquina. Lo que destrabó el caso fue cambiar de
+    // host: `kvk.icar.gov.in` y `krishi.icar.gov.in` siguen sin resolver, y los
+    // mismos planes de contingencia están publicados en `icar-crida.res.in`,
+    // que sí abre. Las listas y sus números están en
+    // `_research/CULTIVOS_SIN_CURAR.md`.
     // Las dos turberas del 12/11/2026, y acá el motivo es otro que los
     // anteriores: no es que no se cultive, ni que la fuente no abra. Es que las
     // dos especies que la evidencia señala —el sagú (Metroxylon sagu) y el

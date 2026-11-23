@@ -306,6 +306,67 @@ material sulfídico debajo y en los manglares, la fracción del grupo B que este
 script calcula es un **piso y no el total**. El script lo imprime en cada
 corrida para que no se lea como cifra cerrada.
 
+## El Decán: tres fichas que decían que acá no hay vertisol
+
+Las tres fichas del Decán seco eran las únicas del bloque de Indomalaya sin
+reparto de suelos, y las tres lo decían. Dos además afirmaban algo más fuerte:
+que el vertisol negro de la traza basáltica **no se hereda** ahí, porque es otro
+basamento. Medido contra el polígono:
+
+| ECO_ID | Ficha | Píxeles con dato | Vertisols | Luvisols | Siguiente |
+|---|---|---|---|---|---|
+| 290 | Decán central | 2.381.340 | **74,5 %** | 17,3 % | Leptosols 3,3 % |
+| 298 | Decán sur | 1.528.342 | **43,1 %** | 26,7 % | Cambisols 17,5 % |
+| 297 | Decán norte | 1.049.796 | **35,2 %** | 42,4 % | Leptosols 10,5 % |
+
+El gradiente es limpio y va de centro a norte. Lo que no se sostenía era la
+negación: en el norte el vertisol es un tercio del polígono y en el sur es el
+orden dominante.
+
+**Y lo que lo convierte en un defecto y no en un matiz** es que la app ya lo
+sabía por otra vía. `lib/sueloExpansivo.ts` infiere el suelo expansivo punto a
+punto de la arcilla y la CEC de SoilGrids, con los umbrales de la WRB 2022, y
+habría marcado «posible» en un tercio del 297 y en casi la mitad del 298
+mientras el campo `suelos` de esas mismas fichas decía que ahí no hay. Dos
+partes del mismo programa contestándose distinto, que es la misma forma del
+defecto que había entre el calendario y la aptitud en los manglares.
+
+### El promedio volvió a esconder la mitad del asunto
+
+Como en Java, el número del polígono entero no es el número del predio. Por
+tercios de superficie:
+
+| 298, por latitud | Sur | Centro | Norte |
+|---|---|---|---|
+| Vertisols | **75,6 %** | 38,6 % | 15,1 % |
+| Luvisols | 2,6 % | 29,5 % | **48,1 %** |
+
+El 298 junta dos provincias de suelo —la llanura de suelo negro algodonero del
+extremo meridional de la península y la meseta roja del norte— y el 43 % del
+promedio no describe a ninguna de las dos. El 297, en cambio, lo tiene
+repartido: 24 % al oeste, 51 % al centro, 30 % al este, y de 29 a 33 % de norte
+a sur. Ahí el promedio sí sirve, y eso también hay que medirlo para saberlo.
+
+### Lo que dice la estadística agrícola del mismo territorio
+
+Los planes de contingencia agrícola de distrito del ICAR traen los suelos
+mayores con su nombre vernáculo, así que se puede contrastar:
+
+- **Kondagaon**, en la meseta de Bastar (297), nombra entre sus cinco suelos
+  mayores el *Vertisols (Kanhar-clayey)*, sin superficie.
+- **Sundargarh** (297, borde norte) da suelo negro 3,3 %, contra rojo 26,5 % y
+  franco arenoso 17,0 %.
+- **Chamarajanagar** (298, tercio central) da suelos negros medios 16,0 %,
+  contra rojo franco 14,2 % y rojo franco arenoso 4,8 %. Esas tres filas suman
+  el 35 % del distrito y el resto, que es bosque, queda sin clasificar:
+  renormalizado sobre lo que sí clasificó, el negro es el 46 %, **el mismo
+  orden que el 38,6 % que SoilGrids da para ese tercio**.
+
+La estadística de distrito y el zonal no se contradicen; lo que no coincide es
+la escala a la que cada uno mide. El detalle de las fuentes y de las listas de
+cultivos que salieron del mismo trabajo está en
+`_research/CULTIVOS_SIN_CURAR.md`.
+
 ## Cómo se corre, y qué queda del backlog
 
 ```
