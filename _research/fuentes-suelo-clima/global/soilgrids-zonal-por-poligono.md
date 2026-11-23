@@ -423,6 +423,12 @@ defecto que había entre el calendario y la aptitud en los manglares.
 
 ### El promedio volvió a esconder la mitad del asunto
 
+Esto lo mide `reparto-espacial-por-tercios.py`, al lado de este archivo:
+reusa las capas que el zonal ya bajó, corta el polígono en tercios **de
+superficie** —no de grados— por longitud y por latitud, y da la fracción de
+cada clase en cada tercio.
+
+
 Como en Java, el número del polígono entero no es el número del predio. Por
 tercios de superficie:
 
