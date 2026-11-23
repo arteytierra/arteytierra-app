@@ -201,6 +201,6 @@ el resumen zonal de SoilGrids del mismo polígono:
   bosque: renormalizado sobre lo que sí clasificó, el negro es el 46 %.
 
 Las dos fichas afirmaban que el vertisol negro «no se hereda» acá. El zonal
-medido dice 35,2 % de Vertisols en el 297 y 43,1 % en el 298. La afirmación no
-se sostiene, y el detalle está en
+medido dice 32,5 % de Vertisols en el 297 y 42,4 % en el 298. La afirmación
+no se sostiene, y el detalle está en
 `_research/fuentes-suelo-clima/global/soilgrids-zonal-por-poligono.md`.

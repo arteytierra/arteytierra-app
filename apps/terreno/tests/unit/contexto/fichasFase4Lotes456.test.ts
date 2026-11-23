@@ -193,15 +193,51 @@ describe('los mecanismos que no se pueden perder al reescribir', () => {
     expect(BIOMAS_REGIONALES_INDOMALAYA['decan_central_hardwickia']!.suelos).toMatch(/del 7 al 11 %/);
   });
 
-  it('el vertisol del Decán no se hereda en Myanmar', () => {
-    expect(BIOMAS_REGIONALES_INDOMALAYA['bosques_secos_irrawaddy']!.suelos)
-      .toMatch(/no se hereda acá/);
+  /**
+   * El 22/11/2026 esta ficha dijo —con las mismas palabras que las tres del
+   * Decán— que el vertisol negro de la traza basáltica no se hereda en Myanmar,
+   * y el zonal medido contra el polígono dio **34,6 % de Vertisols**. La
+   * corrección no es que no se herede: es que no hace falta heredarlo.
+   *
+   * Pero este polígono es el único que tenía una segunda fuente para contrastar,
+   * y no cierra: la tabla nacional de la FAO le da a Myanmar entero 0,48 Mha de
+   * vertisol y el 34,6 % de acá son 1,22 Mha, dos veces y media el total del
+   * país. Con
+   * el luvisol, en cambio, cierra bien. Así que lo que esta ficha tiene que
+   * decir no es qué suelo hay, sino cuánto puede estar errada la cifra y cómo
+   * se verifica —los tres criterios de la WRB que se ven en una calicata—.
+   */
+  it('en Myanmar el vertisol aparece igual, y la cifra queda discutida', () => {
+    const s = BIOMAS_REGIONALES_INDOMALAYA['bosques_secos_irrawaddy']!.suelos;
+    expect(s).toMatch(/34,6 %/);
+    expect(s).toMatch(/0,48 millones/);
+    expect(s).toMatch(/dos veces y media el total del país/);
+    // La corrección queda escrita como corrección.
+    expect(s).toMatch(/no se hereda de la traza basáltica/);
+    expect(s).toMatch(/no significa que no haya/);
+    // Y la verificación de campo, que es lo que resuelve una clase dudosa.
+    expect(s).toMatch(/calicata/);
+    expect(s).toMatch(/caras de deslizamiento/);
   });
 
-  it('las tres dicen que no tienen reparto de HWSD ni de SoilGrids', () => {
-    for (const id of ['manglares_sundarbans', 'bosques_secos_irrawaddy', 'matorral_espinoso_decan']) {
-      expect(BIOMAS_REGIONALES_INDOMALAYA[id]!.suelos, id).toMatch(/HWSD/);
-      expect(BIOMAS_REGIONALES_INDOMALAYA[id]!.suelos, id).toMatch(/no se extrajo/);
+  /**
+   * Las tres estaban sin reparto de suelos y lo decían. Dos se midieron el
+   * 22/11/2026 contra su polígono, y la tercera también: el matorral espinoso
+   * del Decán (315) pide 24 Mpx por capa, entra con una reducción de 1,98x —el
+   * tope es 2x, porque arriba de ahí el WCS promedia códigos de leyenda— y dio
+   * la fracción de vertisol más alta del bloque. Las tres siguen sin HWSD v2,
+   * que no tiene WCS en ISRIC y necesita el ráster global de FAO.
+   */
+  it('las tres tienen el zonal de SoilGrids y ninguna el de HWSD', () => {
+    const medidas: Record<string, string> = {
+      manglares_sundarbans: '96,7 %', bosques_secos_irrawaddy: '34,6 %',
+      matorral_espinoso_decan: '76,6 %',
+    };
+    for (const [id, cifra] of Object.entries(medidas)) {
+      const f = BIOMAS_REGIONALES_INDOMALAYA[id]!;
+      expect(f.suelos, id).toContain(cifra);
+      expect(f.suelos, id).toMatch(/HWSD v2 sigue sin extraerse/);
+      expect(f.fuentes.some((x) => x.url.includes('isric.org/soilgrids')), id).toBe(true);
     }
   });
 });

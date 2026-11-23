@@ -15,7 +15,21 @@ Las dos decisiones de metodo estan explicadas en
    supone: se deduce. `MostProbable` es por definicion el argmax de las 30
    capas de probabilidad, asi que para cada valor presente se busca que grupo
    lo maximiza. Si la unanimidad no es total el valor queda sin nombre y se
-   reporta, en vez de recibir el grupo plausible.
+   reporta, en vez de recibir el grupo plausible. Deducido en nueve poligonos
+   de cuatro continentes, el resultado coincide exactamente con el indice
+   alfabetico base 0 de las 30 capas: el valor v es GRUPOS[v]. La deduccion se
+   deja igual porque es la que lo verifica cada vez.
+
+1b. **El valor 0 es dos cosas y hay que separarlas.** Es Acrisols -el primero
+   de la lista alfabetica- y es tambien el relleno del raster donde no hay
+   suelo. Medido: en un cuadrado del Atlantico abierto el valor 0 cubre todo y
+   las 30 probabilidades valen 0; en un cuadrado de Guinea forestal el valor 0
+   cubre el 12 % de la tierra y ahi la probabilidad de Acrisols es la mas alta
+   de las 30. Asi que no se puede descartar el 0 sin tirar los Acrisols, y no
+   se puede contarlo sin sumar el oceano. La prueba que los separa es la capa
+   de Acrisols: si en un pixel con valor 0 la probabilidad de Acrisols es
+   mayor que cero, el pixel es Acrisols, porque un argmax no puede valer cero
+   mientras las 30 clases suman 100; y si vale cero, no hay dato.
 2. Se recorta al poligono y no al bbox. En Java occidental el recorte duplica
    los andosoles y baja los ferralsoles a un cuarto: sin recorte el numero no
    sirve. El recorte es por *scanline*: para cada fila de latitud se calculan
@@ -36,14 +50,26 @@ que el script ya maneja:
    borde con un error de un par de pixeles sobre poligonos de millones de
    hectareas. De paso acelera el recorte, que es O(vertices) por fila.
 
-4. **El raster se submuestrea cuando no cabe.** El bbox del miombo seco pide
-   118 Mpx por capa, o sea unos 3.700 Mpx entre las 31. Arriba de TOPE_MPX se
-   pide con `SCALESIZE`, y eso **esta verificado que no interpola**: pedido el
-   mismo cuadrado nativo y reducido a la mitad, los dos devuelven el mismo
-   conjunto de valores -{0, 10, 17}, no aparece ningun 11..16- y las
-   fracciones coinciden a 0,1 punto (87,4 % contra 87,5 %). Un bilineal sobre
-   datos categoricos habria promediado codigos de leyenda y producido clases
-   que no existen. El reporte dice siempre a que resolucion efectiva se midio.
+4. **El raster se submuestrea cuando no cabe, pero NUNCA mas de 2x.** El bbox
+   del miombo seco pide 118 Mpx por capa, o sea unos 3.700 Mpx entre las 31.
+   Arriba de TOPE_MPX se pide con `SCALESIZE`, y hasta 2x eso esta verificado
+   que no interpola: pedido el mismo cuadrado nativo y reducido a la mitad, los
+   dos devuelven el mismo conjunto de valores -{0, 10, 17}, no aparece ningun
+   11..16- y las fracciones coinciden a 0,1 punto (87,4 % contra 87,5 %).
+
+   **Pasado 2x deja de valer, y el 22/11/2026 se midio cuanto.** Un cuadrado
+   de dos grados del miombo seco tiene 8 clases a resolucion nativa y 7 a la
+   mitad; pedido a un cuarto tiene 27, con 19 valores que en el dato nativo no
+   existen, y a un octavo tiene 21. O sea que arriba de 2x el servidor sirve
+   de una piramide promediada -y `INTERPOLATION=NEAREST` no lo impide-, y un
+   promedio de codigos de leyenda inventa clases: en el miombo aparecian
+   Cryosols, Chernozems y Kastanozems. La prueba vieja no lo detectaba porque
+   comparaba la MISMA capa a dos escalas vecinas, y el defecto empieza en la
+   tercera.
+
+   Por eso TOPE_REDUCCION corta en 1,9 en vez de submuestrear mas: un
+   poligono que no entra se reporta como pendiente de mosaico por tiles, que
+   es trabajo, en lugar de devolver un reparto de clases que no existen.
 
 Requiere curl y Pillow. No requiere GDAL ni rasterio.
 
@@ -81,6 +107,11 @@ PX_NATIVO = 0.002083
 # capas y salio unanime al 100 % en los cuatro poligonos corridos, asi que no
 # hace falta mas; subirlo solo cuesta tiempo.
 TOPE_MUESTRA = 4000
+# Reduccion lineal maxima que el WCS respeta sin promediar codigos de leyenda.
+# Es el valor medido y no un margen: a 2x el conjunto de valores no cambia, y a
+# 4x aparecen 19 valores que el dato nativo no tiene. Ver el punto 4 del
+# encabezado. El poligono 315 pide 1,98x y entra justo.
+TOPE_REDUCCION = 2.0
 # El WCS de ISRIC sirve las capas desde COGs y de a ratos devuelve un tile
 # roto: HTTP 400 con `_TIFFPartialReadStripArray: Cannot read offset/size for
 # strile` o `ZIPDecode: Decoding error at scanline 0`. Es intermitente y no es
@@ -261,6 +292,14 @@ def main(eco_id, carpeta):
     nota_escala = 'resolucion nativa (%.0f m)' % (PX_NATIVO * 111320)
     if mpx > TOPE_MPX:
         f = (TOPE_MPX / mpx) ** 0.5
+        if 1.0 / f > TOPE_REDUCCION:
+            raise SystemExit(
+                'el bbox pide %.0f Mpx por capa y reducirlo para que entre en '
+                '%.0f necesitaria %.1fx, arriba del tope de %.1fx. Pasado 2x '
+                'el WCS promedia codigos de leyenda e inventa clases (ver el '
+                'punto 4 del encabezado), asi que este poligono necesita '
+                'mosaico por tiles a resolucion nativa y no se mide asi.'
+                % (mpx, TOPE_MPX, 1.0 / f, TOPE_REDUCCION))
         we, he = max(1, int(wn * f)), max(1, int(hn * f))
         escala = '&SCALESIZE=x(%d),y(%d)&INTERPOLATION=NEAREST' % (we, he)
         nota_escala = ('submuestreado a %dx%d desde %dx%d (%.0f m de pixel); '
@@ -296,18 +335,31 @@ def main(eco_id, carpeta):
     print('recorte listo: %d pixeles adentro (%d segmentos)'
           % (len(idx), len(segs)), flush=True)
 
+    # El valor 0 es Acrisols Y es nodata: ver el punto 1b del encabezado. Los
+    # pixeles con 0 se apartan y los separa la capa de Acrisols, que de todos
+    # modos hay que leer.
+    im_ac, ac = datos(os.path.join(carpeta, 'Acrisols.tif'))
+    if im_ac.size != (W, H):
+        raise SystemExit('Acrisols no comparte la grilla con MostProbable')
+
     # Las muestras por valor se arman en UNA pasada: filtrar `validos` por cada
     # valor costaba 30 recorridos de millones de elementos.
     cuenta = Counter()
     muestras = {}
+    sin_dato = 0
     for i in idx:
         v = mp[i]
-        if v <= 0:
+        if v == 0 and ac[i] == 0:
+            sin_dato += 1
+            continue
+        if v < 0:
+            sin_dato += 1
             continue
         cuenta[v] += 1
         m = muestras.setdefault(v, [])
         if len(m) < TOPE_MUESTRA:
             m.append(i)
+    del ac
     total_validos = sum(cuenta.values())
     if total_validos == 0:
         raise SystemExit('ningun pixel con dato adentro del poligono')
@@ -341,8 +393,8 @@ def main(eco_id, carpeta):
     w('=== ECO_ID %s - %s ===' % (eco_id, nombre))
     w('raster %dx%d  pixel %.6f x %.6f grados' % (W, H, dx, dy))
     w('%s' % nota_escala)
-    w('pixeles dentro del poligono: %d   con dato: %d'
-      % (len(idx), total_validos))
+    w('pixeles dentro del poligono: %d   con dato: %d   sin dato: %d'
+      % (len(idx), total_validos, sin_dato))
     w('')
     w('mapeo deducido valor -> grupo (unanimidad del argmax):')
     for v in sorted(cuenta):

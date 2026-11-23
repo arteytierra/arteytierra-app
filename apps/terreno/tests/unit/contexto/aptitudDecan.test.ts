@@ -228,14 +228,14 @@ describe('lo que no se afirma', () => {
 
   it('da el de SoilGrids, que se midió, y sigue sin dar el de HWSD', () => {
     // Estuvo sin ningún porcentaje desde el 23/10/2026, y lo decía. El
-    // 22/11/2026 se corrió el zonal contra el polígono y dio 74,5 % de
-    // Vertisols, la fracción más alta de las tres fichas del Decán: la
+    // 22/11/2026 se corrió el zonal contra el polígono y dio 74,3 % de
+    // Vertisols, la fracción más alta del Decán deciduo: la
     // medición de campo del ICRISAT que ocupa el resto de este campo ahora
     // tiene su superficie. HWSD v2 no tiene WCS en ISRIC y queda pendiente.
     const urls = ficha().fuentes.map((f) => f.url);
     expect(urls.some((u) => u.includes('harmonized-world-soil-database'))).toBe(false);
     expect(urls.some((u) => u.includes('isric.org/soilgrids'))).toBe(true);
-    expect(ficha().suelos).toMatch(/74,5 %/);
+    expect(ficha().suelos).toMatch(/74,3 %/);
     expect(ficha().suelos).toMatch(/HWSD v2 sigue sin extraerse/);
   });
 
@@ -277,7 +277,7 @@ describe('el Decán norte, ECO_ID 297', () => {
    * regur del Decán central, que la ecorregión está afuera de la traza
    * basáltica y que por eso el vertisol negro no se hereda. Lo primero sigue
    * siendo cierto; lo segundo no. El 22/11/2026 el resumen zonal de SoilGrids
-   * contra el polígono dio **35,2 % de Vertisols**, y repartido por todo el
+   * contra el polígono dio **32,5 % de Vertisols**, y repartido por todo el
    * polígono y no en una esquina.
    *
    * Lo que lo vuelve un defecto y no un matiz: `lib/sueloExpansivo.ts` infiere
@@ -287,8 +287,12 @@ describe('el Decán norte, ECO_ID 297', () => {
    */
   it('el zonal corrige el hallazgo del lote: vertisol hay, y es un tercio', () => {
     const s = fichaDe(NORTE).suelos;
-    expect(s).toMatch(/35,2 %/);
-    expect(s).toMatch(/42,4 %/);
+    expect(s).toMatch(/32,5 %/);
+    expect(s).toMatch(/39,1 %/);
+    // Y los Acrisols, que el 22/11/2026 estuvieron un rato contados como
+    // nodata: el valor 0 de MostProbable es Acrisols y también el relleno del
+    // ráster, y separarlos cambió todos los porcentajes del lote.
+    expect(s).toMatch(/Acrisols 7,8 %/);
     // La corrección queda escrita como corrección, no borrada.
     expect(s).toMatch(/afuera de la traza basáltica/);
     expect(s).toMatch(/lo primero es cierto, lo segundo no/);
@@ -455,17 +459,18 @@ describe('lo que las tres comparten, y lo que ninguna afirma', () => {
   /**
    * Las tres tenían el mismo hueco y el 22/11/2026 se llenó la mitad. El
    * resumen zonal de SoilGrids contra el polígono se corrió para las tres y da
-   * el vertisol en gradiente: 74,5 % en el centro, 43,1 % en el sur y 35,2 %
-   * en el norte. HWSD v2 sigue sin extraerse —no tiene WCS en ISRIC y hay que
+   * el vertisol en gradiente: 76,6 % en el matorral espinoso, 74,3 % en el
+   * centro, 42,4 % en el sur y 32,5 % en el norte. HWSD v2 sigue sin extraerse —no tiene WCS en ISRIC y hay que
    * bajar el ráster global de FAO—, así que la comparación entre las dos
    * bases, que es la que la regla del −25 pide, todavía no se puede hacer, y
    * las tres lo dicen.
    */
   it('las tres declaran el zonal de SoilGrids y ninguna el de HWSD', () => {
     const esperado: Record<string, string> = {
-      [DECAN]: '74,5 %', [NORTE]: '35,2 %', [SUR]: '43,1 %',
+      [DECAN]: '74,3 %', [NORTE]: '32,5 %', [SUR]: '42,4 %',
+      matorral_espinoso_decan: '76,6 %',
     };
-    for (const id of [DECAN, NORTE, SUR]) {
+    for (const id of Object.keys(esperado)) {
       const urls = fichaDe(id).fuentes.map((f) => f.url);
       expect(urls.some((u) => u.includes('harmonized-world-soil-database')), id).toBe(false);
       expect(urls.some((u) => u.includes('isric.org/soilgrids')), id).toBe(true);
