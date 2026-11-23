@@ -250,9 +250,13 @@ describe('las fuentes y los totales del lote', () => {
     // de montar las tres fichas de fase 4 que destrabaron entradas ya verificadas,
     // más la mitad de la de Myanmar que cae en el 235. Las otras tres son la
     // repesca del 11/11/2026, que estrenó dos fichas de los Ghats del norte.
+    // El 23/11/2026 las claves pasaron de 227 a 228 sin que entrara ninguna
+    // práctica nueva: `california_klamath_sierra_valle` se partió en cinco
+    // fichas y sus cuatro entradas se repartieron dos al Klamath y dos al
+    // matorral interior. El total de entradas no se mueve.
     const fichas = Object.keys(PRACTICAS_POR_FICHA);
     const total = fichas.reduce((n, id) => n + practicasDeFicha(id).length, 0);
-    expect(fichas).toHaveLength(227);
+    expect(fichas).toHaveLength(228);
     expect(total).toBe(460);
   });
 

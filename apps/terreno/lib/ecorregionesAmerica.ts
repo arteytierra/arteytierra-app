@@ -72,12 +72,8 @@ export const ECO_ID_AMERICA: Record<number, string> = {
   // Bosque seco panameño
   541: 'bosque_seco_panameno',
 
-  // California: Klamath, Sierra Nevada, Valle Central y bosques interiores
-  357: 'california_klamath_sierra_valle',
-  366: 'california_klamath_sierra_valle',
-  385: 'california_klamath_sierra_valle',
-  423: 'california_klamath_sierra_valle',
-  425: 'california_klamath_sierra_valle',
+  // Matorral y robledal del interior de California
+  423: 'california_matorral_interior',
 
   // Chaparral costero y montano de las Californias
   422: 'californias_chaparral_costero',
@@ -159,6 +155,9 @@ export const ECO_ID_AMERICA: Record<number, string> = {
   // Bosques secos de Jamaica
   535: 'jamaica_bosque_seco',
 
+  // Klamath-Siskiyou: coníferas y serpentina
+  357: 'klamath_siskiyou',
+
   // Manglares de Bahamas y las Antillas
   612: 'manglares_antillanos',
 
@@ -226,12 +225,18 @@ export const ECO_ID_AMERICA: Record<number, string> = {
   564: 'sabanas_pino_belice_mosquitia',
   573: 'sabanas_pino_belice_mosquitia',
 
+  // Santa Lucía: matorral montano y laderas que se mueven
+  425: 'santa_lucia_matorral_montano',
+
   // Selva Maya de Petén y Yucatán
   494: 'selva_maya_peten_yucatan',
   519: 'selva_maya_peten_yucatan',
 
   // Selva Maya y península de Yucatán
   551: 'selva_maya_yucatan',
+
+  // Sierra Nevada: bosque mixto de coníferas
+  366: 'sierra_nevada_coniferas',
 
   // Bosques de pino-encino de las Sierras Madre
   326: 'sierras_madre_pino_encino',
@@ -259,6 +264,9 @@ export const ECO_ID_AMERICA: Record<number, string> = {
   // Bosques de Trinidad y Tobago
   510: 'trinidad_tobago_bosques',
   548: 'trinidad_tobago_bosques',
+
+  // Valle Central de California: pastizal, charcas vernales y aluvión
+  385: 'valle_central_california',
 
   // Selvas, montañas y humedales de Veracruz–Tabasco
   489: 'veracruz_tabasco_selvas_humedales',

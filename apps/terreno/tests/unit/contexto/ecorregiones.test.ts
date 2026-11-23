@@ -87,11 +87,15 @@ describe('catálogos de fichas', () => {
   });
 
   it('toda ficha regional trae especies, salvo una y con motivo', () => {
-    // 22 escritas a mano + 53 americanas + 10 canadienses + 8 europeas
+    // 22 escritas a mano + 57 americanas + 10 canadienses + 8 europeas
     // + 28 de la UE y sus asociados + 28 de Medio Oriente + 14 del norte de
     // África mediterráneo + 40 de Indomalaya + 2 de Australasia
     // + 47 sudamericanas + 2 del África tropical y austral.
-    expect(Object.keys(BIOMAS_REGIONALES)).toHaveLength(256);
+    //
+    // Las americanas eran 53 hasta el 23/11/2026, cuando
+    // `california_klamath_sierra_valle` se partió en las cinco ecorregiones que
+    // cubría. No entró ningún ECO_ID nuevo: son los mismos cinco repartidos.
+    expect(Object.keys(BIOMAS_REGIONALES)).toHaveLength(260);
 
     // La única excepción: la ficha de WWF de IM0108 no nombra ninguna planta
     // con nombre científico, y deducirla de las ecorregiones vecinas sería

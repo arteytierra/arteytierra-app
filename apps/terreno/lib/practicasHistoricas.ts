@@ -2456,7 +2456,9 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
       ],
     },
   ],
-  california_klamath_sierra_valle: [
+  // Las dos del bajo Klamath: ambas karuk y yurok, ambas en el
+  // 357.
+  klamath_siskiyou: [
     {
       practica: 'Quema cultural Karuk y Yurok para varas de avellano',
       periodo: 'Revitalizada y documentada en sitios con quemas entre 1989 y 2019',
@@ -2479,6 +2481,11 @@ export const PRACTICAS_POR_FICHA: Record<string, PracticaHistorica[]> = {
         { label: 'Atlas et al. (2021) — Indigenous Systems of Management for Culturally and Ecologically Resilient Pacific Salmon, BioScience 71(2)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7882363/' },
       ],
     },
+  ],
+  // Las dos del anillo de lomas que rodea el Valle Central: el
+  // territorio pomo de las Coast Ranges y North Fork, en el pie
+  // de la Sierra, dan los dos 423 por consulta espacial.
+  california_matorral_interior: [
     {
       practica: 'La quema de otoño que dejaba afuera los manchones que daban fruto',
       periodo: 'Testimonios pomo recogidos por Omer Stewart en 1935; el capítulo ubica el régimen muchos siglos antes del contacto',

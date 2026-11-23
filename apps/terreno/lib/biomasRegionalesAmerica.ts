@@ -23,6 +23,26 @@
 
 import type { BiomaFicha } from './biomaTipos';
 
+/**
+ * Las fuentes que comparten las cinco fichas de California.
+ *
+ * Las descripciones oficiales de serie (OSD) son del National Cooperative Soil
+ * Survey; el enlace va por SoilWeb de UC Davis porque el sitio propio de la
+ * NRCS respondía 404 el 23/11/2026 y SoilWeb sirve una copia con la fecha de
+ * revisión a la vista. Son el mejor dato de suelo disponible para estos cinco
+ * polígonos: más fino que cualquier ráster global y con la química adentro de
+ * la clasificación. Ver `_research/fuentes-suelo-clima/global/`.
+ */
+const RESOLVE_AMERICA = { label: 'RESOLVE Ecoregions 2017', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' };
+const SOILGRIDS = { label: 'ISRIC — SoilGrids WRB MostProbable (~250 m), muestreado dentro del polígono', url: 'https://files.isric.org/soilgrids/latest/data/wrb/' };
+const HENGL = { label: 'Hengl et al. 2017 — SoilGrids250m, PLoS ONE, doi:10.1371/journal.pone.0169748 (precisión y sesgos del mapa WRB)', url: 'https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0169748' };
+const SERIE_SAN_JOAQUIN = { label: 'NRCS — descripción oficial de la serie San Joaquín, suelo oficial de California (duripán de 51 a 102 cm, Abruptic Durixeralf), vía SoilWeb de UC Davis', url: 'https://casoilresource.lawr.ucdavis.edu/sde/?series=san+joaquin' };
+const SERIE_DUBAKELLA = { label: 'NRCS — descripción oficial de la serie Dubakella, el suelo serpentínico del Klamath (clase mineralógica magnesic), vía SoilWeb de UC Davis', url: 'https://casoilresource.lawr.ucdavis.edu/sde/?series=dubakella' };
+const SERIE_SHAVER = { label: 'NRCS — descripción oficial de la serie Shaver, granítica de la Sierra Nevada (epipedón úmbrico de 50 a 90 cm), vía SoilWeb de UC Davis', url: 'https://casoilresource.lawr.ucdavis.edu/sde/?series=shaver' };
+const SERIE_HOLLAND = { label: 'NRCS — descripción oficial de la serie Holland, granítica muy profunda de la Sierra Nevada, vía SoilWeb de UC Davis', url: 'https://casoilresource.lawr.ucdavis.edu/sde/?series=holland' };
+const SERIE_AUBURN = { label: 'NRCS — descripción oficial de la serie Auburn, somera del pie de la Sierra (roca de 25 a 70 cm y variación en menos de 3,5 m), vía SoilWeb de UC Davis', url: 'https://casoilresource.lawr.ucdavis.edu/sde/?series=auburn' };
+const SERIE_SUR = { label: 'NRCS — descripción oficial de la serie Sur, del rango de Santa Lucía (pendientes de 30 a 85 % y movimiento gravitacional del suelo), vía SoilWeb de UC Davis', url: 'https://casoilresource.lawr.ucdavis.edu/sde/?series=sur' };
+
 export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
   // US · confianza alta
   alaska_costa_taiga: {
@@ -293,34 +313,36 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
   },
 
   // US · confianza alta
-  california_klamath_sierra_valle: {
-    id: 'california_klamath_sierra_valle',
-    nombre: 'California: Klamath, Sierra Nevada, Valle Central y bosques interiores',
-    emoji: '🌲',
-    color: '#4E7147',
-    resumen: 'Gradiente mediterráneo desde pastizales del Valle Central y chaparral hasta bosques mixtos de Klamath y coníferas de Sierra Nevada.',
-    vegetacion: 'Robles, pino ponderosa, sugar pine, cedro incienso, sequoias, chaparral, pastos anuales y humedales remanentes.',
-    fauna: 'Oso negro, puma, venado, fisher, salmón, águila real y fauna endémica de charcas vernales.',
-    suelos: 'El aluvión del Valle Central es profundo pero muchas veces tiene un piso cementado a sesenta o cien centímetros, heredado de terrazas viejas: es lo que sostiene las charcas vernales y lo que ahoga un monte frutal si nadie lo rompió antes de plantar. En el oeste del valle, regar sin salida de drenaje sube sales y selenio. En Klamath hay serpentina, con mucho magnesio y poco calcio y metales pesados, donde lo estándar directamente no crece. En la Sierra el suelo granítico es grueso, retiene poca agua y queda hidrófobo después de un fuego severo.',
+  california_matorral_interior: {
+    id: 'california_matorral_interior',
+    nombre: 'Matorral y robledal del interior de California',
+    emoji: '🌿',
+    color: '#8A8C4F',
+    resumen: 'El anillo de lomas que rodea el Valle Central -pie de la Sierra y Coast Ranges interiores-, con robledal abierto de roble azul, pino de pie de monte y chaparral de chamiso.',
+    vegetacion: 'Roble azul, roble interior de hoja perenne, pino de pie de monte, chamiso, ceanothus y manzanita, sobre un tapiz de pastos anuales introducidos.',
+    fauna: 'Venado bura, coyote, pájaro carpintero bellotero, codorniz de California, águila real y reptiles de ladera seca.',
+    suelos: 'Poco suelo, y lo peor es que no se sabe cuánto sin cavar. La serie Auburn, extensiva en el pie de la Sierra y en el norte de las Coast Ranges, es un Lithic Haploxerept somero a moderadamente profundo formado sobre esquisto anfibolítico, greenstone o diabasa -roca metabásica y metasedimentaria, no granito-, con la roca entre 25 y 70 cm y afloramientos frecuentes. El dato que decide el diseño está en la propia descripción oficial: la profundidad hasta la roca pasa de menos de 50 cm a más de 50 cm en menos de 3,5 metros de distancia horizontal, y sobre el 50 a 90 % de la superficie el suelo tiene de 25 a 50 cm. Ningún mapa de suelo puede decir qué hay abajo del punto donde uno está parado: eso lo dice una calicata, y acá hay que hacer varias. El uso declarado es pastizal anual de secano con manchas de pastura bajo riego. Y hay algo que esta ecorregión le manda cuesta abajo a la vecina: las rocas sedimentarias marinas de su flanco occidental son la fuente del selenio que aparece en el drenaje del Valle Central. SoilGrids medido contra el polígono da Luvisols 49,9 %, Kastanozems 36,7 %, Vertisols 6,3 % y Regosols 3,3 %, sin nada lixiviado. Y el desacuerdo con la descripción de serie no es acá culpa del producto sino de la escala: el zonal da Luvisols, que son suelos con horizonte argílico, sobre un paisaje cuya serie extensiva tiene un cámbico de 15 a 45 cm apoyado en la roca. Un píxel de 232 metros de lado no puede resolver una propiedad que cambia al doble en 3,5 metros, y eso no se arregla con un ráster mejor: se arregla cavando. El zonal de HWSD v2 sigue sin extraerse.',
     saberes: [],
     especies: [
-      'Avellano de California (Corylus cornuta var. californica)',
-      'Roble de valle (Quercus lobata)',
       'Roble azul (Quercus douglasii)',
-      'Pino ponderosa (Pinus ponderosa)',
-      'Cedro incienso (Calocedrus decurrens)',
+      'Roble interior (Quercus wislizeni)',
+      'Pino de pie de monte (Pinus sabiniana)',
+      'Chamiso (Adenostoma fasciculatum)',
       'Manzanita (Arctostaphylos spp.)',
-      'Salmón Chinook (Oncorhynchus tshawytscha)',
+      'Ceanothus (Ceanothus cuneatus)',
+      'Avellano de California (Corylus cornuta var. californica)',
     ],
-    cultivos: ['almendro', 'nogal', 'vid', 'olivo', 'naranjo', 'durazno', 'arroz', 'lavanda', 'alfalfa'],
+    cultivos: ['vid', 'olivo', 'higuera', 'granado', 'lavanda', 'avena', 'veza', 'trebol_blanco'],
     aptitud: [
-      { uso: 'huerta', delta: 0, razon: 'En el aluvión profundo del valle la huerta sí va: es una de las regiones hortícolas más productivas del mundo. Pero va enteramente con agua traída, y la asignación de riego es el límite real, no el suelo.' },
-      { uso: 'reserva', delta: 10, razon: 'En los sustratos ultramáficos del Klamath, con flora serpentinícola endémica, no hay uso agrícola que valga lo que se pierde.' },
+      { uso: 'pasturas', delta: 5, razon: 'Es el uso que la descripción oficial de la serie Auburn declara: pastizal anual de secano, con manchas de pastura bajo riego. El robledal abierto de roble azul funciona como silvopastoril desde antes de que existiera la palabra.' },
+      { uso: 'huerta', delta: -15, razon: 'La roca está entre 25 y 50 cm sobre la mitad o más de la superficie, y la profundidad cambia de un lado al otro de un cantero: menos de 3,5 metros horizontales separan los 50 cm de los 25. Sin calicata no hay bancal que se pueda planificar en un mapa.' },
     ],
     fuentes: [
-      { label: 'USFS — Karuk and Yurok cultural burning', url: 'https://research.fs.usda.gov/treesearch/62061' },
-      { label: 'NOAA — Original Salmon Stewards', url: 'https://www.fisheries.noaa.gov/west-coast/endangered-species-conservation/original-salmon-stewards' },
-      { label: 'RESOLVE Ecoregions 2017', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
+      SERIE_AUBURN,
+      { label: 'USGS — Linking selenium sources to ecosystems: irrigation (las Coast Ranges como roca de origen del selenio)', url: 'https://www.usgs.gov/mission-areas/water-resources/science/linking-selenium-sources-ecosystems-irrigation' },
+      SOILGRIDS,
+      HENGL,
+      RESOLVE_AMERICA,
     ],
   },
 
@@ -828,6 +850,41 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
     ],
   },
 
+  // US · confianza alta
+  klamath_siskiyou: {
+    id: 'klamath_siskiyou',
+    nombre: 'Klamath-Siskiyou: coníferas y serpentina',
+    emoji: '🌲',
+    color: '#3F6B4F',
+    resumen: 'Montañas del noroeste de California y suroeste de Oregón con bosque mixto de coníferas, ríos con salmón y la mayor superficie de serpentina de Norteamérica.',
+    vegetacion: 'Douglas-fir, sugar pine, cedro incienso, tanoak y madroño donde el suelo es común; sobre serpentina el rodal se abre y se achaparra, con Jeffrey pine como conífera dominante.',
+    fauna: 'Salmón Chinook y coho, trucha arcoíris anádroma, fisher, oso negro y salamandras endémicas de cuenca en cuenca.',
+    suelos: 'Hay dos suelos y la diferencia la escribe la geología. Sobre roca ultrabásica está la serie Dubakella, que la taxonomía de Estados Unidos clasifica en la clase mineralógica «magnesic»: no es que tenga mucho magnesio, es que hizo falta inventar una clase para nombrar la relación calcio-magnesio dada vuelta, y con eso el calcio queda indisponible aunque esté. La descripción oficial le pone roca entre 51 y 102 cm, perfil arcillo-esquelético, pendientes de 5 a 75 %, hasta la mitad de la superficie cubierta de piedras y bochones, afloramientos frecuentes, permeabilidad lenta y escurrimiento de medio a muy alto. Y le pone tres usos, ninguno agrícola: madera, cuenca o fauna. Fuera de la serpentina el perfil es forestal común. SoilGrids medido contra el polígono da Cambisols 57,1 %, Luvisols 38,7 %, Alisols 2,0 % y Andosols 1,1 %, con 2,0 % de lixiviados, o sea delta 0 por ese lado. Lo que importa es lo que el zonal NO ve: la serpentina es un cualificador de la WRB y no un grupo, así que un ráster global de clases no la puede mostrar y la descripción de serie sí. Acá el relevamiento nacional le gana al producto global, y es el único de los catorce polígonos medidos donde eso se pudo comprobar. El zonal de HWSD v2 sigue sin extraerse.',
+    saberes: [],
+    especies: [
+      'Jeffrey pine (Pinus jeffreyi)',
+      'Sugar pine (Pinus lambertiana)',
+      'Douglas-fir (Pseudotsuga menziesii)',
+      'Cedro incienso (Calocedrus decurrens)',
+      'Avellano de California (Corylus cornuta var. californica)',
+      'Tanoak (Notholithocarpus densiflorus)',
+      'Salmón Chinook (Oncorhynchus tshawytscha)',
+    ],
+    cultivos: ['alfalfa', 'trebol_blanco', 'avena', 'cebada', 'papa', 'manzano'],
+    aptitud: [
+      { uso: 'reserva', delta: 10, razon: 'En los sustratos ultramáficos, con flora serpentinícola endémica, no hay uso agrícola que valga lo que se pierde: la propia descripción de la serie Dubakella no declara ninguno.' },
+      { uso: 'huerta', delta: -15, razon: 'Sobre serpentina el calcio está presente y no disponible, y la roca aparece entre 51 y 102 cm. No es un suelo que se corrija con enmienda de una temporada. Fuera de la serpentina, en el fondo de los valles de Scott y Shasta, la huerta va: acá el delta castiga el caso que el relieve no distingue.' },
+    ],
+    fuentes: [
+      { label: 'USFS — Karuk and Yurok cultural burning', url: 'https://research.fs.usda.gov/treesearch/62061' },
+      { label: 'NOAA — Original Salmon Stewards', url: 'https://www.fisheries.noaa.gov/west-coast/endangered-species-conservation/original-salmon-stewards' },
+      SERIE_DUBAKELLA,
+      SOILGRIDS,
+      HENGL,
+      RESOLVE_AMERICA,
+    ],
+  },
+
   // BS, CU, HT, DO, JM, PR, AG, DM, GD, KN, LC, VC, VG, VI, TC · confianza alta
   manglares_antillanos: {
     id: 'manglares_antillanos',
@@ -1198,6 +1255,40 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
     ],
   },
 
+  // US · confianza alta
+  santa_lucia_matorral_montano: {
+    id: 'santa_lucia_matorral_montano',
+    nombre: 'Santa Lucía: matorral montano y laderas que se mueven',
+    emoji: '⛰️',
+    color: '#6E7A4B',
+    resumen: 'La sierra costera de Monterey y San Luis Obispo, con el relieve costero más abrupto del oeste continental, el abeto de Santa Lucía como endémico y el límite austral de la secuoya en los cañones.',
+    vegetacion: 'Encino de cañón y encino interior, tanoak, madroño, laurel de California, chamiso y manzanita; coulter pine y sugar pine en las exposiciones norte, abeto de Santa Lucía en manchones y bosquetes de secuoya en los cañones que miran al Pacífico.',
+    fauna: 'Cóndor de California reintroducido en Big Sur, puma, venado bura, salmón y trucha arcoiris anádroma en los arroyos cortos de la vertiente oeste.',
+    suelos: 'La serie Sur -la del propio rango de Santa Lucía- arranca en 30 % de pendiente: en la descripción oficial no existe el terreno llano, el rango es de 30 a 85 %, el escurrimiento es rápido o muy rápido y el texto registra movimiento gravitacional del suelo cuesta abajo como característica de la serie, no como accidente. Es moderadamente profunda y algo excesivamente drenada, formada sobre esquisto, arenisca, lutita, gneis y roca ígnea ácida, con 1 a 25 % de la superficie en afloramientos, bochones y piedras. Declara tres usos y ninguno es agrícola: recreación, fauna y cuenca. SoilGrids da Kastanozems 80,7 %, Cambisols 9,2 % y Luvisols 9,0 %, sin nada lixiviado: el Kastanozem es la traducción WRB del Haploxeroll de la serie, así que las dos clasificaciones coinciden sin haberse consultado. El USGS documenta en esta costa los desprendimientos que cortan la Ruta 1 -Mud Creek en mayo de 2017, Rat Creek en enero de 2021- y agrega un matiz que conviene no perder: el microclima de Big Sur hace que la vegetación vuelva rápido, así que la ventana de peligro después del fuego dura menos acá que en el chaparral seco de más al sur, aunque el desprendimiento sea más grande porque el relieve es más grande. El zonal de HWSD v2 sigue sin extraerse.',
+    saberes: [],
+    especies: [
+      'Abeto de Santa Lucía (Abies bracteata)',
+      'Secuoya costera (Sequoia sempervirens)',
+      'Coulter pine (Pinus coulteri)',
+      'Encino de cañón (Quercus chrysolepis)',
+      'Tanoak (Notholithocarpus densiflorus)',
+      'Madroño del Pacífico (Arbutus menziesii)',
+      'Laurel de California (Umbellularia californica)',
+    ],
+    cultivos: ['vid', 'olivo', 'higuera', 'lavanda'],
+    aptitud: [
+      { uso: 'reserva', delta: 15, razon: 'La descripción oficial de la serie Sur no declara ningún uso productivo -recreación, fauna y cuenca-, su pendiente mínima es 30 % y registra que el suelo se mueve cuesta abajo por gravedad. Lo que hay acá que valga la pena sostener es la ladera.' },
+      { uso: 'huerta', delta: -25, razon: 'No hay terreno llano en el rango: la serie del lugar va de 30 a 85 % de pendiente, con escurrimiento rápido o muy rápido. La poca agricultura de la zona está en las terrazas del pie, mirando al valle del Salinas, no en la sierra.' },
+    ],
+    fuentes: [
+      SERIE_SUR,
+      { label: 'USGS — Big Sur landslides (Mud Creek 2017, Rat Creek 2021 y la recuperación rápida de la vegetación)', url: 'https://www.usgs.gov/special-topics/big-sur-landslides' },
+      SOILGRIDS,
+      HENGL,
+      RESOLVE_AMERICA,
+    ],
+  },
+
   // BZ, GT, MX · confianza alta
   selva_maya_peten_yucatan: {
     id: 'selva_maya_peten_yucatan',
@@ -1252,6 +1343,41 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       { label: 'FAO — Ich Kool, milpa maya', url: 'https://www.fao.org/giahs/giahs-around-the-world/mexico-ich-kool-mayan-milpa-system/en' },
       { label: 'CONABIO — La milpa', url: 'https://www.biodiversidad.gob.mx/diversidad/sistemas-productivos/milpa' },
       { label: 'RESOLVE Ecoregions 2017', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
+    ],
+  },
+
+  // US · confianza alta
+  sierra_nevada_coniferas: {
+    id: 'sierra_nevada_coniferas',
+    nombre: 'Sierra Nevada: bosque mixto de coníferas',
+    emoji: '🏔️',
+    color: '#4E7147',
+    resumen: 'Cinturón de coníferas de la Sierra Nevada sobre granito, con nieve de invierno que es la reserva de agua de medio estado y un régimen de fuego alterado por un siglo de supresión.',
+    vegetacion: 'Pino ponderosa, sugar pine, Jeffrey pine, white fir, cedro incienso, roble negro de California y sequoia gigante en bosquetes; sotobosque de manzanita y ceanothus.',
+    fauna: 'Oso negro, puma, venado bura, marta, pájaro carpintero bellotero y anfibios de laguna de altura.',
+    suelos: 'Granito descompuesto, y el horizonte oscuro es más grueso de lo que suele decirse. La serie Shaver, la extensiva del cinturón de coníferas, es profunda a muy profunda, de textura gruesa y con un epipedón úmbrico de 50 a 90 cm: la reserva de agua y de materia orgánica está arriba y es espesa. Lo que frena el agua está abajo: la conductividad saturada es de moderadamente alta a alta en el suelo y de muy baja a baja en la roca meteorizada, que aparece entre 100 y 200 cm. El agua entra rápido, baja rápido y después corre de costado sobre el saprolito, y eso es lo que hay que leer antes de cortar una ladera. La serie Holland, la otra extensiva, es muy profunda sobre cuarzodiorita y granodiorita. Las dos declaran un solo uso: madera de coníferas, cuenca, fauna y recreación. Sobre el fuego hay una medición que conviene no simplificar: en el incendio Caldor de 2021, en la Sierra oriental y sobre una sola unidad de suelo arenoso de till glaciar, la retención de agua y la conductividad hidráulica no cambiaron de forma significativa, lo que cambió fue la mojabilidad; el suelo sin quemar ya era hidrófobo, con ángulo de contacto aparente mayor a 90 grados, y la ceniza de arriba resultó hidrófila, con ángulo menor a 10 grados. Son trece muestras de una unidad, no la Sierra entera. SoilGrids medido contra el polígono da Cambisols 50,4 %, Luvisols 25,5 %, Kastanozems 18,6 % y Chernozems 2,9 %, con 0,6 % de lixiviados: delta 0. Y acá las dos clasificaciones no coinciden, que es lo más útil que dio la corrida: el zonal no devuelve ni un píxel de Umbrisols, que es el grupo que la WRB define por el horizonte oscuro de baja saturación de bases, y ese horizonte es el que la serie Shaver tiene de 50 a 90 cm de espesor. El producto global pierde la reserva de agua y de carbono que la descripción de serie mide. Con la advertencia de siempre: Shaver es una serie y la ecorregión tiene decenas. El zonal de HWSD v2 sigue sin extraerse.',
+    saberes: [],
+    especies: [
+      'Pino ponderosa (Pinus ponderosa)',
+      'Sugar pine (Pinus lambertiana)',
+      'Cedro incienso (Calocedrus decurrens)',
+      'White fir (Abies concolor)',
+      'Roble negro de California (Quercus kelloggii)',
+      'Sequoia gigante (Sequoiadendron giganteum)',
+      'Manzanita verde (Arctostaphylos patula)',
+    ],
+    cultivos: ['alfalfa', 'trebol_blanco', 'avena', 'papa', 'arandano', 'manzano'],
+    aptitud: [
+      { uso: 'forestal', delta: 5, razon: 'Es el único uso productivo que las descripciones oficiales de las dos series extensivas del cinturón -Shaver y Holland- declaran: producción comercial de coníferas. El epipedón úmbrico de 50 a 90 cm de Shaver es la base de eso.' },
+      { uso: 'huerta', delta: -10, razon: 'No por el suelo, que es profundo, sino por el agua y el frente: el perfil drena rápido hasta el saprolito y la sección de control de humedad queda seca de junio a octubre. Huerta de verano acá es huerta con riego todos los días.' },
+    ],
+    fuentes: [
+      SERIE_SHAVER,
+      SERIE_HOLLAND,
+      { label: 'Sion et al. 2023 — Assessment of the effects of the 2021 Caldor megafire on soil physical properties, eastern Sierra Nevada, Fire 6(2):66, doi:10.3390/fire6020066', url: 'https://doi.org/10.3390/fire6020066' },
+      SOILGRIDS,
+      HENGL,
+      RESOLVE_AMERICA,
     ],
   },
 
@@ -1445,6 +1571,41 @@ export const BIOMAS_REGIONALES_AMERICA: Record<string, BiomaFicha> = {
       { label: 'UNESCO — North-East Tobago Biosphere Reserve', url: 'https://www.unesco.org/en/mab/north-east-tobago' },
       { label: 'CEPF — Caribbean Islands Ecosystem Profile', url: 'https://www.cepf.net/sites/default/files/cepf-caribbean-islands-ecosystem-profile-december-2020-english.pdf' },
       { label: 'RESOLVE Ecoregions 2017', url: 'https://developers.google.com/earth-engine/datasets/catalog/RESOLVE_ECOREGIONS_2017' },
+    ],
+  },
+
+  // US · confianza alta
+  valle_central_california: {
+    id: 'valle_central_california',
+    nombre: 'Valle Central de California: pastizal, charcas vernales y aluvión',
+    emoji: '🌾',
+    color: '#9C9A52',
+    resumen: 'Llanura aluvial de clima mediterráneo que fue pastizal perenne y humedal, hoy casi toda agricultura de riego; RESOLVE la clasifica como «Nature Imperiled», el peor de sus cuatro grados.',
+    vegetacion: 'Pastos anuales introducidos sobre lo que fue pastizal perenne, roble de valle disperso, bosque ribereño de álamo y sauce, charcas vernales y tulares remanentes.',
+    fauna: 'Antilocapra y alce tule reintroducidos, zorro kit de San Joaquín, aves acuáticas migratorias por millones y la fauna endémica de charca vernal, que vive de que el piso cementado exista.',
+    suelos: 'Aluvión profundo con un piso cementado que está más arriba de lo que se suele decir. La serie San Joaquín -suelo oficial del estado desde 1997- es un Abruptic Durixeralf moderadamente profundo hasta un duripán, y la descripción oficial ubica ese duripán entre 51 y 102 cm, con la arcilla aumentando más de 15 puntos absolutos de golpe y permeabilidad muy lenta: el escurrimiento va de medio a muy alto en terreno llano, que es lo contrario de lo que sugiere la palabra valle. Ese piso es lo que sostiene las charcas vernales y lo que ahoga un monte frutal si nadie lo rompió antes de plantar. En el oeste del valle hay un segundo problema y no nace acá: las rocas sedimentarias marinas de las Coast Ranges, cuesta arriba, están enriquecidas en selenio, y el riego sin salida de drenaje lo moviliza junto con las sales; el USGS llama a eso el efecto Kesterson y cuenta unas 100.000 ha del valle occidental con napa somera y drenaje insuficiente. Medido con SoilGrids contra el polígono no hay clase dominante, y eso también es un dato: Luvisols 26,4 %, Kastanozems 20,9 %, Vertisols 18,6 %, Cambisols 15,5 %, Regosols 10,7 %, Fluvisols 4,1 % en las fajas de río y 0,1 % de salinos en los sumideros del sur. Cero lixiviados. Los Luvisols son el argílico de la serie San Joaquín y los Vertisols las arcillas de cubeta, así que en eso las dos clasificaciones dicen lo mismo con otras palabras. En lo que no coinciden es en el piso: el zonal no devuelve ni un píxel de Durisols, que es el grupo que la WRB define por la acumulación y la cementación con sílice secundaria, o sea por el duripán mismo. El producto global pierde justo la capa que decide si el frutal se ahoga, y la descripción de serie no. El zonal de HWSD v2 sigue sin extraerse.',
+    saberes: [],
+    especies: [
+      'Roble de valle (Quercus lobata)',
+      'Álamo de Fremont (Populus fremontii)',
+      'Sauce rojo (Salix laevigata)',
+      'Tule (Schoenoplectus acutus)',
+      'Pasto de racimo púrpura (Stipa pulchra)',
+      'Camarones renacuajo de charca vernal (Lepidurus packardi)',
+      'Zorro kit de San Joaquín (Vulpes macrotis mutica)',
+    ],
+    cultivos: ['arroz', 'almendro', 'nogal', 'pistacho', 'vid', 'durazno', 'naranjo', 'alfalfa', 'trigo', 'cebolla', 'girasol', 'veza'],
+    aptitud: [
+      { uso: 'huerta', delta: 0, razon: 'En el aluvión profundo del valle la huerta sí va: es una de las regiones hortícolas más productivas del mundo. Pero va enteramente con agua traída, y la asignación de riego es el límite real, no el suelo.' },
+      { uso: 'frutales', delta: -5, razon: 'El duripán de la serie San Joaquín está entre 51 y 102 cm y la permeabilidad es muy lenta: el frutal va -la propia descripción oficial lista viña y frutos secos entre los usos-, pero no sin romper el piso antes de plantar, y eso es obra previa, no manejo.' },
+      { uso: 'reserva', delta: 10, razon: 'Es la ecorregión que RESOLVE clasifica como «Nature Imperiled»: queda muy poco pastizal y muy poca charca vernal, y lo que queda depende del mismo piso cementado que la agricultura rompe. Un parche remanente adentro de un campo vale más como reserva que como otra cuadra de almendro; el delta no discute el campo que ya existe.' },
+    ],
+    fuentes: [
+      SERIE_SAN_JOAQUIN,
+      { label: 'USGS — Linking selenium sources to ecosystems: irrigation (el efecto Kesterson y el drenaje del valle occidental)', url: 'https://www.usgs.gov/mission-areas/water-resources/science/linking-selenium-sources-ecosystems-irrigation' },
+      SOILGRIDS,
+      HENGL,
+      RESOLVE_AMERICA,
     ],
   },
 

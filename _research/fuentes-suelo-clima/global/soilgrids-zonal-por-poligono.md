@@ -562,3 +562,115 @@ mapeo en ventanas chicas aparte, porque el mapeo es global y no hace falta
 bajar las 30 capas sobre los 118 Mpx. Eso es trabajo, no un parámetro.
 
 Lo que no entra en una tarde es HWSD.
+## California: la primera vez que hubo contra qué comparar
+
+Los nueve polígonos anteriores están en India, Myanmar, Indonesia, Malasia y
+Australia, y de los cinco países sólo Australia tiene un relevamiento de suelo
+abierto comparable al de SoilGrids. Así que el método se venía controlando
+contra estadística agrícola de distrito, contra tablas nacionales de la FAO y
+contra lo que citaba cada ficha, que son controles indirectos. California es el
+primer caso con un relevamiento nacional denso, abierto y por serie: el National
+Cooperative Soil Survey, cuyas descripciones oficiales de serie (OSD) dan el
+perfil horizonte por horizonte, con la química adentro de la clasificación.
+
+El 23/11/2026 se partió la ficha `california_klamath_sierra_valle`, que cubría
+cinco ecorregiones, y se corrió el zonal contra las cinco. Lo que salió es a la
+vez el mejor respaldo y la peor noticia que tuvo el método hasta ahora.
+
+### Los cinco polígonos, medidos
+
+| ECO_ID | ECO_NAME de RESOLVE | Bioma | Clase dominante | Grupo A |
+|---|---|---|---|---|
+| 357 | Klamath-Siskiyou forests | Conífera templada | Cambisols 57,1 % | 2,0 % |
+| 366 | Sierra Nevada forests | Conífera templada | Cambisols 50,4 % | 0,6 % |
+| 385 | California Central Valley grasslands | Pastizal templado | Luvisols 26,4 % | 0,0 % |
+| 423 | California interior chaparral and woodlands | Mediterráneo | Luvisols 49,9 % | 0,0 % |
+| 425 | Santa Lucia Montane Chaparral & Woodlands | Mediterráneo | Kastanozems 80,7 % | 0,0 % |
+
+Los cinco a resolución nativa, sin submuestrear. Ninguno de los cinco mueve el
+delta de la regla del grupo A: California no tiene suelos lixiviados en
+superficie apreciable, lo cual era esperable en clima mediterráneo y es el
+primer resultado del lote que no sorprende a nadie.
+
+Tres cosas aparte, antes de lo importante:
+
+- **El Valle Central no tiene clase dominante.** El máximo es 26,4 %. En los
+  nueve polígonos anteriores la dominante iba de 34,6 % a 96,7 %, y acá el
+  reparto es Luvisols 26,4 %, Kastanozems 20,9 %, Vertisols 18,6 %, Cambisols
+  15,5 %, Regosols 10,7 %, Fluvisols 4,1 % y 0,1 % de salinos. No es ruido: es
+  que el valle es un mosaico de aluvión, cubeta y faja de río, no una provincia
+  de suelo. La ausencia de dominante es el dato.
+- **En Santa Lucía las dos clasificaciones coinciden sin haberse consultado.**
+  Kastanozems 80,7 % contra el `Entic Haploxeroll` de la serie Sur, que es la
+  traducción directa. Es el control más limpio que tuvo el método: dos sistemas
+  independientes, el mismo suelo.
+- **El mapeo volvió a salir unánime**, hasta 16 valores distintos con 100 % en
+  el polígono de la Sierra. Van 14 polígonos de cinco continentes.
+
+### Y lo que el producto no ve
+
+`MostProbable` devuelve **grupos de referencia** de la WRB. Y sobre estos cinco
+polígonos no devuelve **ni un píxel** de dos de ellos:
+
+| Grupo | Qué lo define en la WRB 2022 | Qué dice el OSD del mismo lugar | Qué devuelve el zonal |
+|---|---|---|---|
+| **Durisols** | «accumulation of, and cementation by, secondary silica» | serie San Joaquín: duripán a 51-102 cm, permeabilidad muy lenta | 0 px; Luvisols 26,4 % |
+| **Umbrisols** | «dark topsoil, low base status» | serie Shaver: epipedón úmbrico de 50 a 90 cm de espesor | 0 px; Cambisols 50,4 % |
+
+Los dos grupos están entre las 31 capas que el script baja: no es que no se
+hayan pedido, el producto los da en cero. Y las dos capas que se pierden son
+justo las que deciden el uso del suelo en cada sector: el duripán es lo que
+ahoga un monte frutal si nadie lo rompió antes de plantar, y el epipedón úmbrico
+es la reserva de agua y de carbono del perfil granítico.
+
+Hay un tercer caso y es peor, porque no es un error del producto sino un límite
+de su formato: **la serpentina del Klamath no se puede mostrar con un grupo.**
+En la WRB el carácter serpentínico es un cualificador —`hypermagnesic`— y no un
+grupo de referencia, así que un ráster de grupos es estructuralmente ciego a él.
+El Klamath le sale Cambisols 57,1 % y Luvisols 38,7 %, como cualquier monte
+templado, mientras la taxonomía de Estados Unidos tuvo que inventar una clase
+mineralógica entera —`magnesic`— para nombrar la relación calcio-magnesio dada
+vuelta, y la serie Dubakella la lleva. Es la misma limitación que el script ya
+anota en cada corrida para los tiónicos de manglar: «los tiónicos son un
+cualificador de la WRB, no un grupo, y MostProbable no los distingue».
+
+Y hay un cuarto desacuerdo que **no** es culpa del producto, y conviene no
+mezclarlo con los otros tres. En el anillo de lomas que rodea el valle (423) el
+zonal da Luvisols 49,9 %, o sea suelos con horizonte argílico, sobre un paisaje
+cuya serie extensiva —Auburn— tiene un cámbico de 15 a 45 cm apoyado en la
+roca. Pero la propia OSD dice que la profundidad hasta la roca pasa de menos de
+50 cm a más de 50 cm **en menos de 3,5 metros de distancia horizontal**. Un
+píxel de 232 m de lado no puede resolver eso, y ningún ráster más fino tampoco
+en la práctica: es un límite de escala, no de producto. Ahí la respuesta no es
+otra fuente, es una calicata, y la ficha lo dice así.
+
+### Qué hacer con eso
+
+No invalida los nueve polígonos de Indomalaya. Los porcentajes medidos siguen
+siendo lo que son, y la fracción del grupo A —que es lo único que mueve un
+número de la app— se calcula sobre grupos que el producto sí distingue bien.
+
+Pero sí dice **qué clase de cosa se les puede estar escapando**, y ahí no hay
+con qué compararlo: si el Valle Central con el mejor relevamiento de suelo del
+mundo pierde su duripán en el zonal, el Decán puede estar perdiendo un horizonte
+que decide lo mismo sin que nadie se entere. Lo que cambia en la práctica es la
+jerarquía de fuentes, y queda escrita:
+
+> **Donde exista relevamiento nacional por serie, manda el relevamiento y
+> SoilGrids entra como control.** Donde no exista, SoilGrids es lo que hay y la
+> ficha tiene que decirlo así.
+
+Las cinco fichas de California citan la OSD de su serie y el zonal queda
+declarado como control. Es la primera vez en este relevamiento que se puede
+escribir en ese orden.
+
+### Una nota de acceso
+
+El sitio propio de la NRCS (`soilseries.sc.egov.usda.gov`) devolvía 404 el
+23/11/2026 y `soilseriesdesc.sc.egov.usda.gov` no resolvía. SoilWeb del
+California Soil Resource Lab (UC Davis) sirve una copia de cada OSD con la fecha
+de revisión a la vista —lo dice en la página: «The official OSD website is down,
+using a recent backup»— y es el enlace que llevan las fichas. Aparte,
+`fs.usda.gov` y `research.fs.usda.gov` devuelven 403 desde esta máquina, igual
+que `kvk.icar.gov.in` el 22/11/2026: es bloqueo de host, no enlace muerto, y las
+citas del USFS que las fichas ya traían se dejaron como estaban.

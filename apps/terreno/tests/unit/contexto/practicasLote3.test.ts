@@ -76,12 +76,19 @@ describe('las mudanzas del tercer lote', () => {
 
   it('el chaparral del interior de California no es la ficha que se llama chaparral', () => {
     // Ukiah, Hopland, Clearlake y Healdsburg —el territorio pomo de las Coast
-    // Ranges— y North Fork, en el pie de la Sierra, dan todos 423, que es una de
-    // las cinco ecorregiones de `california_klamath_sierra_valle`. La ficha
+    // Ranges— y North Fork, en el pie de la Sierra, dan todos 423. La ficha
     // `chaparral_californiano` es sólo el 424, el chaparral montano.
-    expect(fichaDeEcorregion(423)).toBe('california_klamath_sierra_valle');
+    //
+    // El 423 era una de las cinco ecorregiones de
+    // `california_klamath_sierra_valle`, que el 23/11/2026 se partió en cinco
+    // fichas —cuatro biomas de RESOLVE en una sola ficha, y Santa Lucía sin
+    // describir—. Las cuatro prácticas que estaban juntas se repartieron dos y
+    // dos, y esta consulta espacial es lo que decidió el reparto. Ver
+    // `californiaPartida.test.ts`.
+    expect(fichaDeEcorregion(423)).toBe('california_matorral_interior');
     expect(fichaDeEcorregion(424)).toBe('chaparral_californiano');
-    expect(practicasDeFicha('california_klamath_sierra_valle')).toHaveLength(4);
+    expect(practicasDeFicha('california_matorral_interior')).toHaveLength(2);
+    expect(practicasDeFicha('klamath_siskiyou')).toHaveLength(2);
     expect(practicasDeFicha('chaparral_californiano')).toHaveLength(1);
   });
 
@@ -187,7 +194,7 @@ describe('los mecanismos que no se pueden perder al reescribir', () => {
     // anual corría por el pasto y el matorral que no servía, y el arbusto que daba
     // fruto quedaba protegido. Más el dato contraintuitivo: la quema por parches
     // BAJABA el riesgo de incendio de verano sobre los caseríos.
-    const quema = practicasDeFicha('california_klamath_sierra_valle').find((p) => /otoño/.test(p.practica))!;
+    const quema = practicasDeFicha('california_matorral_interior').find((p) => /otoño/.test(p.practica))!;
     expect(quema.detalle).toMatch(/quedaban protegidos/);
     expect(quema.detalle).toMatch(/rayo/);
     expect(quema.detalle).toMatch(/competencia por el agua del suelo/);
@@ -236,7 +243,8 @@ describe('las fuentes de este lote', () => {
   const FICHAS = [
     'sumatra_montano', 'java_bali_montano', 'java_oriental_bali_bajo',
     'pantanos_borneo_suroeste', 'luzon_bajo', 'mindoro', 'mindanao_montano',
-    'mindanao_visayas_oriental', 'california_klamath_sierra_valle',
+    'mindanao_visayas_oriental', 'klamath_siskiyou',
+    'california_matorral_interior',
     'manglares_pacifico_suramericano', 'galapagos_matorral_xerico',
   ];
   const DEL_LOTE = FICHAS.flatMap((id) => practicasDeFicha(id).flatMap((p) => p.fuentes));
@@ -253,14 +261,17 @@ describe('las fuentes de este lote', () => {
     }
   });
 
-  it('son quince entradas nuevas sobre once fichas, hoy dieciocho', () => {
+  it('son quince entradas nuevas sobre once fichas, hoy sobre doce', () => {
     // 14 entradas entregadas, 15 montadas: el subak va en dos fichas. El lote 4
     // le sumó dos a `sumatra_montano` y una a `luzon_bajo`, y los totales de acá
-    // son el estado de hoy, no el del lote.
+    // son el estado de hoy, no el del lote. Las once fichas pasaron a doce sin
+    // que entrara ninguna práctica nueva: las cuatro de California se
+    // repartieron dos y dos cuando la ficha se partió en cinco.
     const esperado: Record<string, number> = {
       sumatra_montano: 4, java_bali_montano: 2, java_oriental_bali_bajo: 1,
       pantanos_borneo_suroeste: 1, luzon_bajo: 6, mindoro: 1, mindanao_montano: 1,
-      mindanao_visayas_oriental: 1, california_klamath_sierra_valle: 4,
+      mindanao_visayas_oriental: 1, klamath_siskiyou: 2,
+      california_matorral_interior: 2,
       manglares_pacifico_suramericano: 3, galapagos_matorral_xerico: 3,
     };
     for (const [id, n] of Object.entries(esperado)) {

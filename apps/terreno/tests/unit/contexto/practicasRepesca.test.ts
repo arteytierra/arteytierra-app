@@ -118,9 +118,13 @@ describe('las fuentes y los totales de la repesca', () => {
   const IDS = ['ghats_norte_montano', 'ghats_norte_deciduo', 'ghats_sur_montano'];
 
   it('el catálogo pasa de 457 sobre 225 a 460 sobre 227', () => {
+    // El 23/11/2026 las claves pasaron de 227 a 228 sin que entrara ninguna
+    // práctica nueva: `california_klamath_sierra_valle` se partió en cinco
+    // fichas y sus cuatro entradas se repartieron dos al Klamath y dos al
+    // matorral interior. El total de entradas no se mueve.
     const fichas = Object.keys(PRACTICAS_POR_FICHA);
     const total = fichas.reduce((n, id) => n + practicasDeFicha(id).length, 0);
-    expect(fichas).toHaveLength(227);
+    expect(fichas).toHaveLength(228);
     expect(total).toBe(460);
     // Y la ficha de contexto ve lo mismo que el catálogo, que es lo que se imprime.
     for (const id of IDS) {

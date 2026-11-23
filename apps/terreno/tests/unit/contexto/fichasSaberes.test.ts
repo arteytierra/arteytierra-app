@@ -61,13 +61,17 @@ describe('los saberes de las fichas', () => {
     }
   });
 
-  it('en total, 22 de 256 fichas regionales tienen saberes', () => {
+  it('en total, 22 de 260 fichas regionales tienen saberes', () => {
     // El número importa porque explica lo que se ve: en casi cualquier predio
     // del mundo esa sección del panel no tiene contenido, y no es un error.
     // BIOMAS_REGIONALES ya es la unión de los once bloques: las 22 a mano más
-    // las 234 que no atribuyen saberes a nadie.
+    // las 238 que no atribuyen saberes a nadie.
+    //
+    // Eran 256 hasta el 23/11/2026, cuando `california_klamath_sierra_valle` se
+    // partió en las cinco ecorregiones que cubría. Las cinco nuevas también
+    // llevan `saberes: []`, por el mismo motivo que las otras 237.
     const todas = Object.values(BIOMAS_REGIONALES);
-    expect(todas.length).toBe(256);
+    expect(todas.length).toBe(260);
     expect(todas.filter((f) => f.saberes.length > 0).length).toBe(22);
   });
 });
