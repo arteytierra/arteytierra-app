@@ -1,0 +1,64 @@
+{
+"_": "Las palabras de las TRES tomas nuevas del 22/11/2026, con sus tiempos en segundos de cada archivo. Salen de faster-whisper sobre el archivo entero —transcribir el recorte perdia palabras: se comio el «app» de n1 y convirtio «dijeron» en «dijera»— y se corrigieron tres cosas a mano: el arranque de la primera palabra de cada toma, que whisper hace empezar en 0 porque le mete el silencio de adelante; el final de la ultima, que se pasaba del habla; y las comas, que whisper no pone. Las fronteras del habla son de silencedetect=noise=-35dB:d=0.12.",
+
+"n1": [
+{"t": 1.17, "f": 1.34, "p": "Esto"},
+{"t": 1.34, "f": 1.48, "p": "lo"},
+{"t": 1.48, "f": 1.94, "p": "construimos"},
+{"t": 1.94, "f": 2.34, "p": "nosotros,"},
+{"t": 2.34, "f": 2.68, "p": "con"},
+{"t": 2.68, "f": 2.82, "p": "las"},
+{"t": 2.82, "f": 3.16, "p": "mismas"},
+{"t": 3.16, "f": 3.56, "p": "cuentas"},
+{"t": 3.56, "f": 3.66, "p": "que"},
+{"t": 3.66, "f": 3.84, "p": "hace"},
+{"t": 3.84, "f": 4.04, "p": "la"},
+{"t": 4.04, "f": 4.24, "p": "app."}
+],
+
+"n2": [
+{"t": 0.74, "f": 0.82, "p": "Y"},
+{"t": 0.82, "f": 1.18, "p": "funciona"},
+{"t": 1.18, "f": 1.34, "p": "en"},
+{"t": 1.34, "f": 1.46, "p": "cualquier"},
+{"t": 1.46, "f": 1.80, "p": "parte"},
+{"t": 1.80, "f": 2.00, "p": "del"},
+{"t": 2.00, "f": 2.24, "p": "mundo."},
+{"t": 2.60, "f": 2.84, "p": "Acá"},
+{"t": 2.84, "f": 2.94, "p": "el"},
+{"t": 2.94, "f": 3.06, "p": "sol"},
+{"t": 3.06, "f": 3.22, "p": "de"},
+{"t": 3.22, "f": 3.54, "p": "verano"},
+{"t": 3.54, "f": 3.78, "p": "pasa"},
+{"t": 3.78, "f": 4.02, "p": "por"},
+{"t": 4.02, "f": 4.14, "p": "el"},
+{"t": 4.14, "f": 4.44, "p": "norte,"},
+{"t": 4.44, "f": 4.74, "p": "y"},
+{"t": 4.74, "f": 4.88, "p": "la"},
+{"t": 4.88, "f": 5.10, "p": "app"},
+{"t": 5.10, "f": 5.26, "p": "lo"},
+{"t": 5.26, "f": 5.50, "p": "sabe"},
+{"t": 5.50, "f": 5.82, "p": "porque"},
+{"t": 5.82, "f": 6.02, "p": "lo"},
+{"t": 6.02, "f": 6.62, "p": "calcula,"},
+{"t": 6.66, "f": 6.82, "p": "no"},
+{"t": 6.82, "f": 7.06, "p": "porque"},
+{"t": 7.06, "f": 7.22, "p": "se"},
+{"t": 7.22, "f": 7.34, "p": "lo"},
+{"t": 7.34, "f": 7.66, "p": "dijeron."}
+],
+
+"n3": [
+{"t": 0.69, "f": 0.82, "p": "Cada"},
+{"t": 0.82, "f": 1.16, "p": "número"},
+{"t": 1.16, "f": 1.60, "p": "dice"},
+{"t": 1.60, "f": 1.82, "p": "de"},
+{"t": 1.82, "f": 1.92, "p": "dónde"},
+{"t": 1.92, "f": 2.42, "p": "salió"},
+{"t": 2.42, "f": 2.60, "p": "y"},
+{"t": 2.60, "f": 2.68, "p": "de"},
+{"t": 2.68, "f": 2.78, "p": "qué"},
+{"t": 2.78, "f": 3.08, "p": "fecha"},
+{"t": 3.08, "f": 3.28, "p": "es."}
+]
+}

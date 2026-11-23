@@ -9,6 +9,13 @@ quince clips de pantalla— pero le mete adentro las once piezas de Remotion que
 se renderizaron después, en los encargos 02, 03 y 04. Esas piezas no existían
 cuando se montó el primero.
 
+> **Esta idea ya está armada y se puede mirar.** El animático de §8 existe, en
+> las dos variantes, y con las tres frases de §6 adentro —Jonatan las grabó el
+> 22/11/2026—. Eso corre algunos números de acá: el video dura 88 s y no 75, y
+> la bisagra cae en el segundo 30,4 y no en el 27,3. Lo que cambió, y por qué,
+> está en `ANIMATICO-02.md`. Este documento queda como estaba: es la idea, no
+> el corte.
+
 ---
 
 ## 1 · Lo que hay, hoy
