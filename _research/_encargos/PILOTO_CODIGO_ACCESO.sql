@@ -10,7 +10,7 @@
 --   1. Le mandás el código por correo.
 --   2. Entra a  https://terreno.arteytierra.org/canjear?codigo=FUNDADOR26
 --   3. Si no tiene cuenta, la crea ahí mismo (así queda su contacto) y vuelve.
---   4. Queda con plan Personal por 7 días. Al vencer, vuelve sola a Semilla.
+--   4. Queda con plan Profesional por 180 días. Al vencer, vuelve sola a Semilla.
 --
 -- ANTES DE PEGAR: confirmá que la URL del proyecto de Supabase abierto sea
 -- https://ojlvflmqcyxdnvhbnhgp.supabase.co  — si no coincide, pará.
@@ -20,12 +20,22 @@
 -- `familia` lo hace excluyente con cualquier otro código de la misma familia:
 -- nadie puede acumular dos pruebas de fundador, ni ahora ni más adelante.
 --
--- 7 días de plan Personal, como quedó definido. El reloj arranca cuando la
--- persona canjea, no cuando vos creás el código: mandá el link cerca del
--- encuentro inicial, no antes, para que la semana le rinda entera.
+-- Desde el 23/11/2026 son 180 días de plan PROFESIONAL (antes eran 7 de
+-- Personal). Seis meses porque un predio no se diseña en una semana: el
+-- calendario agrícola, el balance hídrico y el pastoreo se leen contra las
+-- estaciones, y la devolución que vale es la de alguien que volvió a entrar en
+-- la época siguiente. Y Profesional porque son diez proyectos en vez de dos
+-- —una cartera, no un caso— y porque trae el informe con marca propia, que es
+-- justamente lo que un consultor entrega y, por lo tanto, lo que mejor puede
+-- criticar.
+--
+-- Esto ya está escrito como migración 0064 en el repositorio: si la 0064 se
+-- aplicó, este bloque no hace falta y no cambia nada (es idempotente).
+--
+-- El reloj arranca cuando la persona canjea, no cuando vos creás el código.
 INSERT INTO terreno.codigos (codigo, plan, dias, usos_max, activo, familia, nota)
-VALUES ('FUNDADOR26', 'personal', 7, 10, true, 'piloto-fundador',
-        'Programa fundador 2026: 6 a 10 participantes, sin costo ni tarjeta.')
+VALUES ('FUNDADOR26', 'profesional', 180, 10, true, 'piloto-fundador',
+        'Programa fundador 2026: Profesional por seis meses, sin costo ni tarjeta. 6 a 10 participantes.')
 ON CONFLICT (codigo) DO UPDATE
   SET plan     = EXCLUDED.plan,
       dias     = EXCLUDED.dias,
@@ -35,7 +45,7 @@ ON CONFLICT (codigo) DO UPDATE
       nota     = EXCLUDED.nota;
 
 -- ─── 2. Comprobación ────────────────────────────────────────────────────────
--- Tiene que devolver una fila: FUNDADOR26 · personal · 7 · 10 · 0 · true
+-- Tiene que devolver una fila: FUNDADOR26 · profesional · 180 · 10 · 0 · true
 SELECT codigo, plan, dias, usos_max, usos, activo, familia
 FROM terreno.codigos
 WHERE familia = 'piloto-fundador';

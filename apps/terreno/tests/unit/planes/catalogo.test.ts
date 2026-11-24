@@ -15,10 +15,12 @@ describe('catálogo de planes', () => {
   it('cobra lo que la vidriera promete', () => {
     expect(acequiaPlanPrice('personal', 'mensual')).toBe(7);
     expect(acequiaPlanPrice('personal', 'anual')).toBe(70);
-    expect(acequiaPlanPrice('profesional', 'mensual')).toBe(15);
-    expect(acequiaPlanPrice('profesional', 'anual')).toBe(150);
-    expect(acequiaPlanPrice('estudio', 'mensual')).toBe(35);
-    expect(acequiaPlanPrice('estudio', 'anual')).toBe(350);
+    // 23/11/2026: Profesional pasó de 15 a 20 y Estudio de 35 a 40. El anual
+    // sigue siendo diez meses, así que acompañaron 150 → 200 y 350 → 400.
+    expect(acequiaPlanPrice('profesional', 'mensual')).toBe(20);
+    expect(acequiaPlanPrice('profesional', 'anual')).toBe(200);
+    expect(acequiaPlanPrice('estudio', 'mensual')).toBe(40);
+    expect(acequiaPlanPrice('estudio', 'anual')).toBe(400);
     expect(ACEQUIA_PLANS.semilla.monthlyUsd).toBeNull();
   });
 

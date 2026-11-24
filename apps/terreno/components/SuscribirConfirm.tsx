@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { CreditCard, Wallet, Loader2, ArrowLeft } from 'lucide-react';
-import { ACEQUIA_PLANS, acequiaPlanPrice } from '@arteytierra/config/acequia';
+import { ACEQUIA_PLANS, ACEQUIA_TRIAL_PLAN, acequiaPlanPrice } from '@arteytierra/config/acequia';
 import { iniciarCheckout, type PlanPago, type Periodo, type Proveedor } from '@/lib/suscribir';
 import type { EstadoPagos } from '@/lib/estadoPagosDato';
 
@@ -25,8 +25,13 @@ const NOMBRE: Record<PlanPago, string> = {
  * importe que Mercado Pago iba a cobrar salía de `ACEQUIA_ARS_PER_USD`: dos
  * números para el mismo precio, y el que veía el usuario no era el que se le
  * cobraba.
+ *
+ * `diasPrueba` llega calculado para ESTE plan y puede ser cero. Desde el
+ * 23/11/2026 la prueba es sólo de Personal, así que la pantalla de Profesional
+ * tiene que decir que el cobro es hoy: era el mismo tipo de falla que la
+ * cotización escrita a mano, prometer una cosa y cobrar otra.
  */
-export function SuscribirConfirm({ plan, periodo, pagos, fechaPrimerCobro }: { plan: PlanPago; periodo: Periodo; pagos: EstadoPagos; fechaPrimerCobro: string }) {
+export function SuscribirConfirm({ plan, periodo, pagos, diasPrueba, fechaPrimerCobro }: { plan: PlanPago; periodo: Periodo; pagos: EstadoPagos; diasPrueba: number; fechaPrimerCobro: string }) {
   const [cargando, setCargando] = useState<Proveedor | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,13 +69,22 @@ export function SuscribirConfirm({ plan, periodo, pagos, fechaPrimerCobro }: { p
             {ars !== null && (
               <p className="text-xs text-ink-700/60 mt-1">o AR$ {ars.toLocaleString('es-AR')}{sufijo} desde Argentina</p>
             )}
-            {pagos.prueba && (
+            {diasPrueba > 0 && (
               <div className="mt-4 rounded-lg bg-moss-50 border border-moss-200 px-3 py-2 text-xs text-moss-900">
-                <strong>Hoy: USD 0.</strong> Acceso completo por {pagos.diasPrueba} días. Primer cobro previsto: {fechaPrimerCobro}, salvo cancelación previa.
+                <strong>Hoy: USD 0.</strong> Acceso completo por {diasPrueba} días. Primer cobro previsto: {fechaPrimerCobro}, salvo cancelación previa.
               </div>
             )}
-            {!pagos.prueba && (
-              <p className="mt-4 text-xs text-ink-700/60">El primer cobro es hoy y la renovación es automática.</p>
+            {diasPrueba === 0 && (
+              <p className="mt-4 text-xs text-ink-700/60">
+                El primer cobro es hoy y la renovación es automática.
+                {pagos.prueba && plan !== ACEQUIA_TRIAL_PLAN && (
+                  <>
+                    {' '}La prueba sin cargo es del plan {ACEQUIA_PLANS[ACEQUIA_TRIAL_PLAN].name},
+                    que ya trae todo el análisis y todo el diseño; desde ahí podés
+                    pasar a este plan cuando quieras.
+                  </>
+                )}
+              </p>
             )}
           </div>
 

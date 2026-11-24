@@ -36,9 +36,10 @@ export default async function RegistroPage({ searchParams }: { searchParams: Pro
         <p className="text-[11px] text-center text-ink-700/50 mt-4 leading-relaxed">
           {pagos.prueba ? (
             <>
-              La prueba comercial ofrece {pagos.diasPrueba} días de acceso completo a Personal o
-              Profesional con un medio de pago autorizado. Si cancelás antes del primer cobro,
-              continuás en Semilla con acceso limitado.
+              La prueba comercial ofrece {pagos.diasPrueba} días de acceso completo al plan
+              Personal con un medio de pago autorizado. Si cancelás antes del primer cobro,
+              continuás en Semilla con acceso limitado. Profesional y Estudio se cobran desde
+              el primer día.
             </>
           ) : (
             <>

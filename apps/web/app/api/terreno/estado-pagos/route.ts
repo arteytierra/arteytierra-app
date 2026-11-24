@@ -6,6 +6,8 @@ import {
   ACEQUIA_PLANS,
   ACEQUIA_TOPO_SEMILLA_HA,
   ACEQUIA_TRIAL_DAYS,
+  ACEQUIA_TRIAL_PLAN,
+  acequiaTrialDays,
   type AcequiaFeature,
   type AcequiaPlanId,
 } from '@arteytierra/config/acequia';
@@ -48,14 +50,28 @@ export interface PlanPublicado {
   cuentas: number;
   /** Si es false, el alta pasa por una persona y `/suscribir` rechaza el plan. */
   checkoutPropio: boolean;
+  /**
+   * Días de prueba de ESTE plan. Cero significa que se cobra desde el primer
+   * día, y desde el 23/11/2026 es el caso de todos menos Personal.
+   *
+   * Va plan por plan porque el error que esto previene es de una sola frase:
+   * un botón que diga "Probar 3 días" en la tarjeta de Profesional manda a una
+   * pantalla que cobra hoy. El número de arriba, `diasPrueba`, no alcanza para
+   * decidir eso —es el de Personal—, así que cada tarjeta tiene que mirar el
+   * suyo.
+   */
+  pruebaDias: number;
 }
 
 export interface EstadoPagos {
   /** Si es false, el checkout responde 503 y no hay nada que ofrecer. */
   pagos: boolean;
-  /** Si es true, el alta empieza con una prueba y el primer cobro se corre. */
+  /** Si es true, hay prueba; de qué plan lo dice `planPrueba`. */
   prueba: boolean;
+  /** Los días de la prueba de `planPrueba`. No es "la prueba de acequia". */
   diasPrueba: number;
+  /** El único plan que se prueba sin pagar. Los demás cobran desde el día uno. */
+  planPrueba: AcequiaPlanId;
   arsPorUsd: number | null;
   /**
    * El catálogo completo, para que ninguna vidriera tenga que copiarlo a mano.
@@ -109,6 +125,7 @@ function publicarPlanes(): Record<AcequiaPlanId, PlanPublicado> {
       proyectos: plan.projects,
       cuentas: plan.seats,
       checkoutPropio: plan.selfCheckout,
+      pruebaDias: plan.id === 'semilla' ? 0 : acequiaTrialDays(plan.id),
     };
   }
   return salida;
@@ -136,6 +153,7 @@ export function GET(req: NextRequest) {
     pagos: pagosAcequiaHabilitados(),
     prueba: pruebaComercialHabilitada(),
     diasPrueba: ACEQUIA_TRIAL_DAYS,
+    planPrueba: ACEQUIA_TRIAL_PLAN,
     // Sin cotización no se muestra el precio en pesos. Es la regla de siempre:
     // degradar avisando antes que rellenar con un número plausible.
     arsPorUsd: tasaArsPorUsdParaMostrar(),

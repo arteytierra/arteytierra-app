@@ -1,3 +1,9 @@
+/** Cuantos dias dura la prueba del plan que se puede probar.
+ *
+ *  No son "los dias de prueba de acequia": son los dias de la prueba de
+ *  Personal, que desde el 23/11/2026 es el unico plan que se prueba sin pagar.
+ *  Quien necesite saber si un plan tiene prueba pregunta por
+ *  `acequiaTrialDays(plan)`, que es cero para los demas. */
 export const ACEQUIA_TRIAL_DAYS = 3;
 
 /** Los planes de acequia. El identificador es el mismo puertas adentro y de cara
@@ -47,8 +53,8 @@ export interface AcequiaPlanDefinition {
 export const ACEQUIA_PLANS: Record<AcequiaPlanId, AcequiaPlanDefinition> = {
   semilla:      { id: 'semilla',      name: 'Semilla',      monthlyUsd: null, annualUsd: null, projects: 1,  seats: 1, selfCheckout: false },
   personal:     { id: 'personal',     name: 'Personal',     monthlyUsd: 7,    annualUsd: 70,   projects: 2,  seats: 1, selfCheckout: true  },
-  profesional:  { id: 'profesional',  name: 'Profesional',  monthlyUsd: 15,   annualUsd: 150,  projects: 10, seats: 1, selfCheckout: true  },
-  estudio:      { id: 'estudio',      name: 'Estudio',      monthlyUsd: 35,   annualUsd: 350,  projects: 10, seats: 5, selfCheckout: false },
+  profesional:  { id: 'profesional',  name: 'Profesional',  monthlyUsd: 20,   annualUsd: 200,  projects: 10, seats: 1, selfCheckout: true  },
+  estudio:      { id: 'estudio',      name: 'Estudio',      monthlyUsd: 40,   annualUsd: 400,  projects: 10, seats: 5, selfCheckout: false },
 };
 
 /** Los planes que una persona puede contratar sin que intervenga nadie. */
@@ -77,9 +83,58 @@ export function acequiaPlanPrice(plan: AcequiaPaidPlanId, period: AcequiaBilling
   return period === 'anual' ? definition.annualUsd! : definition.monthlyUsd!;
 }
 
-export function addAcequiaTrialDays(from = new Date()): Date {
+/* ─── Quién puede probar sin pagar ───────────────────────────────────
+ *
+ * Decisión de Jonatan del 23/11/2026, y es un cambio de dónde vive la regla.
+ *
+ * Hasta hoy la prueba era del CHECKOUT y no del plan: el alta de cualquier plan
+ * contratable arrancaba con tres días en cero y el primer cobro se corría tres
+ * días, así que Profesional —que cuesta el triple— se probaba igual que
+ * Personal. Ahora la prueba es de Personal. Profesional y Estudio se cobran
+ * desde el primer día.
+ *
+ * Por qué eso no deja a nadie sin poder mirar antes de pagar: Personal ya
+ * habilita TODO el análisis y TODO el diseño —las 27 funciones con candado que
+ * arrancan en `personal`—. Lo que Profesional agrega encima son los diez
+ * proyectos y el informe con marca propia, que son cosas de cartera y no de
+ * herramienta. Así que la prueba de Personal muestra el producto completo, y al
+ * terminarla se contrata el plan que se quiera, incluido uno superior: eso lo
+ * resuelve el checkout, que cierra la suscripción anterior antes de abrir la
+ * nueva.
+ *
+ * Esta regla vive acá y no en una variable de entorno a propósito.
+ * `ACEQUIA_TRIAL_ENABLED` decide si hay prueba en absoluto —es una bandera de
+ * despliegue, y vive donde están las credenciales de cobro—; de qué plan es la
+ * prueba es una decisión de producto, y por lo tanto del catálogo.
+ */
+
+/** El único plan que se prueba sin pagar. */
+export const ACEQUIA_TRIAL_PLAN: AcequiaPaidPlanId = 'personal';
+
+/** Días de prueba de un plan. Cero significa que se cobra desde el primer día. */
+export function acequiaTrialDays(plan: AcequiaPaidPlanId): number {
+  return plan === ACEQUIA_TRIAL_PLAN ? ACEQUIA_TRIAL_DAYS : 0;
+}
+
+/** ¿Este plan se puede probar sin pagar? Acepta también el viejo `disenador`. */
+export function acequiaTienePrueba(plan: string): boolean {
+  const resuelto = resolveAcequiaPaidPlan(plan);
+  return resuelto !== null && acequiaTrialDays(resuelto) > 0;
+}
+
+/**
+ * Cuándo termina la prueba de un plan, o null si ese plan no tiene prueba.
+ *
+ * Reemplaza a `addAcequiaTrialDays`, que sumaba los días sin preguntar de qué
+ * plan se trataba. El null no es un detalle de estilo: es lo que hace que el
+ * checkout de Profesional no pueda arrancar con una fecha de primer cobro
+ * corrida por descuido.
+ */
+export function acequiaFinDePrueba(plan: AcequiaPaidPlanId, from = new Date()): Date | null {
+  const dias = acequiaTrialDays(plan);
+  if (dias <= 0) return null;
   const end = new Date(from);
-  end.setUTCDate(end.getUTCDate() + ACEQUIA_TRIAL_DAYS);
+  end.setUTCDate(end.getUTCDate() + dias);
   return end;
 }
 

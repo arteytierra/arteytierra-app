@@ -230,7 +230,12 @@ const FAQS = [
   { q: '¿Sirve fuera de Argentina?', a: 'Sí. Las fuentes de relieve, clima, suelo y biodiversidad tienen cobertura global, así que podés analizar un predio en cualquier parte del mundo. Lo que cambia es el detalle: en Estados Unidos, Francia, España o Canadá acequia usa los modelos de elevación nacionales, que son bastante más finos que el global. Cuando una fuente no alcanza para una zona, la plataforma lo avisa.' },
   { q: '¿Qué pasa con mis datos y mis proyectos?', a: 'Son tuyos y privados. Se guardan en tu cuenta y sólo vos los ves, salvo que decidas compartir el informe por link.' },
   { q: '¿Puedo cancelar cuando quiera?', a: 'Sí, sin permanencia. Si dejás de pagar, tu cuenta vuelve al plan Semilla y conservás tu proyecto.' },
-  { q: '¿Cuál es la diferencia entre los planes?', a: 'Semilla mide y dibuja, gratis. Personal desbloquea todo el análisis y el diseño para hasta 2 proyectos. Profesional ofrece lo mismo, sin límite de proyectos. Estudio agrega tu marca propia en los informes, exportación CAD y trabajo en equipo.' },
+  // Este renglón decía tres cosas falsas a la vez: que Profesional no tiene
+  // límite de proyectos (tiene diez), que la marca propia en el informe es de
+  // Estudio (es de Profesional) y, por omisión, que la prueba sin cargo es de
+  // cualquier plan. Desde el 23/11/2026 la prueba es sólo de Personal.
+  { q: '¿Cuál es la diferencia entre los planes?', a: 'Semilla mide y dibuja, gratis. Personal desbloquea todo el análisis y todo el diseño, para hasta 2 proyectos. Profesional suma hasta 10 proyectos y el informe con tu logo y tu matrícula. Estudio agrega cinco cuentas sobre la misma cartera y la exportación a DXF/CAD por capas.' },
+  { q: '¿Hay algo para probar antes de pagar?', a: 'Sí, dos cosas distintas. El plan Semilla es gratis para siempre y no pide medio de pago: dibujás, medís y ves una muestra del análisis. Y el plan Personal —que ya trae todo el análisis y todo el diseño— empieza con tres días de acceso completo; si cancelás antes del primer cobro, seguís en Semilla. Profesional y Estudio se cobran desde el primer día, y podés pasar a ellos durante la prueba de Personal o cuando quieras.' },
   { q: '¿Cómo se paga desde otros países?', a: 'Desde Argentina, por Mercado Pago en pesos. Desde el resto del mundo, por PayPal en USD. La página muestra la moneda según desde dónde entrás.' },
   { q: '¿Necesito saber de CAD o GIS?', a: 'No. Lo que en un software técnico lleva días de trabajo, en acequia sucede al marcar el polígono de tu terreno.' },
 ];
@@ -574,7 +579,7 @@ export default async function AcequiaLanding() {
             {/* Programa fundador separado de la prueba comercial. */}
             <div className="max-w-2xl mx-auto mb-12 text-center bg-[#2E6B8A]/10 border border-[#2E6B8A]/25 px-6 py-4">
               <p className="font-sans text-sm text-[#3D2010]">
-                <strong className="text-[#2E6B8A]">Programa fundador:</strong> piloto cerrado de 6 a 10 participantes durante 7 días, sin costo ni tarjeta.
+                <strong className="text-[#2E6B8A]">Programa fundador:</strong> piloto cerrado de 6 a 10 participantes con el plan Profesional sin costo durante seis meses, sin tarjeta.
               </p>
             </div>
 

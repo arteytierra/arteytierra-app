@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import {
   acequiaSelfCheckout,
+  acequiaTrialDays,
   resolveAcequiaPaidPlan,
   type AcequiaBillingPeriod,
 } from '@arteytierra/config/acequia';
@@ -38,9 +39,16 @@ export default async function SuscribirPage({
   // al apretar el botón lo decide la web, que es la que tiene las credenciales
   // de cobro. Por eso se lo pregunta en vez de leer su propio entorno: los días
   // de prueba y la cotización del peso viven allá.
+  //
+  // De qué plan es la prueba no se pregunta: es una regla del catálogo, igual
+  // acá y allá. Lo que se pregunta es si hay prueba en absoluto, que depende de
+  // una variable de entorno del proyecto que cobra. Desde el 23/11/2026
+  // `acequiaTrialDays` devuelve cero para Profesional y Estudio, y entonces el
+  // primer cobro de esta pantalla es hoy.
   const pagos = await leerEstadoPagos();
+  const diasPrueba = pagos.prueba ? acequiaTrialDays(plan) : 0;
   const primerCobro = new Date();
-  primerCobro.setUTCDate(primerCobro.getUTCDate() + pagos.diasPrueba);
+  primerCobro.setUTCDate(primerCobro.getUTCDate() + diasPrueba);
   const fechaPrimerCobro = new Intl.DateTimeFormat('es-AR', {
     day: 'numeric',
     month: 'long',
@@ -52,6 +60,7 @@ export default async function SuscribirPage({
       plan={plan}
       periodo={periodo}
       pagos={pagos}
+      diasPrueba={diasPrueba}
       fechaPrimerCobro={fechaPrimerCobro}
     />
   );

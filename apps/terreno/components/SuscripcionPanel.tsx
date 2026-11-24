@@ -1,7 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { ACEQUIA_TRIAL_DAYS } from '@arteytierra/config/acequia';
+import {
+  ACEQUIA_PLANS,
+  ACEQUIA_PLAN_ORDER,
+  acequiaTrialDays,
+  resolveAcequiaPaidPlan,
+  type AcequiaPlanId,
+} from '@arteytierra/config/acequia';
 import { darDeBajaSuscripcion } from '@/lib/suscribir';
 import type { SuscripcionActual } from '@/lib/auth/plan';
 import { estadoEfectivo, rotuloEstado, type EstadoEfectivo } from '@/lib/suscripcionEstado';
@@ -37,6 +43,18 @@ export default function SuscripcionPanel({ suscripcion }: { suscripcion: Suscrip
   const [resultado, setResultado] = useState<string | null>(null);
 
   const enPrueba = estado === 'prueba';
+  // Los días salen del plan que se está probando y no de una constante global:
+  // desde el 23/11/2026 sólo Personal tiene prueba, y si algún día otro la
+  // tuviera no sería forzosamente de la misma cantidad de días.
+  const planPago = resolveAcequiaPaidPlan(suscripcion.plan);
+  const diasDeLaPrueba = planPago ? acequiaTrialDays(planPago) : 0;
+  // Los planes estrictamente superiores al actual, por el orden del catálogo.
+  // Se decide con ACEQUIA_PLAN_ORDER y no con una lista escrita: con una lista,
+  // a quien ya está en Estudio se le ofrecería Profesional como si fuera subir.
+  const nivelActual = planPago ? ACEQUIA_PLAN_ORDER[planPago] : 0;
+  const superiores = (['profesional', 'estudio'] as const).filter(
+    (p) => ACEQUIA_PLAN_ORDER[p as AcequiaPlanId] > nivelActual,
+  );
   const yaDeBaja = estado === 'cancelada' || suscripcion.seDaDeBajaAlFinal;
   // Los accesos otorgados a mano no tienen cobro que dar de baja.
   const esManual = suscripcion.provider === 'manual' || suscripcion.provider === null;
@@ -66,7 +84,7 @@ export default function SuscripcionPanel({ suscripcion }: { suscripcion: Suscrip
     <section className="border-bone-200 mt-5 rounded-2xl border bg-white p-6 md:p-8">
       <p className="eyebrow">Suscripción</p>
       <h2 className="font-display text-ink-950 mt-3 text-2xl">
-        {enPrueba ? `Estás en la prueba de ${ACEQUIA_TRIAL_DAYS} días` : 'Tu suscripción'}
+        {enPrueba ? `Estás en la prueba de ${diasDeLaPrueba} días` : 'Tu suscripción'}
       </h2>
 
       <dl className="mt-5 grid gap-4 sm:grid-cols-3">
@@ -99,6 +117,31 @@ export default function SuscripcionPanel({ suscripcion }: { suscripcion: Suscrip
       {enPrueba && (
         <p className="text-ink-700/70 mt-4 text-sm leading-relaxed">
           Si das de baja antes del {fecha(suscripcion.finDePrueba)}, no se te cobra nada.
+        </p>
+      )}
+
+      {/* El camino que la prueba de Personal deja abierto: terminarla pasando a
+          un plan más grande, sin dar de baja primero. El checkout cierra esta
+          suscripción en el proveedor antes de abrir la nueva, así que no quedan
+          dos cobros vivos; hacerlo durante la prueba no cobra nada acá. */}
+      {!yaDeBaja && superiores.length > 0 && (
+        <p className="text-ink-700/70 mt-4 text-sm leading-relaxed">
+          {enPrueba ? '¿Te queda chico?' : '¿Necesitás más?'} Podés pasar a{' '}
+          {superiores.map((p, i) => (
+            <span key={p}>
+              {i > 0 && ' o '}
+              {ACEQUIA_PLANS[p].selfCheckout ? (
+                <a href={`/suscribir?plan=${p}&periodo=mensual`} className="text-moss-700 underline">
+                  {ACEQUIA_PLANS[p].name}
+                </a>
+              ) : (
+                `${ACEQUIA_PLANS[p].name} (el alta la hacemos nosotros: escribinos)`
+              )}
+            </span>
+          ))}
+          . {enPrueba
+            ? 'Cerramos esta prueba sin cobrarte y arranca el plan nuevo.'
+            : 'Cerramos esta suscripción y arranca la nueva.'}
         </p>
       )}
 

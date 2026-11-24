@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import {
   ACEQUIA_PLANS, ACEQUIA_FEATURES, ACEQUIA_PLAN_ORDER, ACEQUIA_TRIAL_DAYS,
+  ACEQUIA_TRIAL_PLAN,
   ACEQUIA_TOPO_SEMILLA_HA,
   type AcequiaPlanId, type AcequiaFeature,
 } from '@arteytierra/config/acequia';
@@ -338,7 +339,7 @@ export default function GuidePage() {
           id="planes"
           num="07"
           titulo="Los planes"
-          bajada={`Todo empieza con ${ACEQUIA_TRIAL_DAYS} días de acceso completo. Si cancelás antes del primer cobro, la cuenta sigue en Semilla. Esta tabla se arma leyendo el mismo catálogo que aplica los permisos, así que no puede decir un precio que no sea el que se cobra.`}
+          bajada={`El plan ${ACEQUIA_PLANS[ACEQUIA_TRIAL_PLAN].name} empieza con ${ACEQUIA_TRIAL_DAYS} días de acceso completo; si cancelás antes del primer cobro, la cuenta sigue en Semilla. Profesional y Estudio se cobran desde el primer día, y se puede pasar a ellos durante la prueba o después. Esta tabla se arma leyendo el mismo catálogo que aplica los permisos, así que no puede decir un precio que no sea el que se cobra.`}
         >
           <div className="grid gap-4 md:grid-cols-2">
             {(Object.values(ACEQUIA_PLANS)

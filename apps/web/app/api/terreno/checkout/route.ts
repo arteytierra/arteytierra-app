@@ -1,7 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { crearPreapprovalMp, esPlanPago, esPeriodo, esProveedorPago, pagosAcequiaHabilitados, puedePagarAcequia } from '@/lib/terreno/suscripciones';
-import { crearSubscripcionPaypal } from '@/lib/terreno/paypal';
+import { cancelarPreapprovalMp, crearPreapprovalMp, esPlanPago, esPeriodo, esProveedorPago, pagosAcequiaHabilitados, puedePagarAcequia } from '@/lib/terreno/suscripciones';
+import { cancelarSubscripcionPaypal, crearSubscripcionPaypal } from '@/lib/terreno/paypal';
+import { cerrarRenovacionPorCambioDePlan, leerSuscripcionTerreno } from '@/lib/terreno/fulfillment-suscripcion';
 import { corsAcequia, esOrigenAcequia } from '@/lib/terreno/cors';
 
 export const runtime = 'nodejs';
@@ -61,6 +62,37 @@ export async function POST(req: NextRequest) {
   }
   if (!esProveedorPago(provider)) {
     return NextResponse.json({ error: 'Proveedor de pago inválido' }, { status: 400, headers });
+  }
+
+  // Cambio de plan: primero se cierra la suscripción que ya existe.
+  //
+  // Es el camino normal desde el 23/11/2026, no un caso raro: la prueba es sólo
+  // de Personal, así que quien quiere Profesional o Estudio llega acá con una
+  // suscripción de Personal viva —en prueba o paga—. Si no se cierra, quedan dos
+  // vivas en el proveedor y las dos cobran: la de Personal sigue su calendario
+  // igual, y el usuario ve dos débitos.
+  //
+  // El orden es el mismo que usa la baja de `/api/terreno/suscripcion`: el
+  // proveedor primero y, si falla, no se abre nada nuevo. Es preferible que
+  // reintente a que termine pagando dos planes. Las altas manuales (`provider`
+  // 'manual', que es lo que deja un código de piloto) no tienen nada que cerrar.
+  try {
+    const actual = await leerSuscripcionTerreno(user.id);
+    const viva = actual
+      && actual.estado !== 'cancelada'
+      && actual.provider_ref
+      && (actual.provider === 'mercadopago' || actual.provider === 'paypal');
+    if (viva && actual) {
+      if (actual.provider === 'mercadopago') await cancelarPreapprovalMp(actual.provider_ref!);
+      else await cancelarSubscripcionPaypal(actual.provider_ref!);
+      await cerrarRenovacionPorCambioDePlan(user.id);
+    }
+  } catch (err) {
+    console.error('[terreno checkout cierre previo]', err);
+    return NextResponse.json(
+      { error: 'No pudimos cerrar tu suscripción actual. Probá de nuevo en un rato.' },
+      { status: 502, headers },
+    );
   }
 
   const siteUrl = process.env.NEXT_PUBLIC_ACEQUIA_SITE_URL ?? 'https://acequia.app';

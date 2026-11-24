@@ -145,6 +145,30 @@ export async function cancelarSuscripcionTerreno(opts: {
   }
 }
 
+/**
+ * Deja constancia de que la renovación ya se cerró en el proveedor porque la
+ * persona está cambiando de plan. No es una baja y no manda el correo de baja.
+ *
+ * Por qué existe. Desde el 23/11/2026 la prueba es sólo de Personal, y el camino
+ * esperado es empezar la prueba ahí y contratar Profesional o Estudio al
+ * terminarla. Ese camino pasa de nuevo por el checkout, que ahora cierra la
+ * suscripción anterior en el proveedor antes de abrir la nueva —si no, quedan
+ * dos vivas y la vieja cobra igual tres días después—. Si después de cerrarla la
+ * persona abandona el pago nuevo, la fila local tiene que decir la verdad: que
+ * no se renueva más. Sin esto el panel de "Mi cuenta" seguiría anunciando un
+ * próximo cobro que el proveedor ya no va a hacer.
+ *
+ * El alta nueva vuelve a poner `cancel_at_period_end` en false, así que en el
+ * camino feliz esto no se nota.
+ */
+export async function cerrarRenovacionPorCambioDePlan(userId: string): Promise<void> {
+  const now = new Date().toISOString();
+  const { error } = await tablaSusc()
+    .update({ cancel_at_period_end: true, cancelled_at: now, updated_at: now })
+    .eq('user_id', userId);
+  if (error) throw error;
+}
+
 /** Deja constancia de que ya se avisó el primer cobro, para que el cron no repita. */
 export async function marcarAvisoCobroEnviado(userId: string): Promise<void> {
   const { error } = await tablaSusc()

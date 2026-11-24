@@ -2,10 +2,10 @@ import 'server-only';
 import { MercadoPagoConfig, PreApproval } from 'mercadopago';
 import {
   ACEQUIA_PLANS,
-  ACEQUIA_TRIAL_DAYS,
+  acequiaFinDePrueba,
   acequiaPlanPrice,
   acequiaSelfCheckout,
-  addAcequiaTrialDays,
+  acequiaTrialDays,
   isAcequiaBillingPeriod,
   isAcequiaPaidPlan,
   type AcequiaBillingPeriod,
@@ -64,9 +64,22 @@ export function esProveedorPago(value: string): value is ProveedorPago {
   return value === 'mercadopago' || value === 'paypal';
 }
 
-/** La prueba queda construida pero inactiva mientras esta variable no sea true. */
+/**
+ * La prueba queda construida pero inactiva mientras esta variable no sea true.
+ *
+ * Decide si hay prueba, no de qué plan. Desde el 23/11/2026 sólo Personal se
+ * prueba sin pagar y eso lo dice el catálogo (`acequiaTrialDays`), que es una
+ * regla de producto y no una bandera de despliegue. Las dos cosas tienen que
+ * valer para que un alta arranque en cero: la bandera prendida y un plan con
+ * prueba.
+ */
 export function pruebaComercialHabilitada(): boolean {
   return process.env.ACEQUIA_TRIAL_ENABLED === 'true';
+}
+
+/** Los días de prueba que le toca a este plan, acá y ahora. */
+export function diasDePruebaDe(plan: PlanPago): number {
+  return pruebaComercialHabilitada() ? acequiaTrialDays(plan) : 0;
 }
 
 export function pagosAcequiaHabilitados(): boolean {
@@ -197,12 +210,15 @@ export async function crearPreapprovalMp(o: CrearCheckoutOpts): Promise<string> 
 
   const ars = Math.round(PRECIO_USD[o.plan][o.periodo] * tasaArsPorUsd());
   const pre = new PreApproval(new MercadoPagoConfig({ accessToken: token }));
-  const trialEnd = pruebaComercialHabilitada() ? addAcequiaTrialDays().toISOString() : undefined;
+  // La prueba es del plan, no del checkout: para Profesional esto es null y el
+  // preapproval sale sin `start_date`, o sea con el primer cobro hoy.
+  const fin = pruebaComercialHabilitada() ? acequiaFinDePrueba(o.plan) : null;
+  const trialEnd = fin ? fin.toISOString() : undefined;
 
   const res = await pre.create({
     body: {
       reason: `Acequia ${NOMBRE[o.plan]} (${o.periodo})`,
-      external_reference: JSON.stringify({ user_id: o.userId, plan: o.plan, periodo: o.periodo, trial_days: trialEnd ? ACEQUIA_TRIAL_DAYS : 0 }),
+      external_reference: JSON.stringify({ user_id: o.userId, plan: o.plan, periodo: o.periodo, trial_days: trialEnd ? acequiaTrialDays(o.plan) : 0 }),
       payer_email: o.email,
       auto_recurring: {
         // MP sólo admite frequency_type 'days' | 'months'; anual = 12 meses.

@@ -1,7 +1,7 @@
 import 'server-only';
 import { createSupabaseAdminClient } from '@/lib/db/admin';
-import { ACEQUIA_PLANS, ACEQUIA_TRIAL_DAYS } from '@arteytierra/config/acequia';
-import { PRECIO_USD, pruebaComercialHabilitada, type PlanPago, type Periodo } from './suscripciones';
+import { ACEQUIA_PLANS } from '@arteytierra/config/acequia';
+import { PRECIO_USD, diasDePruebaDe, pruebaComercialHabilitada, type PlanPago, type Periodo } from './suscripciones';
 
 /**
  * PayPal Subscriptions — cobro internacional recurrente (USD).
@@ -91,28 +91,43 @@ async function ensureProduct(tk: string, conPrueba: boolean): Promise<string> {
   return j.id;
 }
 
+/**
+ * El plan de PayPal que corresponde a este plan, período, precio y prueba.
+ *
+ * EL PRECIO VA EN LA CLAVE, y no es un detalle: un plan de PayPal nace con su
+ * importe adentro y el importe no se edita por acá. Con la clave vieja
+ * —`profesional_mensual_t3_acequia_v1`— subir Profesional de 15 a 20 en el
+ * catálogo no habría cambiado nada en PayPal: el identificador cacheado seguiría
+ * cobrando 15, la vidriera anunciaría 20 y nadie se enteraría hasta leer un
+ * resumen de tarjeta. Es exactamente la falla que esta parte del producto no se
+ * puede permitir, y del lado que cuesta plata.
+ *
+ * Los días de prueba también: un plan con ciclo TRIAL y uno sin él son dos
+ * planes distintos en PayPal, y desde el 23/11/2026 eso depende del plan.
+ */
 async function ensurePlan(tk: string, plan: PlanPago, periodo: Periodo): Promise<string> {
-  const conPrueba = pruebaComercialHabilitada();
-  const clave = conPrueba
-    ? `${plan}_${periodo}_t${ACEQUIA_TRIAL_DAYS}_acequia_v1`
-    : `${plan}_${periodo}`;
+  const dias = diasDePruebaDe(plan);
+  const conPrueba = dias > 0;
+  const usd = PRECIO_USD[plan][periodo];
+  const clave = `${plan}_${periodo}_u${usd}_t${dias}_acequia_v2`;
   const cached = await getRef(clave);
   if (cached) return cached;
 
-  const productId = await ensureProduct(tk, conPrueba);
-  const usd = PRECIO_USD[plan][periodo];
+  // El producto de PayPal es uno solo y no lleva precio: sigue atado a si la
+  // marca es Acequia o la vieja Terreno, no a la prueba de este plan.
+  const productId = await ensureProduct(tk, pruebaComercialHabilitada());
   const res = await fetch(`${base()}/v1/billing/plans`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${tk}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       product_id: productId,
-      name: `${conPrueba ? 'Acequia' : 'Terreno'} ${NOMBRE[plan]} (${periodo})`,
+      name: `Acequia ${NOMBRE[plan]} (${periodo})`,
       billing_cycles: [
         // El precio cero va explícito. PayPal admite un TRIAL sin `pricing_scheme`,
         // pero entonces el importe queda a criterio del intérprete de turno; con el
         // cero escrito no hay forma de que la prueba cobre algo.
         ...(conPrueba ? [{
-          frequency: { interval_unit: 'DAY', interval_count: ACEQUIA_TRIAL_DAYS },
+          frequency: { interval_unit: 'DAY', interval_count: dias },
           tenure_type: 'TRIAL',
           sequence: 1,
           total_cycles: 1,
@@ -154,7 +169,7 @@ export async function crearSubscripcionPaypal(o: {
         user_id: o.userId,
         plan: o.plan,
         periodo: o.periodo,
-        trial_days: pruebaComercialHabilitada() ? ACEQUIA_TRIAL_DAYS : 0,
+        trial_days: diasDePruebaDe(o.plan),
       }),
       subscriber: { email_address: o.email },
       application_context: {
