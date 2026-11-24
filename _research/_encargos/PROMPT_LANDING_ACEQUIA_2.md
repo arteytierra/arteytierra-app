@@ -106,10 +106,13 @@ Están transcriptos del sitio en producción. Los marco con **F** (falso hoy) o
   está escrita como si fuera una demo de una semana.
 - Qué sí se queda textual: «Sin costo ni tarjeta», «Buscamos entre 6 y 10
   personas», el bloque «Qué queremos aprender» y el formulario.
-- **Una incoherencia que no resuelvo yo:** el encabezado dice «Programa fundador
-  · **Cupo cerrado**» y abajo hay un formulario abierto que dice «Quiero
-  participar». Con seis meses de Profesional en juego, decidir si el cupo está
-  abierto o cerrado es de Jonatan: **preguntale antes de tocar ese rótulo.**
+- **F** · El encabezado dice «Programa fundador · **Cupo cerrado**» y abajo hay
+  un formulario abierto que dice «Quiero participar». Ya está decidido por
+  Jonatan el **23/11/2026: el cupo queda abierto.** Sacá ese rótulo o cambialo
+  por uno que diga que la convocatoria está abierta, y dejá el formulario como
+  está. Lo que no se toca es el tamaño del grupo: siguen siendo **entre 6 y 10
+  personas**, y eso es parte de la oferta —hay acompañamiento directo—, no una
+  escasez inventada. Si algún día se llena, se cierra con un rótulo; hoy no.
 
 **Un criterio para reescribir el cronograma del piloto.** No lo estires de siete
 días a seis meses multiplicando: el sentido del cambio es otro. Seis meses no es

@@ -579,7 +579,7 @@ export default async function AcequiaLanding() {
             {/* Programa fundador separado de la prueba comercial. */}
             <div className="max-w-2xl mx-auto mb-12 text-center bg-[#2E6B8A]/10 border border-[#2E6B8A]/25 px-6 py-4">
               <p className="font-sans text-sm text-[#3D2010]">
-                <strong className="text-[#2E6B8A]">Programa fundador:</strong> piloto cerrado de 6 a 10 participantes con el plan Profesional sin costo durante seis meses, sin tarjeta.
+                <strong className="text-[#2E6B8A]">Programa fundador:</strong> convocatoria abierta para entre 6 y 10 participantes, con el plan Profesional sin costo durante seis meses y sin tarjeta.
               </p>
             </div>
 
