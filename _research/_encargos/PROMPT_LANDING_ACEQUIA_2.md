@@ -165,11 +165,25 @@ Cómo se lee lo nuevo, y es importante:
   alta a mano). Un plan con `checkoutPropio: false` **no puede tener un botón
   que lleve al checkout**.
 
-Si en este repositorio ya existe el snapshot versionado del catálogo que pedía
-el encargo anterior (`data/planes.json` o como haya quedado), **volvelo a traer
-y dejá que el test de CI compare**. Si no existe, armalo ahora: ningún precio,
-ningún tope y ninguna frase escritos a mano en un componente, y la build falla
-si el catálogo no se pudo traer. Nunca una tarjeta con un precio de relleno.
+Según mis notas, en este repositorio ya existe la maquinaria para esto y sólo
+hay que usarla: **`npm run planes:traer`** congela el catálogo en
+**`data/planes.json`**, las cuatro tarjetas se arman desde ahí, y
+**`tests/catalogo-sincronizado.test.ts`** compara la instantánea contra el
+endpoint etiqueta por etiqueta y salvedad por salvedad en cada `npm run check`
+(con `SIN_RED=1` para saltearlo). **Verificá que esos tres nombres existan
+todavía antes de confiar en ellos**; si cambiaron, usá lo que haya.
+
+Lo que **no** se congela, y esto ya fue un bug: `pagos`, `prueba` y `diasPrueba`
+son el estado de quien cobra, cambian con un redeploy del otro lado y
+congelarlos deja la vidriera anunciando lo contrario de lo que pasa. Fijate de
+qué lado cae `pruebaDias`: va adentro de `planes`, así que viene con la
+instantánea, **pero es una regla del producto y no una bandera de entorno** —no
+cambia con un redeploy—, así que congelarlo está bien y el test lo va a
+comparar igual.
+
+Si algo de eso no estuviera, armalo ahora: ningún precio, ningún tope y ninguna
+frase escritos a mano en un componente, y la build falla si el catálogo no se
+pudo traer. Nunca una tarjeta con un precio de relleno.
 
 Y revisá que los `Offer` del JSON-LD salgan del **mismo** snapshot. Si quedaron
 tres precios escritos ahí, son un tercer lugar donde el número envejece.
