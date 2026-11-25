@@ -1,11 +1,12 @@
 # La versión final del segundo video
 
-`salida/acequia-02-final.mp4` · 1920×1080 · **73,2 s** · 117 MB
+`salida/acequia-02-final.mp4` · 1920×1080 · **73,2 s** · 135 MB
 
 Sale de las dos variantes del animático y de las cinco correcciones que pediste
 el 24/11/2026 después de mirarlas. Esto cuenta qué hizo cada una, qué encontré
 mirando los animáticos y qué queda abierto.
 
+    node    packages/placas/scripts/video-1080.mjs
     py -3.12 _research/video-acequia/tiempos-02f.py
     bash    _research/video-acequia/final.sh
 
@@ -161,11 +162,83 @@ verse igual.
 
 ## 7 · Lo que sigue, si te sirve
 
-1. **Las ocho piezas de Remotion están a 1280×720 y acá se agrandan ×1,5.** Las
-   curvas de nivel y los textos chicos salen más blandos de lo que van a salir.
-   La entrega se rinde de nuevo con `--scale=1.5`, que no agranda píxeles: los
-   dibuja. Son ocho renders.
+1. ~~Las ocho piezas se agrandan ×1,5.~~ **Hecho el 25/11/2026.** Ver §8.
 2. **La cama sigue sintetizada**: cuatro acordes y ruido rosa. Se reemplaza
    dejando un `musica.mp3` en `videoapp-1/audio en off/`.
 3. **Los dos verticales** (15 s y 30 s) todavía son los del primer video.
 4. El tramo del segundo 43 al 53, si se graba material con otro encuadre.
+
+---
+
+## 8 · Las ocho piezas, rendidas a la resolución del video (25/11/2026)
+
+Las siete piezas de Remotion se rendían a 1280×720 y el montaje las agrandaba
+×1,5; la octava, el terreno crudo, era un PNG de 1600×900. Ahora se rinden a
+`--scale=1.5`, que no agranda píxeles: **sube la densidad del navegador que las
+dibuja**. La maquetación en píxeles CSS queda idéntica —nada se mueve de
+lugar— y todo lo que se traza, las curvas de nivel, los rótulos, los bordes del
+predio y la tipografía del informe, se traza con tres puntos donde había dos.
+
+`packages/placas/scripts/video-1080.mjs`, que es sólo para esto.
+
+**Por qué un guion aparte y no `piezas.mjs`.** Son dos entregas con criterios
+opuestos. Las de `piezas.mjs` son para la página: 1280×720, con tope de peso
+porque las baja un visitante por la red, y su propio informe exige literalmente
+`v.wh === '1280x720'`. Las del video son 1920×1080, crf 12 y sin tope. Escribir
+encima de los maestros de la web habría roto su verificación la próxima vez que
+alguien recodifique, y la habría roto *después* de pisar archivos aprobados.
+Por eso los nuevos llevan sufijo `-1080` y viven al lado.
+
+**Dos piezas no son un render de Remotion y cada una tiene su motivo.**
+
+- *El terreno crudo va a 3200×1800, no a 1920.* `seg_foto` lleva la imagen a
+  3200 de ancho y recién ahí el `zoompan` recorta a 1920: con un PNG de 1920 el
+  empuje volvería a inventar píxeles adentro del montaje. 1600×900 × 2 da
+  3200×1800 exacto.
+- *La obra no se rinde, se arma*: metraje de dron a 3840×2160 más la capa de
+  líneas en ProRes 4444 con alfa. Y encima lleva el «aterrizado», que no estaba
+  escrito en ningún guion del repo. Se recuperó midiendo el archivo: es un
+  **disolver lineal hacia el último cuadro, del 379 al 420**, y después ese
+  cuadro sostenido hasta el 438. La reconstrucción se probó primero a 720 contra
+  el original —peor diferencia 2,7 de 255, contra 17,4 que daba el maestro sin
+  aterrizar— antes de usarla.
+
+**El etiquetado de color no se toca, y verificarlo costó un susto.** La primera
+versión del informe le exigía a las siete piezas de Remotion `yuv420p / tv /
+bt709` y marcó seis como mal. El criterio estaba equivocado, no los archivos:
+Remotion encodea con su propio etiquetado, `yuvj420p / pc / bt470bg`, y siempre
+lo hizo — los maestros de 720 que el video entregado consumió salen exactamente
+así. Ahora la verificación compara cada pieza nueva **contra el archivo que el
+montaje ya venía consumiendo**, que es lo que de verdad hay que garantizar: que
+el camino de conversión no cambie. Lo que arma ffmpeg acá sigue saliendo
+`yuv420p / tv / bt709`, como la obra vieja.
+
+**El corte es el mismo.** `planos-f.sh` regenerado contra el de antes difiere en
+exactamente ocho líneas, las ocho rutas: todos los arranques, cuadros y factores
+de velocidad son iguales byte a byte, y `duraciones.sh` —con `DURACION_F=73.23`—,
+`frases-f.txt` y los subtítulos del karaoke salieron idénticos.
+
+### Lo que se verificó
+
+| qué | resultado |
+|---|---|
+| las ocho piezas | 1920×1080 (y 3200×1800 la foto), cuadros exactos, sin audio, color igual al maestro que reemplazan |
+| peso por pieza | 1,65 a 2,3 veces la versión de 720 — lo que da 2,25 veces los píxeles al mismo crf |
+| el entregable | 73,23 s · 2196 cuadros · 1920×1080 · H.264 High, yuv420p, bt709, rango limitado · AAC 48 kHz · `moov` antes de `mdat` |
+| nitidez ganada | +1,05 a +3,17 dB de energía de alta frecuencia en las siete piezas de Remotion |
+| dos planos de control | una grabación de la app y el cierre de marca: ±0,01 dB — el cambio quedó confinado a las ocho |
+| niveles | −15,5 LUFS · −1,4 dBTP · LRA 3,4 — iguales al entregado |
+| las 20 frases | caen en la misma marca con el mismo salto; peor diferencia 0,10 dB en una sola |
+| carga en un navegador de verdad | `video.error` = ninguno · presenta cuadro · busca a 0,5 / 13,5 / 17,5 / 33 / 42 / 56,5 / 60 / 63 / 72,9 s y llega |
+
+**Una de las ocho no ganó nada, y hay que decirlo:** el plano del terreno crudo
+es ortofoto satelital casi pura. Son teselas de imagen, y rendirlas al doble no
+agrega detalle, sólo las muestra más grandes; lo único trazado del plano es el
+subtítulo, que el montaje quema a 1080 en las dos versiones. Mide ±0 igual que
+los controles. No es una falla: es lo que esa pieza es. Las otras siete sí.
+
+**Lo que queda señalado, no resuelto.** `portada-giro` lleva una curva de
+apertura de sombras que `piezas.mjs` aplica sólo a los formatos de la web, nunca
+al maestro. El video usa el maestro, o sea que va sin esa curva — como iba
+antes. Se dejó igual a propósito, porque el pedido era resolución, pero vale
+decidirlo.

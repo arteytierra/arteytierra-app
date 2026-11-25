@@ -262,18 +262,37 @@ CARPETAS = {
     "04": "salida-encargo-04",
 }
 
+# Las piezas que entran al video salen de `scripts/video-1080.mjs`, que las
+# rinde A 1920x1080 —la resolucion del video— y no a los 1280x720 de la
+# entrega web. Son dos entregas distintas y conviven: los `-master.mp4` de al
+# lado siguen siendo los de la pagina, con su tope de peso y su verificacion
+# que exige 1280x720.
+#
+# Hasta el 25/11/2026 esto apuntaba a los de 720 y el montaje los estiraba a
+# 1080 con lanczos, que es inventar un pixel de cada tres: las curvas de nivel
+# y los textos chicos salian blandos. `--scale=1.5` no agranda pixeles, los
+# dibuja.
+#
+# `sol-y-viento` es la unica que sigue en 720, y a proposito: no esta en la
+# version final —ver la tabla de bajas en FINAL-02.md— asi que rendirla a 1080
+# serian mil doscientos cuadros para un plano que no existe. Queda nombrada
+# porque el animatico, que si la usaba, todavia se puede generar.
 PIEZAS = {
-    "obra":              ("04", "obra-master-aterrizado.mp4"),
-    "portada":           ("02", "portada-master.mp4"),
-    "portada-giro":      ("02", "portada-giro-master.mp4"),
-    "lectura-secuencia": ("02", "lectura-secuencia-master.mp4"),
-    "lectura-agua":      ("02", "lectura-agua-master.mp4"),
-    "mesa-de-trabajo":   ("03", "mesa-de-trabajo-master.mp4"),
+    "obra":              ("04", "obra-master-1080.mp4"),
+    "portada":           ("02", "portada-master-1080.mp4"),
+    "portada-giro":      ("02", "portada-giro-master-1080.mp4"),
+    "lectura-secuencia": ("02", "lectura-secuencia-master-1080.mp4"),
+    "lectura-agua":      ("02", "lectura-agua-master-1080.mp4"),
+    "mesa-de-trabajo":   ("03", "mesa-de-trabajo-master-1080.mp4"),
     "sol-y-viento":      ("04", "sol-y-viento-master.mp4"),
-    "informe":           ("04", "informe-master.mp4"),
+    "informe":           ("04", "informe-master-1080.mp4"),
 }
 
-FOTOS = {"crudo.png": ("03", "crudo.png")}
+# El crudo va a 3200 de ancho y no a 1920, porque `seg_foto` le hace un empuje:
+# lleva la imagen a 3200 y recien ahi recorta a 1920. Con un PNG de 1920 el
+# empuje volveria a inventar pixeles adentro del montaje. 1600x900 x2 da
+# 3200x1800 exacto, asi que el `scale` del constructor queda sin nada que hacer.
+FOTOS = {"crudo.png": ("03", "crudo-3200.png")}
 
 # Los carteles: lo que diria la pieza que todavia no existe. La barra vertical
 # separa renglones; el largo lo escribe el generador, para que el cartel diga

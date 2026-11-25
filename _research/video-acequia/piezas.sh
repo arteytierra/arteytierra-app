@@ -71,8 +71,14 @@ seg_h () {
 # seg_pieza <salida> <ruta-relativa-a-portada-animacion> <desde> <cuadros> <vel>
 #
 # Sin banda y sin capas: la pieza ya trae su pie de fuente dibujado adentro.
-# El `scale` a 1920x1080 es el que sube de 720; `fps=30` despues del `setpts`
-# por la misma razon que en seg_h, aunque estas no pierden cuadros.
+# `fps=30` despues del `setpts` por la misma razon que en seg_h, aunque estas
+# no pierden cuadros.
+#
+# El `scale` a 1920x1080 ya no sube nada y se queda igual, de guardia: desde el
+# 25/11/2026 las piezas llegan rendidas a 1920x1080 por
+# `packages/placas/scripts/video-1080.mjs` y el filtro no tiene nada que hacer.
+# Sacarlo ahorraria cero —ffmpeg no escala cuando las medidas coinciden— y
+# dejaria el constructor sin red el dia que alguien le pase una de 720.
 seg_pieza () {
   local dest="$T/$1.mp4" src="$A/$2" desde="$3" n="$(( $4 + EXTRA ))" vel="$5"
   ffmpeg -v error -y -ss "$desde" -i "$src" \
@@ -82,10 +88,15 @@ seg_pieza () {
 
 # seg_foto <salida> <ruta-relativa-a-portada-animacion> <cuadros>
 #
-# Un PNG con un empuje muy lento. Se agranda primero a 3200 px y despues el
-# `zoompan` recorta: haciendolo al reves el zoom salta de pixel en pixel y se
-# ve el escalon. El 1,00 -> 1,04 en tres segundos y medio no se lee como
+# Un PNG con un empuje muy lento. El `zoompan` tiene que recortar de una imagen
+# MAS GRANDE que el cuadro: haciendolo al reves el zoom salta de pixel en pixel
+# y se ve el escalon. El 1,00 -> 1,04 en tres segundos y medio no se lee como
 # movimiento, se lee como que la imagen esta viva.
+#
+# Los 3200 px son de donde recorta, y desde el 25/11/2026 el PNG YA VIENE a
+# 3200x1800 —`crudo-3200.png`, rendido a doble escala— asi que el `scale` no
+# agranda nada. Antes entraba uno de 1600x900 y esta misma linea lo estiraba al
+# doble, o sea que el empuje recorria pixeles inventados.
 seg_foto () {
   local dest="$T/$1.mp4" src="$A/$2" n="$(( $3 + EXTRA ))"
   ffmpeg -v error -y -loop 1 -i "$src" \
