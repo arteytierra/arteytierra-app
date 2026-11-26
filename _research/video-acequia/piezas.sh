@@ -157,6 +157,74 @@ seg_placa () {
     -frames:v "$(( $3 + EXTRA ))" "${X264[@]}" "$T/$1.mp4"
 }
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Los mismos, en 9:16 — los usa `verticales.sh`
+#
+# La diferencia entre los dos formatos no es un numero: es que el material se
+# consigue de dos maneras distintas y hay que tratarlo distinto.
+#
+# · Las piezas de Remotion **se renderizan de nuevo** paradas, con
+#   `packages/placas/scripts/vertical.mjs`. La camara del mapa sale del tamanio
+#   del cuadro, asi que un cuadro parado no es un recorte del apaisado: es otro
+#   encuadre, calculado. No se estira nada.
+#
+# · Las grabaciones de la app **se recortan en columna**, y ahi si se agranda:
+#   de los 1920x1080 de la captura se toma una ventana de 607x1080 y se la lleva
+#   a 1080x1920, que es x1,78. Es el unico lugar de los reels donde se inventan
+#   pixeles, y no hay vuelta: la pantalla se grabo una vez y a esa medida. Lo
+#   que se elige, plano por plano, es QUE columna; por eso `x` es un argumento
+#   y no una cuenta.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# seg_v <salida> <corte> <desde> <cuadros> <vel> <x-del-recorte> [placa.mov@retardo ...]
+seg_v () {
+  local dest="$T/$1.mp4" src="$C/$2.mp4" desde="$3" n="$(( $4 + EXTRA ))" vel="$5" x="$6"
+  shift 6
+  local -a ins=(-ss "$desde" -i "$src" -i "$P/banda-v.png")
+  local fc="[0:v]setpts=PTS/${vel},fps=30,crop=607:1080:${x}:0,"
+  fc="${fc}scale=1080:1920:flags=lanczos,setsar=1[v];[v][1:v]overlay=0:0[b1]"
+  local previo=b1 i=2 capa f retardo
+  for capa in "$@"; do
+    f="${capa%%@*}"; retardo="${capa##*@}"
+    ins+=(-i "$P/$f")
+    fc="${fc};[${i}:v]format=rgba,tpad=start_duration=${retardo}:start_mode=add:color=0x00000000[c${i}]"
+    fc="${fc};[${previo}][c${i}]overlay=0:0:eof_action=pass:repeatlast=0[b${i}]"
+    previo="b${i}"; i=$((i + 1))
+  done
+  fc="${fc};[${previo}]tpad=stop_mode=clone:stop_duration=1[z]"
+  ffmpeg -v error -y "${ins[@]}" -filter_complex "$fc" -map "[z]" \
+    -frames:v "$n" "${X264[@]}" "$dest"
+}
+
+# seg_pieza_v <salida> <ruta-relativa-a-portada-animacion> <desde> <cuadros> <vel>
+#
+# El `scale` esta de guardia, igual que en `seg_pieza`: los maestros verticales
+# ya llegan a 1080x1920 y ffmpeg no escala cuando las medidas coinciden.
+seg_pieza_v () {
+  local dest="$T/$1.mp4" src="$A/$2" desde="$3" n="$(( $4 + EXTRA ))" vel="$5"
+  ffmpeg -v error -y -ss "$desde" -i "$src" \
+    -vf "setpts=PTS/${vel},fps=30,scale=1080:1920:flags=lanczos,setsar=1,tpad=stop_mode=clone:stop_duration=1" \
+    -frames:v "$n" "${X264[@]}" "$dest"
+}
+
+# seg_foto_v <salida> <ruta-relativa-a-portada-animacion> <cuadros>
+#
+# El PNG ya viene a 1800x3200 —`crudo-vertical-1800.png`, rendido a doble
+# escala— que es 1,667 veces el cuadro, los mismos 1,667 que tiene el
+# horizontal con sus 3200 sobre 1920. El empuje recorta de ahi y no agranda
+# nada.
+seg_foto_v () {
+  local dest="$T/$1.mp4" src="$A/$2" n="$(( $3 + EXTRA ))"
+  ffmpeg -v error -y -loop 1 -i "$src" \
+    -vf "scale=1800:-2:flags=lanczos,zoompan=z='1+0.00035*on':d=1:fps=30:s=1080x1920:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)',setsar=1" \
+    -frames:v "$n" "${X264[@]}" "$dest"
+}
+
+seg_negro_v () {
+  ffmpeg -v error -y -f lavfi -i "color=c=${NEGRO}:s=1080x1920:r=30" \
+    -frames:v "$(( $2 + EXTRA ))" "${X264[@]}" "$T/$1.mp4"
+}
+
 # quemar <mudo> <archivo.ass> <salida>
 #
 # Se entra a la carpeta y se le pasa el nombre pelado: el filtro `subtitles`
@@ -173,6 +241,105 @@ pegar () {
   : > "$lista"
   for s in "$@"; do printf "file '%s.mp4'\n" "$s" >> "$lista"; done
   ffmpeg -v error -y -f concat -safe 0 -i "$lista" -c copy "$dest"
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# pegar_suave <salida> <archivo.ass> <seg1> <seg2> ...
+#
+# Pega los segmentos disolviendo uno en el siguiente y quema los subtitulos,
+# todo en una pasada.
+#
+# No recibe las duraciones: **las mide**. Cada segmento se escribio con EXTRA
+# cuadros de mas, asi que los cuadros que le tocan son los que tiene menos
+# EXTRA. Medirlos en vez de confiar en los que se pidieron es lo que hace que
+# un segmento que salio corto se note aca y no en el video terminado.
+#
+# El plano k+1 empieza a aparecer exactamente donde terminaba el plano k en la
+# linea de tiempo, asi que la suma de los cuadros nominales es el largo final
+# y la voz sigue cayendo donde cae.
+#
+# Esta aca y no en `final.sh` porque la usan los dos montajes —la version final
+# horizontal y los dos reels— y los cortes se tienen que disolver igual en
+# todos: una segunda copia es la forma segura de que un dia uno de los dos
+# empiece a cortar distinto.
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# `csv=p=0` deja la coma del separador aunque se pida un solo campo, asi que
+# la salida viene como «117,» y eso adentro de un $(( )) es un error de
+# sintaxis, no un cero: se queda solo con los digitos.
+cuadros_de () {
+  local n
+  n="$(ffprobe -v error -select_streams v:0 -show_entries stream=nb_frames \
+       -of csv=p=0 "$1" | tr -dc '0-9')"
+  if [ -z "$n" ]; then
+    n="$(ffprobe -v error -count_frames -select_streams v:0 \
+         -show_entries stream=nb_read_frames -of csv=p=0 "$1" | tr -dc '0-9')"
+  fi
+  printf '%s' "$n"
+}
+
+pegar_suave () {
+  local dest="$1" ass="$2"; shift 2
+  local -a ins=() nn=()
+  local s n total=0 esperado
+
+  for s in "$@"; do
+    n="$(cuadros_de "$T/$s.mp4")"
+    esperado=$((n - EXTRA))
+    if [ "$esperado" -lt 1 ]; then
+      printf 'El segmento %s salio con %s cuadros: no llega ni a los %d del disolver\n' \
+        "$s" "$n" "$EXTRA" >&2
+      exit 1
+    fi
+    ins+=(-i "$T/$s.mp4")
+    nn+=("$esperado")
+    total=$((total + esperado))
+  done
+
+  # La cadena. El offset del disolver k es donde termina el plano k en la
+  # linea de tiempo, contado en cuadros y pasado a segundos con seis
+  # decimales: a treinta cuadros por segundo, redondear a centesimas corre
+  # medio cuadro por corte y veintidos cortes son siete cuadros.
+  local fc="" previo="0:v" i=1 acum=0
+  while [ "$i" -lt "${#nn[@]}" ]; do
+    acum=$((acum + nn[i - 1]))
+    fc="${fc}[${previo}][${i}:v]xfade=transition=fade:duration=${DISOLVER}"
+    fc="${fc}:offset=$(awk -v a="$acum" 'BEGIN{printf "%.6f", a/30}')[x${i}];"
+    previo="x${i}"
+    i=$((i + 1))
+  done
+  fc="${fc}[${previo}]subtitles=${ass}[v]"
+
+  cp -f "$G/$ass" "$T/$ass"
+  printf '  %d planos · %d cortes disueltos · %d cuadros\n' \
+    "${#nn[@]}" "$(( ${#nn[@]} - 1 ))" "$total"
+
+  # `-color_range tv` no es decoracion: sin el, el rango del resultado lo
+  # NEGOCIA ffmpeg a partir de la mezcla de entradas, y la mezcla cambia de un
+  # montaje a otro. Los segmentos llegan de dos clases: los que salen de una
+  # pieza de Remotion son `yuvj420p` de rango completo, y los demas —el negro,
+  # la foto, las grabaciones de la app— son `yuv420p` de rango limitado.
+  #
+  # En el horizontal son diecisiete limitados contra seis completos y la cadena
+  # se resuelve en limitado, que es lo correcto. En el reel de 30 s son cinco
+  # contra cinco, se resolvio en completo, y como `pegar_sonido` escribe el
+  # atomo `colr` con `tv` igual, el archivo terminaba **diciendo rango limitado
+  # y llevando rango completo**: los negros levantados y los blancos recortados
+  # segun que reproductor lo abra.
+  #
+  # Medido sobre un disolver de prueba entre el negro de arranque y la portada:
+  # sin el flag, el tramo de la pieza sale con la luma entre 0 y 255; con el
+  # flag, entre 15 y 234, que es la misma conversion que el horizontal ya le
+  # venia haciendo a sus piezas. (Esto no quiere decir que el video entero
+  # quede adentro de 16..235: las grabaciones de la app traen blancos en 255 y
+  # el horizontal aprobado tambien los tiene.)
+  #
+  # Pedirlo explicito hace que ffmpeg convierta lo que haga falta antes de
+  # encodear, en vez de adivinar. Para el horizontal no cambia un pixel: ya
+  # venia resolviendose asi, y lo unico que agrega es decirlo en el flujo
+  # ademas de en el contenedor.
+  (cd "$T" && ffmpeg -v error -y "${ins[@]}" -filter_complex "$fc" \
+    -map "[v]" -frames:v "$total" "${X264[@]}" -color_range tv "$(basename "$dest")")
 }
 
 # ─────────────────────────────────────────────────────────────────────────────

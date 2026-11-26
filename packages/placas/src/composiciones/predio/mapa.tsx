@@ -120,16 +120,51 @@ export interface Camara {
  * caber no es el rectángulo sino su sombra girada: un rectángulo a 23° ocupa más
  * ancho y más alto que el original, y sin eso el giro le corta las puntas.
  */
-export function zoomQueEncuadra(ancho: number, alto: number, sombra = SOMBRA_QUIETA): number {
+function zoomes(ancho: number, alto: number, sombra: number): { zx: number; zy: number } {
   const latMedia = ((SUR + NORTE) / 2) * Math.PI / 180;
   const anchoDeg = ESTE - OESTE;
   const altoDeg = (NORTE - SUR) / Math.cos(latMedia);
   const cos = Math.abs(Math.cos(sombra * Math.PI / 180));
   const sen = Math.abs(Math.sin(sombra * Math.PI / 180));
   const padding = ancho * AIRE;
-  const zx = Math.log2(((ancho - 2 * padding) * 360) / (512 * (anchoDeg * cos + altoDeg * sen)));
-  const zy = Math.log2(((alto - 2 * padding) * 360) / (512 * (altoDeg * cos + anchoDeg * sen)));
+  return {
+    zx: Math.log2(((ancho - 2 * padding) * 360) / (512 * (anchoDeg * cos + altoDeg * sen))),
+    zy: Math.log2(((alto - 2 * padding) * 360) / (512 * (altoDeg * cos + anchoDeg * sen))),
+  };
+}
+
+export function zoomQueEncuadra(ancho: number, alto: number, sombra = SOMBRA_QUIETA): number {
+  const { zx, zy } = zoomes(ancho, alto, sombra);
   return Math.min(zx, zy);
+}
+
+/**
+ * El acercamiento, atado al ANCHO del cuadro y no al lado que primero se llena.
+ *
+ * `acercar` se suma al zoom que mete el predio entero, que es el menor de los
+ * dos. En 16:9 el menor es el del alto; en 9:16 pasa a ser el del ancho, y
+ * entonces el mismo 1,0 deja el predio al doble del ancho del cuadro, cortado
+ * por los dos lados. Se vio en la primera prueba de `PortadaPredioVertical`.
+ *
+ * Lo que hace esta función es calcular el acercamiento una sola vez contra un
+ * cuadro 16:9 de referencia y aplicarlo sobre el zoom del ancho del cuadro
+ * real. Así, cuando el formato cambia, lo que se conserva es cuánto del ancho
+ * ocupa el predio, que es lo que decide si la pieza se lee.
+ *
+ * Para cualquier cuadro 16:9, de cualquier tamaño, devuelve el mismo valor que
+ * la cuenta anterior: exacto en 1280 × 720 y con 2 × 10⁻¹⁵ de diferencia en los
+ * otros, que es ruido de coma flotante y no mueve un píxel.
+ *
+ * **No es una predicción, es una corrección de formato.** La cuenta de arriba
+ * es Mercator plano y no sabe nada de la inclinación de 61°, así que no
+ * anticipa qué parte del cuadro va a ocupar el predio: eso se mira. Mirado, con
+ * el cuadro parado ocupa unas tres cuartas partes del ancho, contra dos tercios
+ * en el apaisado —la perspectiva reparte distinto cuando el cuadro es más
+ * alto—, y a esa distancia la pieza se lee bien en un teléfono.
+ */
+function mordida(acercar: number, sombra: number): number {
+  const ref = zoomes(16, 9, sombra);
+  return acercar + Math.min(ref.zx, ref.zy) - ref.zx;
 }
 
 /**
@@ -188,7 +223,7 @@ export function vistaASangre(
       CENTRO[0] + (BLANCO_HACIA_LA_CAMARA_M * Math.sin(a)) / (111_320 * Math.cos(latMedia)),
       CENTRO[1] + (BLANCO_HACIA_LA_CAMARA_M * Math.cos(a)) / 111_320,
     ],
-    zoom: zoomQueEncuadra(ancho, alto, sombra) + acercar,
+    zoom: zoomes(ancho, alto, sombra).zx + mordida(acercar, sombra),
     pitch: inclinacion,
     bearing: rumbo,
   };

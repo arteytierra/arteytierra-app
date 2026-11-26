@@ -1,6 +1,8 @@
 # La versión final del segundo video
 
 `salida/acequia-02-final.mp4` · 1920×1080 · **73,2 s** · 135 MB
+`salida/acequia-02-30s-vertical.mp4` · 1080×1920 · **30,0 s** · 30 MB
+`salida/acequia-02-15s-vertical.mp4` · 1080×1920 · **15,0 s** · 15 MB
 
 Sale de las dos variantes del animático y de las cinco correcciones que pediste
 el 24/11/2026 después de mirarlas. Esto cuenta qué hizo cada una, qué encontré
@@ -9,6 +11,12 @@ mirando los animáticos y qué queda abierto.
     node    packages/placas/scripts/video-1080.mjs
     py -3.12 _research/video-acequia/tiempos-02f.py
     bash    _research/video-acequia/final.sh
+
+Y los dos verticales, que son otro montaje sobre el mismo corte (§9):
+
+    node    packages/placas/scripts/vertical.mjs
+    py -3.12 _research/video-acequia/vertical-02.py
+    bash    _research/video-acequia/verticales.sh
 
 ---
 
@@ -165,7 +173,8 @@ verse igual.
 1. ~~Las ocho piezas se agrandan ×1,5.~~ **Hecho el 25/11/2026.** Ver §8.
 2. **La cama sigue sintetizada**: cuatro acordes y ruido rosa. Se reemplaza
    dejando un `musica.mp3` en `videoapp-1/audio en off/`.
-3. **Los dos verticales** (15 s y 30 s) todavía son los del primer video.
+3. ~~Los dos verticales todavía son los del primer video.~~ **Hechos el
+   26/11/2026.** Ver §9.
 4. El tramo del segundo 43 al 53, si se graba material con otro encuadre.
 
 ---
@@ -242,3 +251,163 @@ apertura de sombras que `piezas.mjs` aplica sólo a los formatos de la web, nunc
 al maestro. El video usa el maestro, o sea que va sin esa curva — como iba
 antes. Se dejó igual a propósito, porque el pedido era resolución, pero vale
 decidirlo.
+
+---
+
+## 9 · Los dos verticales, rearmados sobre este corte (26/11/2026)
+
+```
+salida/acequia-02-30s-vertical.mp4   1080×1920 · 30,0 s · 900 cuadros · reel
+salida/acequia-02-15s-vertical.mp4   1080×1920 · 15,0 s · 450 cuadros · story
+```
+
+Llevan `02` en el nombre: **no pisan** a `acequia-15s-vertical.mp4` ni a
+`acequia-30s-vertical.mp4`, que son los del primer video y siguen donde están.
+
+```bash
+node packages/placas/scripts/vertical.mjs          # las piezas, paradas
+py -3.12 _research/video-acequia/vertical-02.py    # la voz y los subtítulos
+bash _research/video-acequia/verticales.sh         # el montaje
+```
+
+### Las piezas se renderizan de nuevo, no se recortan
+
+Es la decisión que define todo lo demás. Un vertical se arma normalmente
+eligiendo una columna del cuadro apaisado —así se hicieron los del primer
+video, y así siguen haciéndose las grabaciones de la app—, pero con las piezas
+de Remotion eso no se puede: **el predio ocupa casi todo el ancho**. Medido
+sobre la portada, va de x≈360 a x≈1580 de 1920, o sea 1220 px; la ventana de
+9:16 más grande que entra en un cuadro de 1080 de alto son 607. Recortar le
+corta las dos puntas al polígono, que es justamente lo único que la pieza
+tiene para mostrar.
+
+No hace falta, porque la cámara del mapa **se calcula con el tamaño del
+cuadro**: `zoomQueEncuadra(ancho, alto)` en `composiciones/predio/mapa.tsx`. Con
+el cuadro parado, el mismo cálculo baja el zoom hasta que el predio entra a lo
+ancho y lo que queda arriba y abajo lo llena la ortofoto que sigue. Es un
+encuadre nuevo, no un recorte del viejo, y es la misma idea de §8: **lo que se
+puede dibujar no se estira**.
+
+Son cinco: `PortadaPredioVertical`, `PortadaGiroVertical`,
+`LecturaAguaVertical`, `LecturaSecuenciaVertical` y `ParCrudoLeidoVertical`. Van
+declaradas a 720×1280 y se rinden a ×1,5 —exactamente como las apaisadas se
+declaran a 1280×720 y se rinden a ×1,5— con dos consecuencias buenas: la
+densidad de trazado es la misma que en el horizontal, y en un cuadro de 720 de
+ancho cada elemento medido en píxeles CSS ocupa 1,78 veces más pantalla, que es
+lo que un video mirado en un teléfono necesita. El crudo va a 900×1600 × 2 =
+1800×3200, que es la misma holgura de 1,667 que tiene el horizontal con sus
+3200 sobre 1920, porque el empuje del montaje recorta de ahí.
+
+**Hubo que arreglar una cosa para que esto funcionara.** El primer render
+vertical salió con el predio cortado por los dos lados. La causa: `acercar` se
+sumaba al zoom que mete el predio **entero**, que es el menor de los dos —el
+del alto en 16:9, el del ancho en 9:16—, así que el mismo 1,0 que en apaisado
+deja el predio a sangre, en parado lo deja al doble del ancho del cuadro. Ahora
+el acercamiento se calcula una vez contra un cuadro 16:9 de referencia y se
+aplica sobre el zoom del ancho real, de modo que lo que se conserva al cambiar
+de formato es cuánto del ancho ocupa el predio. **Para cualquier cuadro 16:9
+devuelve el mismo número que antes** —exacto en 1280 × 720— así que los
+maestros horizontales no se tocan.
+
+No es una predicción: la cuenta es Mercator plano y no sabe nada de la
+inclinación de 61°. Mirado el render, con el cuadro parado el predio ocupa unas
+tres cuartas partes del ancho contra dos tercios en el apaisado, porque la
+perspectiva reparte distinto cuando el cuadro es más alto.
+
+### Las grabaciones de la app sí se agrandan, y no hay alternativa
+
+De los 1920×1080 de la captura se toma una ventana de 607×1080 y se la lleva a
+1080×1920: ×1,78. **Es el único lugar de los reels donde se inventan píxeles**,
+y conviene decirlo al lado de todo lo anterior. No hay vuelta: la pantalla se
+grabó una vez y a esa medida. Lo que sí se elige, plano por plano, es qué
+columna, y está escrita en cada llamada:
+
+| plano | columna | qué se ve |
+|---|---|---|
+| `22b-capas-shader` | x = 1313 | el panel de capas: topografía, plano profesional, riesgo de erosión — «todo en un solo lugar» escrito en una lista |
+| `13-represa` | x = 40 | los sitios de represa rankeados, con los litros al lado |
+| `21-sectores-cierre` | x = 817 | el mapa con las viviendas, los sectores de sol y viento y el keypoint |
+
+Encima va `banda-v.png`, que tapa la barra de Screenity: después del recorte y
+el agrande cae en y 1692–1815, y la banda ocupa de 1620 para abajo. Las piezas
+no la llevan, porque no tienen nada que tapar. Es la misma distinción que hace
+el horizontal.
+
+### El corte
+
+No son el video recortado: son otros dos montajes. De las veinte frases entran
+ocho en el reel y tres en la story, y el criterio no es resumir sino que cada
+una **se entienda sola**, porque un reel se mira sin sonido, a la mitad y casi
+nunca desde el principio. Quedan afuera las dos primeras —los quince años y la
+bioarquitectura—: en setenta y tres segundos son el piso de todo lo que sigue,
+y en treinta son diez segundos de currículum antes de que aparezca el producto.
+
+El reel de 30 s son diez planos: el terreno crudo sobre «se me iba más tiempo
+juntando datos», la portada sobre «por eso hice acequia», la lectura en
+secuencia y el panel de capas sobre la letanía de datos, el agua, las represas,
+el plano terminado sobre «un proyecto entero en una fracción del tiempo», el
+giro sobre el nombre, y el cierre de marca. La story son cinco: portada, panel
+de capas, lectura y cierre.
+
+El cierre de marca del reel son 135 cuadros y el archivo tiene 105: los treinta
+que faltan los clona `seg_placa` del último cuadro, que es el lockup quieto. Así
+«empezar no cuesta nada» cae encima de la marca y no en el aire.
+
+**El subtítulo baja de 110 a 300 px del borde.** Instagram se queda con la
+franja de abajo del cuadro —el pie, los botones, el texto del posteo— y a 110 px
+el subtítulo cae justo ahí. Es el único número de todos estos que se puede
+equivocar sin que se note en la computadora y se note en el teléfono.
+
+### El rango de color, que estuvo mal una corrida
+
+La primera versión de los reels salió **diciendo rango limitado y llevando
+rango completo**. No es un detalle de etiqueta: según qué reproductor lo abra,
+los negros se levantan y los blancos se recortan.
+
+La causa es que el rango del resultado lo negociaba ffmpeg a partir de la mezcla
+de entradas, y la mezcla cambia de un montaje a otro. Los segmentos llegan de
+dos clases: los que salen de una pieza de Remotion son de rango completo y los
+demás —el negro, la foto, las grabaciones de la app— de rango limitado. En el
+horizontal son diecisiete limitados contra seis completos y la cadena se
+resuelve en limitado; en el reel son cinco contra cinco y se resolvió en
+completo, mientras `pegar_sonido` escribía el átomo `colr` con `tv` igual.
+
+Ahora `pegar_suave` lo pide explícito con `-color_range tv`. Medido sobre un
+disolver de prueba, sin el flag el tramo de la pieza sale con la luma entre 0 y
+255 y con el flag entre 15 y 234, que es la conversión que el horizontal ya le
+venía haciendo a las suyas. (Eso no quiere decir que el video entero quede
+adentro de 16–235: las grabaciones de la app traen blancos en 255, y el
+horizontal aprobado también los tiene.)
+
+### `pegar_suave` se mudó a `piezas.sh`
+
+El pegado con disolver —que además quema los subtítulos en la misma pasada—
+estaba dentro de `final.sh`. Ahora hay tres montajes y los tres tienen que
+cortar igual, así que vive en `piezas.sh` con el resto de los constructores. El
+horizontal se volvió a armar entero para probarlo: **los 2196 cuadros salieron
+byte a byte idénticos** a los de antes del cambio.
+
+### Lo que se verificó
+
+| qué | resultado |
+|---|---|
+| las cinco piezas paradas | 1080×1920 (y 1800×3200 la foto), cuadros exactos: 390 / 810 / 360 / 360 |
+| los dos entregables | 900 y 450 cuadros exactos · H.264, yuv420p, bt709, rango limitado · AAC 48 kHz mono · `moov` antes de `mdat` |
+| color | `yuv420p tv bt709` en los tres entregables, el horizontal incluido |
+| niveles | −15,4 y −15,3 LUFS · −1,4 y −1,3 dBTP — contra −15,5 del horizontal |
+| el horizontal, después del refactor | flujo de video byte a byte idéntico al de antes |
+| pausas de la voz | 0,40 a 0,45 s en el reel, 0,44 en la story: ninguna llega al medio segundo |
+| carga en un navegador de verdad | los dos: `video.error` = ninguno · presentan cuadro · catorce saltos buscados y alcanzados |
+
+### Lo que queda señalado, no resuelto
+
+- **La cama sigue sintetizada** también acá. Un `musica.mp3` en
+  `videoapp-1/audio en off/` los arregla a los tres de una.
+- **La story abre tranquila.** Los primeros cuatro segundos son la portada con
+  las curvas y el agua dibujándose: es lo que más pasa por segundo de toda la
+  pieza, pero sigue siendo un paisaje. Si rinde poco, el reemplazo natural es
+  un plano de la app moviéndose, que es más feo y engancha más.
+- **`Informe` no tiene gemela vertical.** El documento tiene las alturas de sus
+  secciones escritas en píxeles, así que en un cuadro de 1920 de alto no se
+  reacomoda. Por eso ninguno de los dos reels muestra el informe rendido; el de
+  30 s llega a ese momento con el plano terminado de la app.

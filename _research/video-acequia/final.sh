@@ -73,74 +73,10 @@ MUSICA_PROPIA="$V/audio en off/musica"   # sin extension; si existe, manda
 # shellcheck source=/dev/null
 . "$G/cama.sh"
 
-# ─────────────────────────────────────────────────────────────────────────────
-# pegar_suave <salida> <archivo.ass> <seg1> <seg2> ...
-#
-# Pega los segmentos disolviendo uno en el siguiente y quema los subtitulos,
-# todo en una pasada.
-#
-# No recibe las duraciones: **las mide**. Cada segmento se escribio con EXTRA
-# cuadros de mas, asi que los cuadros que le tocan son los que tiene menos
-# EXTRA. Medirlos en vez de confiar en los que se pidieron es lo que hace que
-# un segmento que salio corto se note aca y no en el video terminado.
-#
-# El plano k+1 empieza a aparecer exactamente donde terminaba el plano k en la
-# linea de tiempo, asi que la suma de los cuadros nominales es el largo final
-# y la voz sigue cayendo donde cae.
-# ─────────────────────────────────────────────────────────────────────────────
-#
-# `csv=p=0` deja la coma del separador aunque se pida un solo campo, asi que
-# la salida viene como «117,» y eso adentro de un $(( )) es un error de
-# sintaxis, no un cero: se queda solo con los digitos.
-cuadros_de () {
-  local n
-  n="$(ffprobe -v error -select_streams v:0 -show_entries stream=nb_frames \
-       -of csv=p=0 "$1" | tr -dc '0-9')"
-  if [ -z "$n" ]; then
-    n="$(ffprobe -v error -count_frames -select_streams v:0 \
-         -show_entries stream=nb_read_frames -of csv=p=0 "$1" | tr -dc '0-9')"
-  fi
-  printf '%s' "$n"
-}
-
-pegar_suave () {
-  local dest="$1" ass="$2"; shift 2
-  local -a ins=() nn=()
-  local s n total=0 esperado
-
-  for s in "$@"; do
-    n="$(cuadros_de "$T/$s.mp4")"
-    esperado=$((n - EXTRA))
-    if [ "$esperado" -lt 1 ]; then
-      printf 'El segmento %s salio con %s cuadros: no llega ni a los %d del disolver\n' \
-        "$s" "$n" "$EXTRA" >&2
-      exit 1
-    fi
-    ins+=(-i "$T/$s.mp4")
-    nn+=("$esperado")
-    total=$((total + esperado))
-  done
-
-  # La cadena. El offset del disolver k es donde termina el plano k en la
-  # linea de tiempo, contado en cuadros y pasado a segundos con seis
-  # decimales: a treinta cuadros por segundo, redondear a centesimas corre
-  # medio cuadro por corte y veintidos cortes son siete cuadros.
-  local fc="" previo="0:v" i=1 acum=0
-  while [ "$i" -lt "${#nn[@]}" ]; do
-    acum=$((acum + nn[i - 1]))
-    fc="${fc}[${previo}][${i}:v]xfade=transition=fade:duration=${DISOLVER}"
-    fc="${fc}:offset=$(awk -v a="$acum" 'BEGIN{printf "%.6f", a/30}')[x${i}];"
-    previo="x${i}"
-    i=$((i + 1))
-  done
-  fc="${fc}[${previo}]subtitles=${ass}[v]"
-
-  cp -f "$G/$ass" "$T/$ass"
-  printf '  %d planos · %d cortes disueltos · %d cuadros\n' \
-    "${#nn[@]}" "$(( ${#nn[@]} - 1 ))" "$total"
-  (cd "$T" && ffmpeg -v error -y "${ins[@]}" -filter_complex "$fc" \
-    -map "[v]" -frames:v "$total" "${X264[@]}" "$(basename "$dest")")
-}
+# `pegar_suave` —el pegado con disolver, que ademas quema los subtitulos en la
+# misma pasada— vive en `piezas.sh` desde que hay reels: los tres montajes
+# tienen que cortar igual. Lee EXTRA y DISOLVER cuando corre, no cuando se
+# define, asi que los dos parametros de arriba son los que manda este archivo.
 
 # ─────────────────────────────────────────────────────────────────────────────
 printf 'Version final (%s s)…\n' "$DURACION_F"

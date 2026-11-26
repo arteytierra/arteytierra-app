@@ -364,6 +364,80 @@ export const Root: React.FC = () => {
       />
 
       {/*
+        ── Las mismas piezas en 9:16, para los reels ──────────────────────
+        No son un recorte del horizontal y por eso existen: el predio ocupa
+        casi todo el ancho del cuadro de 16:9, así que una ventana vertical le
+        corta las dos puntas. Acá no hace falta recortar nada, porque la cámara
+        del mapa sale de `zoomQueEncuadra(ancho, alto)`: con el cuadro parado,
+        el mismo cálculo baja el zoom hasta que el predio entra a lo ancho y
+        rellena arriba y abajo con la ortofoto que sigue. El encuadre se
+        calcula, no se corta.
+
+        720 × 1280 y no 1080 × 1920 por la misma razón por la que las
+        horizontales son 1280 × 720: la maquetación se declara a esa medida y
+        el render la dibuja a ×1,5 (ver `scripts/vertical.mjs`). Además, en un
+        cuadro de 720 de ancho cada elemento medido en píxeles CSS ocupa 1,78
+        veces más pantalla que en uno de 1280, que es justo lo que un video
+        mirado en un teléfono necesita.
+      */}
+      <Composition
+        id="PortadaPredioVertical"
+        component={PortadaPredio}
+        durationInFrames={CUADROS_PORTADA_PREDIO}
+        fps={FPS}
+        width={720}
+        height={1280}
+        schema={esquemaPortadaPredio}
+        defaultProps={{}}
+      />
+
+      <Composition
+        id="PortadaGiroVertical"
+        component={PortadaGiro}
+        durationInFrames={CUADROS_PORTADA_GIRO}
+        fps={FPS}
+        width={720}
+        height={1280}
+        schema={esquemaPortadaGiro}
+        defaultProps={{}}
+      />
+
+      {/*
+        De las seis lecturas, sólo las dos que usan los reels. Las otras cuatro
+        no se declaran en vertical porque no las pide nadie, y una composición
+        que nadie renderiza es una que se rompe sin que nadie se entere.
+      */}
+      {(['agua', 'secuencia'] as const).map(lectura => (
+        <Composition
+          key={`v-${lectura}`}
+          id={`Lectura${lectura[0]!.toUpperCase()}${lectura.slice(1)}Vertical`}
+          component={LecturaPredio}
+          durationInFrames={CUADROS_LECTURA}
+          fps={FPS_LECTURA}
+          width={720}
+          height={1280}
+          schema={esquemaLectura}
+          defaultProps={{ lectura }}
+        />
+      ))}
+
+      {/*
+        El terreno crudo del reel. 900 × 1600 es el 9:16 de los 1600 × 900 del
+        par horizontal, y se rinde a ×2 por lo mismo que aquél: el empuje del
+        montaje recorta de una imagen más grande que el cuadro, así que lo que
+        hace falta es 1800 × 3200 y no 1080 × 1920.
+      */}
+      <Composition
+        id="ParCrudoLeidoVertical"
+        component={ParCrudoLeido}
+        durationInFrames={CUADROS_PAR}
+        fps={FPS}
+        width={900}
+        height={1600}
+        defaultProps={{}}
+      />
+
+      {/*
         Las seis lecturas: doce segundos y una vuelta entera, o sea un grado de
         rumbo por cuadro. Antes eran dos segundos a 60 fps —180° por segundo— y
         a esa velocidad no se distingue nada, que es la corrección que pidió
