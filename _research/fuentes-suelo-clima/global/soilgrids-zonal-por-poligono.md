@@ -523,9 +523,10 @@ seis de los ocho polígonos de un lote. Con espera creciente los seis salieron.
 
 ### El recuento
 
-De los diez polígonos que pedía el backlog están hechos **nueve**: 264, 290,
-294, 297, 298, 315, 323, 221 y 216. Más **288** y **229**, los dos de Java,
-que no estaban pedidos y que hay que volver a correr con el arreglo del valor 0.
+De los diez polígonos que pedía el backlog están hechos **los diez**: 264,
+290, 294, 297, 298, 315, 323, 221, 216 y —desde el 27/11/2026, por mosaico— el
+**42**. Más **288** y **229**, los dos de Java, que no estaban pedidos y que hay
+que volver a correr con el arreglo del valor 0.
 
 | ECO_ID | Ficha | Clase dominante | Fracción del grupo A |
 |---|---|---|---|
@@ -538,6 +539,7 @@ que no estaban pedidos y que hay que volver a correr con el arreglo del valor 0.
 | 264 | Turberas de Malaca | Histosols 92,4 % | 7,4 % |
 | 221 | Turberas de Borneo | Histosols 84,1 % | 1,1 % |
 | 216 | Mulga de Australia Occidental | Cambisols 44,5 % | 0,0 % |
+| 42 | Miombo seco de Zambeze | Lixisols 33,4 % | **67,2 %** |
 
 Dos que vale la pena mirar aparte:
 
@@ -553,15 +555,134 @@ Dos que vale la pena mirar aparte:
   no lo necesitaba: ya tenía la descripción por unidad de suelo, que es más
   fina que una clase WRB.
 
-**El que falta es el 42, el miombo seco de Zambeze, y falta por una razón
-escrita.** Su bbox pide 118 Mpx por capa, que entrando en el tope de 6 Mpx
-necesitaría reducir 4,4x, y arriba de 2x el WCS promedia códigos de leyenda. El
-script corta y lo dice. Para medirlo hay que hacer mosaico por tiles a
-resolución nativa: unos veinte tiles de `MostProbable`, y la deducción del
-mapeo en ventanas chicas aparte, porque el mapeo es global y no hace falta
-bajar las 30 capas sobre los 118 Mpx. Eso es trabajo, no un parámetro.
+## El 42, el miombo seco: el décimo, el más grande y el que hubo que mosaicar
+
+**Hecho el 27/11/2026.** Era el único de los diez que el script de un solo
+pedido no podía medir, y la razón estaba escrita: su bbox pide 118 Mpx por capa
+—10.978 × 10.744 píxeles, 22,9 × 22,4 grados—, que entrando en el tope de 6 Mpx
+necesitaría reducir 4,4x, y arriba de 2x el WCS sirve de una pirámide
+promediada. La herramienta nueva es **`soilgrids-zonal-mosaico.py`**, al lado de
+este archivo, y no submuestrea nada: parte el bbox en tiles de 2.400 × 2.400
+píxeles a resolución nativa y deduce el mapeo aparte, en ventanas de un grado.
+Importa el método del otro script en vez de copiarlo, así que el mapeo, los
+grupos de la regla y la escalera de reintentos siguen teniendo un solo lugar
+donde viven.
+
+### Lo que hubo que medir antes de escribirla
+
+**El servidor ancla la grilla al pedido, y el paso no es 0,002083.** Pedidos dos
+cuadrados contiguos de 100 píxeles en múltiplos de 1/480 de grado, cada TIFF
+arranca exactamente en el x0 y el y1 pedidos y los dos orígenes vuelven
+separados 100,000000 píxeles. O sea que los tiles empalman sin solape y sin
+hueco **si y sólo si** los bordes se piden en múltiplos exactos del paso, y el
+paso exacto es 1/480 = 0,002083333..., no el 0,002083 redondeado que el otro
+script usa para estimar cuánto pesa un bbox: ese redondeo, acumulado a lo largo
+de 10.978 columnas, son 3,7 milésimas de grado, casi dos píxeles. El script
+igual verifica tile por tile el tamaño y el origen contra lo que la grilla
+global predice, y corta si no coinciden: una grilla corrida medio píxel
+contaría dos veces el borde y el total seguiría pareciendo razonable.
+
+### Las tres pruebas
+
+**1. El mismo polígono con dos tamaños de tile da el mismo conteo, píxel por
+píxel.** Corrido el 264 con un tile de 2.400 y con seis de 600: 67.509 píxeles
+adentro las dos veces, y las siete clases idénticas hasta la unidad —61.632
+Histosols, 4.868 Ferralsols, 499 Acrisols, 96, 32, 5 y 1—. Es la prueba que
+busca el defecto propio de un mosaico, que es contar dos veces una costura o
+saltearla. Y en cada corrida el script compara además los píxeles que recorrió
+contra los que el scanline global había contado antes de bajar nada, y corta si
+difieren.
+
+**2. El mosaico reproduce el resultado del script de un solo pedido.** El 264
+medido por mosaico da Histosols 91,8 % y grupo A 8,0 %, contra 91,7 % y 8,0 %
+del camino verificado. No es idéntico al píxel y no puede serlo: acá la grilla
+está pegada a múltiplos de 1/480 y allá arranca en el bbox crudo, así que el
+borde del polígono cae en píxeles distintos. La diferencia es de 209 píxeles
+sobre 67.718, el 0,3 %.
+
+**3. Y la superficie da la cifra publicada.** El scanline del 42 devuelve
+**1.192.594 km²** y la ficha cita **119,26 millones de hectáreas** de One Earth:
+seis km² de diferencia sobre 1,19 millones. Vale como control del recorte
+entero, con el descuento de los 109 anillos invertidos incluido —en este
+polígono eran el 10 %—.
+
+### El resultado
+
+Veintiún valores presentes, **los veintiuno deducidos por unanimidad del
+100 %**, y el mapeo vuelve a dar `GRUPOS[v]`: es el décimo polígono que lo
+verifica. Ningún valor afuera de 0..29, o sea ninguna señal de pirámide
+promediada.
+
+| Clase | Superficie | km² |
+|---|---|---|
+| Lixisols | **33,4 %** | 398.010 |
+| Ferralsols | 29,2 % | 347.794 |
+| Arenosols | 13,9 % | 165.814 |
+| Luvisols | 12,0 % | 143.138 |
+| Acrisols | 4,3 % | 51.062 |
+| Cambisols | 4,2 % | 50.019 |
+| Leptosols | 1,1 % | 13.531 |
+| los otros catorce grupos | 1,7 % | 20.794 |
+
+**La fracción del grupo A es 67,2 %**, la más alta de los quince polígonos
+medidos —la anterior era el 21,9 % del Irrawaddy—, y la regla daría −15. Pero
+hay que leerla con cuidado, y de acá sale el hallazgo que más lejos llega.
+
+### El grupo A junta dos suelos que la WRB separa a propósito
+
+El Lixisol y el Acrisol comparten la arcilla de baja actividad —menos de 24
+cmolc/kg de arcilla en el horizonte árgico— y lo que los distingue es la
+saturación de bases: del 50 % o más entre 25 y 100 cm en el Lixisol, por debajo
+del 50 % en el Acrisol. El grupo A de la regla de acequia se llama «lixiviados
+y ácidos» y mete a los dos en la misma bolsa. Acá eso decide la lectura, porque
+la clase dominante es justamente la saturada en bases: de los 67,2 %,
+**33,8 % son los ácidos propiamente —Ferralsoles, Acrisoles, Podzoles, Alisoles
+y Plintosoles— y 33,4 % son Lixisoles.**
+
+Entonces el 67 % **no desmiente** el pH de 6,5 a 7,3 que la ficha tiene medido
+adentro del polígono, en Niassa. Lo que dice es otra cosa, y es más útil: el
+**80,9 %** de la superficie —Lixisoles, Ferralsoles, Acrisoles y Arenosoles
+juntos— está sobre suelos cuya definición incluye poca capacidad de retener
+nutrientes, que es exactamente la limitante que esas catorce muestras midieron
+como ECEC de 3,84 a 0,67 meq/100 g. El zonal no cambia el mecanismo de la ficha:
+le pone superficie, y lo saca de un rincón de 14 muestras.
+
+Fuente de las definiciones: WRB de ISRIC, fichas de
+[Lixisols](https://wrb.isric.org/soilgroups/lixisol.html) y de
+[Acrisols](https://wrb.isric.org/soilgroups/acrisol.html) y la clave de primer
+nivel en <https://wrb.isric.org/system.html>.
+
+**Lo que no se hizo, y por qué.** No se tocó ningún delta de la ficha. La regla
+pide dos bases a ≤ 5 puntos y HWSD v2 sigue sin extraerse, así que con una sola
+base se abstiene; y el −20 de la huerta no sale de la regla sino de la ECEC, de
+los nutrientes que faltan, de la seca de hasta seis meses y de la Striga. Lo que
+queda anotado acá es la definición del grupo A: si algún día se separa el
+Lixisol del Acrisol, los deltas que esa fracción propone se mueven en fichas de
+cuatro continentes, y eso no se cambia por la medición de un polígono.
+
+### Contra lo que la ficha esperaba
+
+La síntesis de CIFOR separa dos repartos por lluvia: en el miombo de menor
+lluvia, Cambisoles ferrálicos y crómicos, Luvisoles crómicos y plínticos y
+Arenosoles; en el de mayor lluvia, Ferralsoles, Acrisoles, Luvisoles y
+Nitisoles. El reparto medido coincide en Arenosoles, Luvisoles, Ferralsoles y
+Acrisoles, **no devuelve Nitisoles** (185 píxeles en todo el polígono), deja a
+los Cambisoles en 4,2 % cuando CIFOR los pone primeros del miombo seco, y pone
+como dominante un grupo que la lista de CIFOR no nombra.
+
+### Cuánto costó
+
+Quince de los veinticinco tiles tienen polígono adentro: los otros diez caen en
+los huecos del bbox entre Angola y Tanzania y no se bajan. Con la capa de
+Acrisoles sobre cada uno —que es la única prueba que separa el 0-Acrisols del
+0-nodata, y acá el valor 0 son 980.649 píxeles de Acrisoles contra 46.699 sin
+dato— son treinta pedidos grandes, más nueve ventanas de un grado por
+treinta y una capas para el mapeo: 311 TIFF y 67 MB en disco. Unos veinte
+minutos de reloj y **ningún reintento**, que para este servidor es suerte y no
+una medición.
 
 Lo que no entra en una tarde es HWSD.
+
 ## California: la primera vez que hubo contra qué comparar
 
 Los nueve polígonos anteriores están en India, Myanmar, Indonesia, Malasia y

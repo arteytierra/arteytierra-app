@@ -122,7 +122,7 @@ describe('California partida en cinco', () => {
   });
 
   it('la serpentina es lo que el zonal no puede ver, y eso se dice', () => {
-    // Hallazgo del 23/11/2026, y el único de los catorce polígonos medidos
+    // Hallazgo del 23/11/2026, y el único de los quince polígonos medidos
     // donde se pudo comparar SoilGrids contra un relevamiento nacional denso.
     // La serpentina es un cualificador de la WRB -hypermagnesic- y no un grupo,
     // así que `MostProbable`, que devuelve grupos, es estructuralmente ciego a

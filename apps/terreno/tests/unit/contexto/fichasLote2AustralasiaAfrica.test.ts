@@ -132,6 +132,36 @@ describe('el polígono decidió tres veces, y dos de las tres contra mi propio e
     expect(seco().suelos).toMatch(/6,5 a 7,3/);   // el pH, que no es ácido
     expect(seco().suelos).toMatch(/1\.418,4 mm/); // y el aviso de que es un rincón húmedo
   });
+
+  it('el zonal del 27/11/2026 le pone superficie al mecanismo y no mueve ningún delta', () => {
+    // El 42 era el último de los diez polígonos del backlog sin medir, y fue el
+    // único que necesitó mosaico: 118 Mpx por capa no entran en un pedido y
+    // arriba de 2x el WCS promedia códigos de leyenda e inventa clases. Ver
+    // _research/fuentes-suelo-clima/global/soilgrids-zonal-por-poligono.md.
+    //
+    // Lo que fija este test no es el reparto: es cómo se lee. El 67,2 % de
+    // «lixiviados» del grupo A de la regla NO contradice el pH de 6,5 a 7,3
+    // que la ficha tiene medido adentro del polígono, porque en la WRB el
+    // Lixisol y el Acrisol comparten la arcilla de baja actividad y los separa
+    // la saturación de bases —≥ 50 % entre 25 y 100 cm en el Lixisol—, y la
+    // clase dominante acá es justamente la saturada en bases. Si alguien borra
+    // esa distinción, la ficha queda diciendo dos cosas opuestas sobre la
+    // acidez de la misma ecorregión.
+    const s = seco().suelos;
+    expect(s).toMatch(/Lixisoles 33,4 %/);
+    expect(s).toMatch(/Ferralsoles 29,2 %/);
+    expect(s).toMatch(/67,2 %/);
+    expect(s).toMatch(/saturación de bases/);
+    expect(s).toMatch(/80,9 %/);        // lo que de verdad comparte el 80,9 %: poca ECEC
+    expect(s).toMatch(/119,26 Mha/);    // el recorte controlado contra One Earth
+    expect(s).toMatch(/no devuelve Nitisoles/);
+    // Y la regla no propone nada con una sola base, así que los deltas quedan
+    // donde estaban, sostenidos por lo que los sostenía: ECEC, nutrientes,
+    // seca y Striga.
+    expect(s).toMatch(/HWSD v2 sigue sin extraerse/);
+    expect(buscar(seco().aptitud!, 'pasturas')!.delta).toBe(0);
+    expect(buscar(seco().aptitud!, 'huerta')!.delta).toBe(-20);
+  });
 });
 
 describe('los dos hosts que contestan 200 sin servir el documento', () => {

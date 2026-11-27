@@ -67,9 +67,10 @@ que el script ya maneja:
    comparaba la MISMA capa a dos escalas vecinas, y el defecto empieza en la
    tercera.
 
-   Por eso TOPE_REDUCCION corta en 1,9 en vez de submuestrear mas: un
-   poligono que no entra se reporta como pendiente de mosaico por tiles, que
-   es trabajo, en lugar de devolver un reparto de clases que no existen.
+   Por eso TOPE_REDUCCION corta en 2,0 en vez de submuestrear mas: un
+   poligono que no entra no se mide aca, se mide con
+   `soilgrids-zonal-mosaico.py`, que parte el bbox en tiles a resolucion
+   nativa. Devolver un reparto de clases que no existen seria peor.
 
 Requiere curl y Pillow. No requiere GDAL ni rasterio.
 
@@ -297,8 +298,9 @@ def main(eco_id, carpeta):
                 'el bbox pide %.0f Mpx por capa y reducirlo para que entre en '
                 '%.0f necesitaria %.1fx, arriba del tope de %.1fx. Pasado 2x '
                 'el WCS promedia codigos de leyenda e inventa clases (ver el '
-                'punto 4 del encabezado), asi que este poligono necesita '
-                'mosaico por tiles a resolucion nativa y no se mide asi.'
+                'punto 4 del encabezado), asi que este poligono se mide con '
+                'soilgrids-zonal-mosaico.py, que lo parte en tiles a '
+                'resolucion nativa.'
                 % (mpx, TOPE_MPX, 1.0 / f, TOPE_REDUCCION))
         we, he = max(1, int(wn * f)), max(1, int(hn * f))
         escala = '&SCALESIZE=x(%d),y(%d)&INTERPOLATION=NEAREST' % (we, he)
